@@ -1,0 +1,17 @@
+{
+  "branch": "master",
+  "publishingSystem": "test",
+  "type": "consumer",
+  "publishers": [
+    {
+      "system": "test",
+      "service": "testApp"
+    }
+  ],
+  "subscribers": [
+    {
+      "system": "test",
+      "service": "testApp"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+@namespace("ch.admin.bit.jeap.domainevent.avro.event.integration.idl")
+protocol IdlTestIntegrationProtocol {
+
+  import idl "DomainEventBaseTypes.avdl";
+
+  record IdlTestIntegrationReference {
+    string type;
+    string id;
+  }
+
+  record IdlTestIntegrationReferences {
+    IdlTestIntegrationReference system;
+  }
+
+  record IdlTestIntegrationPayload {
+    string message;
+  }
+
+  record IdlTestIntegrationEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    IdlTestIntegrationReferences references;
+    IdlTestIntegrationPayload payload;
+    string domainEventVersion;
+  }
+}

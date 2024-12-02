@@ -1,0 +1,4 @@
+jeap:
+  messaging:
+    kafka:
+      bootstrap-servers: "some-local-broker:9029"

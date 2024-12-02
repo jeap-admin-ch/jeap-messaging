@@ -1,0 +1,82 @@
+{
+  "properties": [
+    {
+      "name": "jeap.messaging.kafka.admin-client-bootstrap-servers",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.bootstrap-servers",
+      "type": "java.lang.String",
+      "description": "A bootstrap-server of the Kafka-Cluster.",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.consumer-bootstrap-servers",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.username",
+      "type": "java.lang.String",
+      "description": "The username if {@link SecurityProtocol#SASL_PLAINTEXT} or {@link SecurityProtocol#SASL_SSL} is used.",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.password",
+      "type": "java.lang.String",
+      "description": "The password if {@link SecurityProtocol#SASL_PLAINTEXT} or {@link SecurityProtocol#SASL_SSL} is used.",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.producer-bootstrap-servers",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.schema-registry-password",
+      "type": "java.lang.String",
+      "description": "Password to be used to authenticate against the schema registry.",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.schema-registry-url",
+      "type": "java.lang.String",
+      "description": "The URL of the schema registry to be used. Only needed if useSchemaRegistry is set to true.",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.schema-registry-username",
+      "type": "java.lang.String",
+      "description": "Username to be used to authenticate against the schema registry.",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.security-protocol",
+      "type": "org.apache.kafka.common.security.auth.SecurityProtocol",
+      "description": "The security protocol to be used, usually {@link SecurityProtocol#SASL_SSL} on CF or {@link SecurityProtocol#SASL_PLAINTEXT for local kafka.",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.cluster",
+      "type": "java.util.Map<java.lang.String,ch.admin.bit.jeap.messaging.kafka.properties.cluster.ClusterProperties>",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.default-cluster-name",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.default-producer-cluster-override",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.kafka.error-topic-name",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    }
+  ],
+  "hints": []
+}

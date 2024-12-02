@@ -1,0 +1,21 @@
+@namespace("ch.admin.bit.jeap.domainevent.avro.event.idlemptyreferences")
+protocol IdlTestEmptyReferencesProtocol {
+
+  import idl "DomainEventBaseTypes.avdl";
+
+  record IdlTestEmptyReferencesReferences {
+  }
+
+  record IdlTestEmptyReferencesPayload {
+    string message;
+  }
+
+  record IdlTestEmptyReferencesEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    IdlTestEmptyReferencesReferences references;
+    IdlTestEmptyReferencesPayload payload;
+    string domainEventVersion;
+  }
+}

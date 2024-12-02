@@ -1,0 +1,41 @@
+@namespace("ch.admin.bit.jeap.domainevent.registry.verifier.testevent")
+protocol TestTestEventProtocol {
+
+	@namespace("ch.admin.bit.jeap.domainevent.avro")
+	record AvroDomainEventPublisher {
+		string system;
+		string service;
+	}
+
+	@namespace("ch.admin.bit.jeap.domainevent.avro")
+	record AvroDomainEventType {
+		string name;
+		string version;
+	}
+
+	@namespace("ch.admin.bit.jeap.domainevent.avro")
+	record AvroDomainEventIdentity {
+		string eventId;
+		string idempotenceId;
+		timestamp_ms created;
+	}
+
+	record TestReferences {
+
+	}
+
+	record TestPayload {
+		string existingField;
+		string newBackwardsIncompatibleField_v2;
+	}
+
+	record TestTestEvent {
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+		TestReferences references;
+		TestPayload payload;
+		union{null, string} processId = null;
+		string domainEventVersion;
+	}
+}

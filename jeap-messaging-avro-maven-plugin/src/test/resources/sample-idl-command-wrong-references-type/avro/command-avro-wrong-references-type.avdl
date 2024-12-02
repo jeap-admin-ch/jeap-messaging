@@ -1,0 +1,37 @@
+protocol IdlTestProtocol {
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessagePublisher {
+    string system;
+    string service;
+  }
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessageType {
+    string name;
+    string version;
+  }
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessageIdentity {
+    string id;
+    string idempotenceId;
+    timestamp_ms created;
+  }
+
+  record IdlTestReferenzen {
+    array<ComplexReference> reference;
+  }
+
+  record ComplexReference {
+    union{null, ComplexReference} reference;
+  }
+
+  record IdlTestCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    IdlTestReferenzen references;
+    string commandVersion;
+  }
+}

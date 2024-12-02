@@ -1,0 +1,68 @@
+{
+  "protocol" : "TestTestEventProtocol",
+  "namespace" : "ch.admin.bit.jeap.domainevent.registry.verifier.testevent",
+  "types" : [ {
+    "type" : "record",
+    "name" : "AvroDomainEventPublisher",
+    "namespace" : "ch.admin.bit.jeap.domainevent.avro",
+    "fields" : [ {
+      "name" : "system",
+      "type" : "string"
+    }, {
+      "name" : "service",
+      "type" : "string"
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "AvroDomainEventType",
+    "namespace" : "ch.admin.bit.jeap.domainevent.avro",
+    "fields" : [ {
+      "name" : "name",
+      "type" : "string"
+    }, {
+      "name" : "version",
+      "type" : "string"
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "AvroDomainEventIdentity",
+    "namespace" : "ch.admin.bit.jeap.domainevent.avro",
+    "fields" : [ {
+      "name" : "eventId",
+      "type" : "string"
+    }, {
+      "name" : "idempotenceId",
+      "type" : "string"
+    }, {
+      "name" : "created",
+      "type" : {
+        "type" : "long",
+        "logicalType" : "timestamp-millis"
+      }
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "TestReferences",
+    "fields" : [ ]
+  }, {
+    "type" : "record",
+    "name" : "TestTestEvent",
+    "fields" : [ {
+      "name" : "identity",
+      "type" : "ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity"
+    }, {
+      "name" : "type",
+      "type" : "ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType"
+    }, {
+      "name" : "publisher",
+      "type" : "ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher"
+    }, {
+      "name" : "references",
+      "type" : "TestReferences"
+    }, {
+      "name" : "domainEventVersion",
+      "type" : "string"
+    } ]
+  } ],
+  "messages" : { }
+}

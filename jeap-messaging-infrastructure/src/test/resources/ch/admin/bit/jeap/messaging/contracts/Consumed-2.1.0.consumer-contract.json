@@ -1,0 +1,12 @@
+{
+   "contractVersion": "1.0.0",
+   "role": "consumer",
+   "systemName": "test-system",
+   "messageTypeName": "Consumed",
+   "messageTypeVersion": "2.1.0",
+   "registryUrl": "http://localhost/registry",
+   "registryBranch": "feature",
+   "compatibilityMode": "BACKWARD",
+   "appName": "test-app",
+   "topics": ["Consumed-210"]
+}

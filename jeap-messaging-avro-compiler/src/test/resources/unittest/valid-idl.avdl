@@ -1,0 +1,19 @@
+protocol IdlTestProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record IdlTestReferences {
+  }
+
+  record IdlTestPayload {
+    string message;
+  }
+
+  record IdlTestEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    IdlTestReferences references;
+    IdlTestPayload payload;
+    string domainEventVersion;
+  }
+}

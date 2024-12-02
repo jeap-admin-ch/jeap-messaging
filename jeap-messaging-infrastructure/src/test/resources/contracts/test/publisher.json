@@ -1,0 +1,18 @@
+{
+  "branch": "master",
+  "publishingSystem": "test",
+  "type": "publisher",
+  "compatibilityMode": "FORWARD",
+  "publishers": [
+    {
+      "system": "test",
+      "service": "testApp"
+    }
+  ],
+  "subscribers": [
+    {
+      "system": "test",
+      "service": "testApp"
+    }
+  ]
+}

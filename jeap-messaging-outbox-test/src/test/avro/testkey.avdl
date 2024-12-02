@@ -1,0 +1,6 @@
+@namespace("ch.admin.bit.jeap.messaging.transactionaloutbox.test")
+protocol TestMessageKeyProtocol {
+  record TestMessageKey {
+    string someProperty;
+  }
+}

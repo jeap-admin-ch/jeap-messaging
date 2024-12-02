@@ -1,0 +1,49 @@
+@namespace("ch.admin.bazg.inspecziun.command")
+protocol InspecziunDeclareInspectionNeedCommandProtocol {
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessagePublisher {
+    string system;
+    string service;
+  }
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessageType {
+    string name;
+    string version;
+  }
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessageIdentity {
+    string id;
+    string idempotenceId;
+    timestamp_ms created;
+  }
+
+  record DeclareInspectionNeedPayload {
+  }
+
+  record InspecziunCaseReference {
+    string type = "InspecziunCase";
+    string id;
+  }
+
+  record RisicoRuleReference {
+    string type = "RisicoRule";
+    string id;
+    string version;
+  }
+
+  record DeclareInspectionNeedReferences {
+    union {null, InspecziunCaseReference} caseReference = null;
+    union {null, RisicoRuleReference} ruleReference = null;
+  }
+
+  record TestTestCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    DeclareInspectionNeedReferences references;
+    DeclareInspectionNeedPayload payload;
+    string commandVersion = "1.3.0";
+  }
+}

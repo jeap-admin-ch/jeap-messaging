@@ -1,0 +1,92 @@
+{
+  "type": "record",
+  "namespace": "ch.admin.bit.jeap.domainevent.example.schema",
+  "name": "AvroSchemaTestEvent",
+  "fields": [
+    {
+      "name": "domainEventVersion",
+      "type": "string"
+    },
+    {
+      "name": "identity",
+      "type": {
+        "type": "record",
+        "name": "ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity",
+        "fields": [
+          {
+            "name": "eventId",
+            "type": "string"
+          },
+          {
+            "name": "idempotenceId",
+            "type": "string"
+          },
+          {
+            "name": "created",
+            "type": {
+              "type": "long",
+              "logicalType": "timestamp-millis"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "type",
+      "type": {
+        "type": "record",
+        "name": "ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "publisher",
+      "type": {
+        "type": "record",
+        "name": "ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher",
+        "fields": [
+          {
+            "name": "system",
+            "type": "string"
+          },
+          {
+            "name": "service",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "references",
+      "type": {
+        "type": "record",
+        "name": "AvroSchemaTestReferences",
+        "fields": [
+        ]
+      }
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "record",
+        "namespace": "ch.admin.bit.jeap.else",
+        "name": "AvroSchemaTestPayload",
+        "fields": [
+          {
+            "name": "message",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

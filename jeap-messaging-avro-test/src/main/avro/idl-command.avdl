@@ -1,0 +1,27 @@
+@namespace("ch.admin.bit.jeap.messaging.avro.command.integration.idl")
+protocol IdlTestIntegrationProtocol {
+
+  import idl "MessagingBaseTypes.avdl";
+
+  record IdlTestIntegrationReference {
+    string type;
+    string id;
+  }
+
+  record IdlTestIntegrationReferences {
+    IdlTestIntegrationReference system;
+  }
+
+  record IdlTestIntegrationPayload {
+    string message;
+  }
+
+  record IdlTestIntegrationCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    IdlTestIntegrationReferences references;
+    IdlTestIntegrationPayload payload;
+    string commandVersion;
+  }
+}

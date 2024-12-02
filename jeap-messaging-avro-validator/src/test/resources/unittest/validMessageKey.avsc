@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "namespace": "ch.admin.bit.jeap.domainevent.avro.messagekey.schema",
+  "name": "AvroSchemaTestMessageKey",
+  "fields": [
+    {
+      "name": "keyPartOne",
+      "type": "string"
+    },
+    {
+      "name": "keyPartTwo",
+      "type": "long"
+    },
+    {
+      "name": "keyPartThree",
+      "type": "string"
+    }
+  ]
+}

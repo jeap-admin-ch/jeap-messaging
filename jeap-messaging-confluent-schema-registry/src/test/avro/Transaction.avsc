@@ -1,0 +1,32 @@
+{
+    "namespace": "ch.admin.bit.jeap.kafka.examples",
+    "type": "record",
+    "name": "Transaction",
+    "fields": [
+        {
+            "name": "id",
+            "type": "string"
+        },
+        {
+            "name": "FirstName",
+            "type": "string"
+        },
+        {
+            "name": "LastName",
+            "type": "string"
+        },
+        {
+            "name": "Age",
+            "type": "int"
+        },
+        {
+            "name": "amount",
+            "type": "double"
+        },
+        {
+            "name": "region",
+            "type": "string",
+            "default": ""
+        }
+    ]
+}

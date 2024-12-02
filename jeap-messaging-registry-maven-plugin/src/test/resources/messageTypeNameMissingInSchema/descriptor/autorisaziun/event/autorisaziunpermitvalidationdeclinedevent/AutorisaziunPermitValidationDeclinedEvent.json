@@ -1,0 +1,24 @@
+{
+  "eventName": "AutorisaziunPermitValidationDeclinedEvent",
+  "definingSystem": "AUTORISAZIUN",
+  "description": "Event that is published by Autorisaziun when a permit validation was declined",
+  "documentationUrl": "https://test",
+  "topic": "autorisaziun-permitvalidation-declined",
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "AutorisaziunPermitValidationDeclinedEvent_v1.0.0.avdl"
+    },
+    {
+      "version": "1.1.0",
+      "valueSchema": "AutorisaziunPermitValidationDeclinedEvent_v1.1.0.avdl",
+      "compatibilityMode": "NONE"
+    },
+    {
+      "version": "2.0.0",
+      "valueSchema": "AutorisaziunPermitValidationDeclinedEvent_v2.0.0.avdl",
+      "compatibilityMode": "NONE"
+    }
+  ]
+}

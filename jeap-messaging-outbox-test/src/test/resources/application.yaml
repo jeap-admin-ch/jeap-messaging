@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: jme-messaging-outbox-it
+  flyway:
+    enabled: true
+    locations: classpath:db/migration/common
+  jpa:
+    open-in-view: false
+
+logging.level:
+  ch.admin.bit.jeap.messaging.transactionaloutbox: DEBUG

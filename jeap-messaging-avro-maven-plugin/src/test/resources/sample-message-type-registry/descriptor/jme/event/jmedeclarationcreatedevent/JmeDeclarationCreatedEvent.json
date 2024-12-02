@@ -1,0 +1,36 @@
+{
+  "eventName": "JmeDeclarationCreatedEvent",
+  "publishingSystem": "JME",
+  "description": "Customs declaration created event",
+  "documentationUrl": "https://testhost",
+  "topic": "jme-messaging-declaration-created",
+  "topics": [
+    "additional-topic"
+  ],
+  "scope": "internal",
+  "versions": [
+    {
+      "version": "1.1.0",
+      "valueSchema": "JmeDeclarationCreatedEvent_v1.avdl",
+      "keySchema": "JmeDeclarationCreatedEvent_key_v1.avdl",
+      "compatibilityMode": "BACKWARD"
+    },
+    {
+      "version": "1.2.0",
+      "valueSchema": "JmeDeclarationCreatedEvent_v2.avdl",
+      "keySchema": "JmeDeclarationCreatedEvent_key_v2.avdl",
+      "compatibilityMode": "BACKWARD"
+    },
+    {
+      "version": "1.3.0",
+      "valueSchema": "JmeDeclarationCreatedEvent_v3.avdl",
+      "compatibilityMode": "BACKWARD"
+    },
+    {
+      "version": "1.4.0",
+      "valueSchema": "JmeDeclarationCreatedEvent_v4.avdl",
+      "keySchema": "ch.admin.bit.jme.declaration.BeanReferenceMessageKey.avdl",
+      "compatibilityMode": "BACKWARD"
+    }
+  ]
+}

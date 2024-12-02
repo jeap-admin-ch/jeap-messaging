@@ -1,0 +1,17 @@
+{
+  "branch": "develop",
+  "publishingSystem": "test",
+  "type": "wrongPublisher",
+  "publishers": [
+    {
+      "system": "test",
+      "service": "someoneelse"
+    }
+  ],
+  "subscribers": [
+    {
+      "system": "test",
+      "service": "testApp"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+protocol IdlTestMessageReferencesProtocol {
+
+  record IdlTestReferences {
+    ComplexReference reference;
+    Complex2Reference reference2;
+  }
+
+  record ComplexReference {
+    string type;
+    union{null, ComplexReference} reference;
+  }
+
+  record Complex2Reference {
+    string type;
+    union{null, ComplexReference} reference;
+  }
+
+}

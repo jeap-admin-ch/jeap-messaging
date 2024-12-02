@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Message Type Descriptor Common Schema Definitions",
+  "definitions": {
+    "Versions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Version"
+      }
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "$ref": "#/definitions/SemanticVersion"
+        },
+        "compatibilityMode": {
+          "$ref": "#/definitions/compatibilityMode"
+        },
+        "compatibleVersion": {
+          "type": "string",
+          "$ref": "#/definitions/SemanticVersion"
+        },
+        "valueSchema": {
+          "type": "string",
+          "pattern": "^.+\\.avdl$"
+        },
+        "keySchema": {
+          "type": "string",
+          "pattern": "^.+\\.avdl$"
+        }
+      },
+      "required": [
+        "version",
+        "valueSchema"
+      ],
+      "additionalProperties": false
+    },
+    "SemanticVersion": {
+      "type": "string",
+      "pattern": "\\d+\\.\\d+\\.\\d+"
+    },
+    "compatibilityMode": {
+      "type": "string",
+      "enum": [
+        "BACKWARD",
+        "FORWARD",
+        "FULL",
+        "NONE"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^http(s)?://.*$"
+    }
+  }
+}

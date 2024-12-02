@@ -1,0 +1,20 @@
+@namespace("ch.admin.bit.jeap.messaging.transactionaloutbox.test")
+protocol TestProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record TestReferences {
+  }
+
+  record TestPayload {
+    union{null, string} message = null;
+  }
+
+  record TestEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    TestReferences references;
+    TestPayload payload;
+    string domainEventVersion;
+  }
+}

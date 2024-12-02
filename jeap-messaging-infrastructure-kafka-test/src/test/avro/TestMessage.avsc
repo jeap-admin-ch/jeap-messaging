@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "TestMessage",
+  "namespace": "ch.admin.bit.jeap.test.avro.message",
+  "fields": [
+    {
+      "name": "message",
+      "type": "string"
+    }
+  ]
+}

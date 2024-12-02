@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Command Descriptor",
+  "description": "JSON schema for command descriptors",
+  "$ref": "#/definitions/CommandDescriptor",
+  "definitions": {
+    "CommandDescriptor": {
+      "type": "object",
+      "properties": {
+        "commandName": {
+          "type": "string",
+          "minLength": 10
+        },
+        "definingSystem": {
+          "type": "string",
+          "minLength": 2
+        },
+        "description": {
+          "type": "string"
+        },
+        "documentationUrl": {
+          "$ref": "common.schema.json#/definitions/url"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "public",
+            "internal"
+          ]
+        },
+        "topic": {
+          "type": "string"
+        },
+        "topics": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "versions": {
+          "$ref": "common.schema.json#/definitions/Versions"
+        }
+      },
+      "required": [
+        "commandName",
+        "description",
+        "scope"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

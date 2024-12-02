@@ -1,0 +1,33 @@
+@namespace("ch.admin.bit.jeap.domainevent.avro.command.idl")
+protocol IdlTestNoUserProtocol {
+
+  import idl "MessagingBaseTypes.avdl";
+
+  record MyCustomNoUserReference {
+    string type;
+    string referenceId;
+  }
+
+  record MyOtherNoUserReference {
+    string type;
+    string customId;
+  }
+
+  record IdlTestNoUserReferences {
+    MyCustomNoUserReference customReference;
+    MyOtherNoUserReference otherReference;
+  }
+
+  record IdlTestNoUserPayload {
+    string message;
+  }
+
+  record IdlTestNoUserCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    IdlTestNoUserReferences references;
+    IdlTestNoUserPayload payload;
+    string commandVersion;
+  }
+}

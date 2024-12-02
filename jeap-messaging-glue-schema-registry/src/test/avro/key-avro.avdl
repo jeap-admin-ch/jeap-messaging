@@ -1,0 +1,7 @@
+@namespace("ch.admin.bit.jeap.messaging.test.glue.avro")
+protocol TestKeyProtocol {
+
+	record TestMessageKey {
+		string value;
+	}
+}

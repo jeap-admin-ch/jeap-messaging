@@ -1,0 +1,10 @@
+@namespace("ch.admin.bit.jme.declaration")
+protocol JmeCreateDeclarationCommandKeyProtocol {
+
+	record JmeCreateDeclarationCommandKey {
+		string name;
+		string namespace;
+		string id;
+	}
+
+}

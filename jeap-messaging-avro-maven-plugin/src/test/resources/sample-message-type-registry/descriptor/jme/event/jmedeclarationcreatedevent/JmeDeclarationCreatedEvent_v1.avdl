@@ -1,0 +1,20 @@
+@namespace("ch.admin.bit.jme.declaration")
+protocol JmeDeclarationCreatedEventProtocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record DeclarationReferences {
+  }
+
+  record DeclarationPayload {
+    string message;
+  }
+
+  record JmeDeclarationCreatedEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    DeclarationReferences references;
+    DeclarationPayload payload;
+    string domainEventVersion;
+  }
+}

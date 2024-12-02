@@ -1,0 +1,7 @@
+ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.OutboxConfig
+ch.admin.bit.jeap.messaging.transactionaloutbox.transaction.OutboxTransactionConfig
+ch.admin.bit.jeap.messaging.transactionaloutbox.jpa.OutboxJpaConfig
+ch.admin.bit.jeap.messaging.transactionaloutbox.messaging.OutboxMessagingConfig
+ch.admin.bit.jeap.messaging.transactionaloutbox.scheduling.OutboxSchedulingConfig
+ch.admin.bit.jeap.messaging.transactionaloutbox.metrics.OutboxMetricsConfig
+ch.admin.bit.jeap.messaging.transactionaloutbox.config.TransactionalOutboxConfigurationProperties

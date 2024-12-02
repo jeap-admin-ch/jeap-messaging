@@ -1,0 +1,21 @@
+@namespace("ch.admin.bit.jme.declaration")
+protocol JmeCreateDeclarationCommandProtocol {
+  import idl "MessagingBaseTypes.avdl";
+
+  record CreateDeclarationReferences {
+  }
+
+  record CreateDeclarationPayload {
+    string text;
+  }
+
+  record JmeCreateDeclarationCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    CreateDeclarationReferences references;
+    CreateDeclarationPayload payload;
+    union {null, string} processId = null;
+    string commandVersion = "1.0.0";
+  }
+}

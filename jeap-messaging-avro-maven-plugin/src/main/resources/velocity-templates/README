@@ -1,0 +1,5 @@
+Those files are an exact copy of the corresponding files from the avro project version 1.9.1. The original files can be found at
+https://github.com/apache/avro/tree/release-1.9.1/lang/java/compiler/src/main/velocity/org/apache/avro/compiler/specific/templates/java/classic
+
+The only changes that have been made is in record.vm
+
