@@ -7,7 +7,7 @@
     <parent>
         <artifactId>jeap-messaging</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>8.8.1-SNAPSHOT</version>
+        <version>8.8.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-messaging-avro-test</artifactId>
