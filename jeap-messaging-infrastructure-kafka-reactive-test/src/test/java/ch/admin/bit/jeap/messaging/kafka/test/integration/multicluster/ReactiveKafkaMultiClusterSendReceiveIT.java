@@ -50,7 +50,7 @@ import static org.awaitility.Awaitility.await;
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 class ReactiveKafkaMultiClusterSendReceiveIT {
 
-    static final int BASE_PORT = 12655;
+    static final int BASE_PORT = 13655;
     static final int PORT_OFFSET = 30;
 
     @RegisterExtension
