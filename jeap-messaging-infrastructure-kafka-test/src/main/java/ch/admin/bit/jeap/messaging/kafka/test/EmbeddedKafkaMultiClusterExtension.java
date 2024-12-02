@@ -18,10 +18,6 @@ public class EmbeddedKafkaMultiClusterExtension implements BeforeAllCallback, Af
 
     private static int brokerIdCounter = 100;
 
-    public EmbeddedKafkaMultiClusterExtension(int portOffset) {
-        this(BASE_PORT, portOffset);
-    }
-
     public EmbeddedKafkaMultiClusterExtension(int basePort, int portOffset) {
         embeddedKafka1 = new EmbeddedKafkaZKBroker(1, true, 1, "TOPIC");
         setNextBrokerId(embeddedKafka1);
@@ -39,11 +35,11 @@ public class EmbeddedKafkaMultiClusterExtension implements BeforeAllCallback, Af
     }
 
     public static EmbeddedKafkaMultiClusterExtension withBasePortAndOffset(int basePort, int portOffset) {
-        return new EmbeddedKafkaMultiClusterExtension(portOffset);
+        return new EmbeddedKafkaMultiClusterExtension(basePort, portOffset);
     }
 
     public static EmbeddedKafkaMultiClusterExtension withPortOffset(int portOffset) {
-        return new EmbeddedKafkaMultiClusterExtension(portOffset);
+        return new EmbeddedKafkaMultiClusterExtension(BASE_PORT, portOffset);
     }
 
     @Override
