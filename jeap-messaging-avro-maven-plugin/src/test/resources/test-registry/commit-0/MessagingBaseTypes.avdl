@@ -1,0 +1,19 @@
+@namespace("ch.admin.bit.jeap.messaging.avro")
+protocol MessagingBaseProtocol {
+
+	record AvroMessagePublisher {
+		string system;
+		string service;
+	}
+
+	record AvroMessageType {
+		string name;
+		string version;
+	}
+
+	record AvroMessageIdentity {
+		string id;
+		string idempotenceId;
+		timestamp_ms created;
+	}
+}

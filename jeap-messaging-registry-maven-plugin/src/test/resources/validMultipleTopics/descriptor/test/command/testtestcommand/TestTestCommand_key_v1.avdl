@@ -1,0 +1,8 @@
+@namespace("ch.admin.bit.jeap.domainevent.registry.verifier.testcommand")
+protocol TestTestCommandKeyProtocol {
+
+	record TestTestCommandKey {
+		string id;
+	}
+
+}

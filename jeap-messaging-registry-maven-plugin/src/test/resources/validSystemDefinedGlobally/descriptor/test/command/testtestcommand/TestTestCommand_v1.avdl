@@ -1,0 +1,45 @@
+@namespace("ch.admin.bit.jeap.messaging.registry.verifier.testcommand")
+protocol TestTestCommandProtocol {
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessagePublisher {
+    string system;
+    string service;
+  }
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessageType {
+    string name;
+    string version;
+  }
+
+  @namespace("ch.admin.bit.jeap.messaging.avro")
+  record AvroMessageIdentity {
+    string id;
+    string idempotenceId;
+    timestamp_ms created;
+  }
+
+  record TestReference {
+    string type;
+    union{null, string} sendingBean = null;
+  }
+
+  record TestReferences {
+    TestReference testReference;
+  }
+
+  record TestPayload {
+    string message;
+  }
+
+
+  record TestTestCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    TestReferences references;
+    TestPayload payload;
+    string commandVersion;
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "commandName": "AutorisaziunCancelPermitConsumptionCommand",
+  "definingSystem": "AUTORISAZIUN",
+  "description": "Command that is issued by a system to cancel a permit consumption",
+  "documentationUrl": "https://test",
+  "topic": "autorisaziun-cancel-permitconsumption",
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "AutorisaziunCancelPermitConsumptionCommand_v1.0.0.avdl",
+      "compatibilityMode": "NONE"
+    }
+  ]
+}

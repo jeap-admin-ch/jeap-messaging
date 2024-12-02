@@ -1,0 +1,26 @@
+@namespace("ch.admin.bit.jeap.domainevent.avro.event.nopayload")
+protocol NoPayloadTestProtocol {
+
+  import idl "DomainEventBaseTypes.avdl";
+
+  record MyCustomReference {
+    string type;
+    string referenceId;
+  }
+
+  record NoPayloadTestReferences {
+    MyCustomReference reference1;
+  }
+
+  record NoPayloadTestPayload {
+    string message;
+  }
+
+  record NoPayloadTestEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    NoPayloadTestReferences references;
+    string domainEventVersion;
+  }
+}

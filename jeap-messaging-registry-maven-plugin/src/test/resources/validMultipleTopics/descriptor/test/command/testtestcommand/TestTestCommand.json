@@ -1,0 +1,18 @@
+{
+  "commandName": "TestTestCommand",
+  "definingSystem": "TEST",
+  "description": "This is a TestCommand",
+  "documentationUrl": "http://example.com",
+  "topics": [
+    "topic-1",
+    "topic-2"
+  ],
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "TestTestCommand_v1.avdl",
+      "keySchema": "TestTestCommand_key_v1.avdl"
+    }
+  ]
+}

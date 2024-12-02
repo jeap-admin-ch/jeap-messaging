@@ -1,0 +1,33 @@
+@namespace("ch.admin.bit.jeap.domainevent.avro.event.idl")
+protocol IdlTestNoUserProtocol {
+
+  import idl "DomainEventBaseTypes.avdl";
+
+  record MyCustomNoUserReference {
+    string type;
+    string referenceId;
+  }
+
+  record MyOtherNoUserReference {
+    string type;
+    string customId;
+  }
+
+  record IdlTestNoUserReferences {
+    MyCustomNoUserReference customReference;
+    MyOtherNoUserReference otherReference;
+  }
+
+  record IdlTestNoUserPayload {
+    string message;
+  }
+
+  record IdlTestNoUserEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    IdlTestNoUserReferences references;
+    IdlTestNoUserPayload payload;
+    string domainEventVersion;
+  }
+}

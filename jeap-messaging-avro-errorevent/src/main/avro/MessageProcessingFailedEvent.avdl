@@ -1,0 +1,53 @@
+@namespace("ch.admin.bit.jeap.messaging.avro.errorevent")
+protocol MessageProcessingFailedEventProtocol {
+	import idl "DomainEventBaseTypes.avdl";
+
+	record MessageProcessingFailedPayload {
+		bytes originalMessage;
+		union{null, bytes} originalKey = null;
+		string errorMessage;
+		union{null, string} errorDescription = null;
+		union{null, string} stackTrace = null;
+		union{null, string} stackTraceHash = null;
+		union{null, FailedMessageMetadata} failedMessageMetadata = null;
+	}
+
+	record FailedMessageMetadata {
+		union{null, string} eventId = null;
+		union{null, string} idempotenceId = null;
+		union{null, timestamp_ms} created = null;
+		union{null, string} system = null;
+		union{null, string} service = null;
+		union{null, string} messageTypeName = null;
+		union{null, string} messageTypeVersion = null;
+		map<bytes> headers = {};
+	}
+
+	record MessageProcessingFailedReferences {
+		MessageReference message;
+		ErrorTypeReference errorType;
+	}
+
+	record MessageReference {
+		string type;
+		string topicName;
+		string partition;
+		string offset;
+	}
+
+	record ErrorTypeReference {
+		string type;
+		string temporality;
+		string code;
+	}
+
+	record MessageProcessingFailedEvent {
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+		MessageProcessingFailedReferences references;
+		MessageProcessingFailedPayload payload;
+		union{null, string} processId = null;
+		string domainEventVersion;
+	}
+}

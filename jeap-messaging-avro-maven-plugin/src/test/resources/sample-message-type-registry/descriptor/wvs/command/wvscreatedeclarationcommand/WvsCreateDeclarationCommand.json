@@ -1,0 +1,15 @@
+{
+  "commandName": "WvsCreateDeclarationCommand",
+  "definingSystem": "WVS",
+  "description": "Initiate the creation of a customs declaration.",
+  "documentationUrl": "https://testhost",
+  "topic": "wvs-messaging-create-declaration",
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "WvsCreateDeclarationCommand_v1.0.0.avdl",
+      "compatibilityMode": "BACKWARD"
+    }
+  ]
+}

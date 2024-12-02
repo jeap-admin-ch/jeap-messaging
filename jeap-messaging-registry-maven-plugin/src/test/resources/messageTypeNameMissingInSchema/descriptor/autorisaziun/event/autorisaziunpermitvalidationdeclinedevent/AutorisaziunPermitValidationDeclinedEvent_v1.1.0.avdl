@@ -1,0 +1,47 @@
+@namespace("ch.admin.bazg.autorisaziun.common.api.domain.event.permit")
+protocol AutorisaziunPermitValidationDeclinedEventProtocol {
+  @namespace("ch.admin.bit.jeap.domainevent.avro")
+  record AvroDomainEventPublisher {
+    string system;
+    string service;
+  }
+
+  @namespace("ch.admin.bit.jeap.domainevent.avro")
+  record AvroDomainEventType {
+    string name;
+    string version;
+  }
+
+  @namespace("ch.admin.bit.jeap.domainevent.avro")
+  record AvroDomainEventIdentity {
+    string eventId;
+    string idempotenceId;
+    timestamp_ms created;
+  }
+
+  record PermitValidationDeclinedPayload {
+    string correlationId;
+    string permitNumber;
+    int permitAuthority;
+    int restrictionCode;
+    string goodsDeclarationReferenceNumber;
+  }
+
+  record PermitValidationDeclinedReferences {
+    PermitValidationDeclinedReference reference;
+  }
+
+  record PermitValidationDeclinedReference {
+    string type;
+    string goodsDeclarationReferenceNumber;
+  }
+
+  record AutorisaziunPermitValidationDeclinedEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    PermitValidationDeclinedReferences references;
+    PermitValidationDeclinedPayload payload;
+    string domainEventVersion;
+  }
+}

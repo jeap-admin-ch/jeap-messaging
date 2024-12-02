@@ -1,0 +1,44 @@
+protocol IdlTestProtocol {
+
+  @namespace("ch.admin.bit.jeap.domainevent.avro")
+  record AvroDomainEventPublisher {
+    string system;
+    string service;
+  }
+
+  @namespace("ch.admin.bit.jeap.domainevent.avro")
+  record AvroDomainEventType {
+    string name;
+    string version;
+  }
+
+  @namespace("ch.admin.bit.jeap.domainevent.avro")
+  record AvroDomainEventIdentity {
+    string eventId;
+    string idempotenceId;
+    timestamp_ms created;
+  }
+
+  record IdlTestReferences {
+    IdlTestReference reference;
+  }
+
+  record IdlTestReference{
+    string type;
+    union{string, null} optionalId;
+  }
+
+  record IdlTestPayload {
+    string message;
+  }
+
+  record IdlTestEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    IdlTestReferences references;
+    IdlTestPayload payload;
+    string domainEventVersion;
+    union {null, string} processId = null;
+  }
+}

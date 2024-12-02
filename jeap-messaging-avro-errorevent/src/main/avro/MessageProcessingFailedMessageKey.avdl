@@ -1,0 +1,7 @@
+@namespace("ch.admin.bit.jeap.messaging.avro.errorevent")
+protocol MessageProcessingFailedMessageKeyProtocol {
+
+  record MessageProcessingFailedMessageKey {
+    string key;
+  }
+}

@@ -1,0 +1,44 @@
+@namespace("ch.admin.bazg.activ.test.event")
+protocol ActivZoneEnteredEventProtocol {
+	import idl "DomainEventBaseTypes.avdl";
+	import idl "ch.admin.bazg.activ.test.common.SystemCommon.avdl";
+
+	record ZoneReference {
+		string type;
+		string versionId;
+	}
+
+	record ZoneReferences {
+		ZoneReference zoneReference;
+	}
+
+	enum Direction {
+		IN,
+		OUT
+	}
+
+	enum ZoneType {
+		TRACKING,
+		ACTIVATION,
+		CONFIRMATION
+	}
+
+	record ZonePayload {
+		string plateValue;
+		string plateCountry;
+		string journeyReferenceNumber;
+		int journeyVersion;
+		string customsOfficeId;
+		Direction direction;
+		ZoneType zoneType;
+	}
+
+	record ActivZoneEnteredEvent {
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+		ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+		ZoneReferences references;
+		ZonePayload payload;
+		string domainEventVersion;
+	}
+}

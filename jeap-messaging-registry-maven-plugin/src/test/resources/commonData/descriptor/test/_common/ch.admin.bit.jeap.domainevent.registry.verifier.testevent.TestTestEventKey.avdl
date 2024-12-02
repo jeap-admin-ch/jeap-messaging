@@ -1,0 +1,9 @@
+@namespace("ch.admin.bit.jeap.domainevent.registry.verifier.testevent")
+protocol TestTestEventKeyProtocol {
+  import idl "ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestEnum.avdl";
+
+  record TestTestEventKey {
+    string id;
+    ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestEnum testenum;
+  }
+}

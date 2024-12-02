@@ -1,0 +1,15 @@
+{
+  "contractVersion": "1.0.0",
+  "role": "consumer",
+  "systemName": "JME",
+  "messageTypeName": "JmeDeclarationCreatedEvent",
+  "messageTypeVersion": "1.4.0",
+  "registryUrl": "https://testhost/projects/TEST/repos/test-message-type-registry/",
+  "registryBranch": "master",
+  "registryCommit": "HEAD",
+  "compatibilityMode": "BACKWARD",
+  "appName": "test-app",
+  "topics": [
+    "test-consumer-topic"
+  ]
+}

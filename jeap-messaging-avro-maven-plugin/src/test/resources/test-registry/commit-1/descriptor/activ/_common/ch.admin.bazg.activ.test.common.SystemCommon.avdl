@@ -1,0 +1,6 @@
+@namespace("ch.admin.bazg.activ.test.common")
+protocol SystemCommonProtocol {
+	record SystemCommon {
+		string attribute;
+	}
+}

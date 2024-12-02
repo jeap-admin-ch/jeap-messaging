@@ -1,0 +1,12 @@
+{
+   "contractVersion": "1.0.0",
+   "role": "producer",
+   "systemName": "test-system",
+   "messageTypeName": "ProducedOther",
+   "messageTypeVersion": "1.1.0",
+   "registryUrl": "http://localhost/registry",
+   "registryBranch": "other",
+   "compatibilityMode": "BACKWARD",
+   "appName": "test-app-other",
+   "topics": ["ProducedOther"]
+}

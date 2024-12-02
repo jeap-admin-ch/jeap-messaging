@@ -1,0 +1,24 @@
+{
+  "commandName": "JmeCreateDeclarationCommand",
+  "definingSystem": "JME",
+  "description": "Initiate the creation of a customs declaration.",
+  "documentationUrl": "https://testhost",
+  "topic": "jme-messaging-create-declaration",
+  "topics": [
+    "additional-topic"
+  ],
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "JmeCreateDeclarationCommand_v1.0.0.avdl",
+      "compatibilityMode": "BACKWARD"
+    },
+    {
+      "version": "1.1.0",
+      "valueSchema": "JmeCreateDeclarationCommand_v1.1.0.avdl",
+      "keySchema": "JmeCreateDeclarationCommand_key_v1.avdl",
+      "compatibilityMode": "BACKWARD"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+@namespace("ch.admin.bit.jeap.domainevent.avro.event.noreferencesevent")
+protocol NoReferencesEventTestProtocol {
+
+  import idl "DomainEventBaseTypes.avdl";
+
+  record NoReferencesEvent {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    string domainEventVersion;
+  }
+
+}

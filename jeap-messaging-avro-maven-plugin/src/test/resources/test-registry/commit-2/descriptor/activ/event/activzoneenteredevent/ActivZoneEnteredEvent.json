@@ -1,0 +1,20 @@
+{
+  "eventName": "ActivZoneEnteredEvent",
+  "description": "Device entered in activation zone.",
+  "publishingSystem": "ACTIV",
+  "scope": "public",
+  "topic": "activ-activation-zoneentered",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "ActivZoneEnteredEvent_v1.0.0.avdl",
+      "compatibilityMode": "BACKWARD"
+    },
+    {
+      "version": "2.0.0",
+      "valueSchema": "ActivZoneEnteredEvent_v2.0.0.avdl",
+      "keySchema": "ch.admin.bazg.activ.test.event.v2.SystemCommon.avdl",
+      "compatibilityMode": "BACKWARD"
+    }
+  ]
+}

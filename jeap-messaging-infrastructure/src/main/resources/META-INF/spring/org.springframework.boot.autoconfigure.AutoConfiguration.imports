@@ -1,0 +1,8 @@
+ch.admin.bit.jeap.messaging.kafka.properties.KafkaPropertiesConfiguration
+ch.admin.bit.jeap.messaging.kafka.tracing.KafkaTracingConfiguration
+ch.admin.bit.jeap.messaging.kafka.contract.ContractConfiguration
+ch.admin.bit.jeap.messaging.kafka.errorhandling.ErrorServiceFailedHandler
+ch.admin.bit.jeap.messaging.kafka.metrics.KafkaMetricsConfiguration
+ch.admin.bit.jeap.messaging.kafka.crypto.KafkaCryptoConfiguration
+ch.admin.bit.jeap.messaging.kafka.auth.KafkaSaslAuthAutoConfiguration
+ch.admin.bit.jeap.messaging.kafka.auth.KafkaSslAuthAutoConfiguration

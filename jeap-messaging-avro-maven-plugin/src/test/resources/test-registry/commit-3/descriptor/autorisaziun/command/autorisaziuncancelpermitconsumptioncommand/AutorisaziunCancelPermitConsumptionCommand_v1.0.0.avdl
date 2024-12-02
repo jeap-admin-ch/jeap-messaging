@@ -1,0 +1,29 @@
+@namespace("ch.admin.bazg.autorisaziun.common.api.domain.command.permit")
+protocol AutorisaziunCancelPermitConsumptionCommandProtocol {
+  import idl "MessagingBaseTypes.avdl";
+
+  record CancelPermitConsumptionPayload {
+    string permitNumber;
+    int permitAuthority;
+    string goodsDeclarationReferenceNumber;
+    string consumptionId;
+  }
+
+  record CancelPermitConsumptionReferences {
+    CancelPermitConsumptionReference reference;
+  }
+
+  record CancelPermitConsumptionReference {
+    string type;
+    string goodsDeclarationReferenceNumber;
+  }
+
+  record AutorisaziunCancelPermitConsumptionCommand {
+    ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity identity;
+    ch.admin.bit.jeap.messaging.avro.AvroMessageType type;
+    ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher publisher;
+    CancelPermitConsumptionReferences references;
+    CancelPermitConsumptionPayload payload;
+    string commandVersion;
+  }
+}

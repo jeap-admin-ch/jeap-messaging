@@ -1,0 +1,36 @@
+{
+  "eventName": "TestTestEvent",
+  "definingSystem": "TEST",
+  "description": "This is a test event",
+  "documentationUrl": "http://example.com",
+  "topic": "test-test",
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.1.0",
+      "valueSchema": "TestTestEvent_v1.avdl",
+      "keySchema": "TestTestEvent_key_v1.avdl"
+    }
+  ],
+  "contracts": {
+    "publishers": [
+      {
+        "system": "TEST",
+        "service": "test-test-service",
+        "publishedVersions": [
+          "1.1.0"
+        ]
+      }
+    ],
+    "subscribers": [
+      {
+        "system": "TEST",
+        "service": "test-test-service",
+        "subscribedVersions": [
+          "1.1.0"
+        ]
+      }
+    ]
+  }
+}
+

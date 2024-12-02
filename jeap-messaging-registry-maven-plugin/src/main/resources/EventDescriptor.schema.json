@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Event Descriptor",
+  "description": "JSON schema for event descriptors",
+  "$ref": "#/definitions/EventDescriptor",
+  "definitions": {
+    "EventDescriptor": {
+      "type": "object",
+      "properties": {
+        "eventName": {
+          "type": "string",
+          "minLength": 10
+        },
+        "definingSystem": {
+          "type": "string",
+          "minLength": 2
+        },
+        "publishingSystem": {
+          "type": "string",
+          "minLength": 2,
+          "$comment": "deprecated - use definingSystem"
+        },
+        "description": {
+          "type": "string"
+        },
+        "documentationUrl": {
+          "$ref": "common.schema.json#/definitions/url"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "public",
+            "internal"
+          ]
+        },
+        "topic": {
+          "type": "string"
+        },
+        "topics": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "versions": {
+          "$ref": "common.schema.json#/definitions/Versions"
+        }
+      },
+      "required": [
+        "eventName",
+        "description",
+        "scope"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "publishingSystem"
+          ]
+        },
+        {
+          "required": [
+            "definingSystem"
+          ]
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

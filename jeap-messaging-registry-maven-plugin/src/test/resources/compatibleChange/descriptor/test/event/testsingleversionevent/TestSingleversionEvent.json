@@ -1,0 +1,15 @@
+{
+  "eventName": "TestSingleversionEvent",
+  "definingSystem": "TEST",
+  "description": "This is a test event",
+  "documentationUrl": "http://example.com",
+  "topic": "test-test",
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "TestSingleversionEvent_v1.0.0.avdl"
+    }
+  ]
+}
+

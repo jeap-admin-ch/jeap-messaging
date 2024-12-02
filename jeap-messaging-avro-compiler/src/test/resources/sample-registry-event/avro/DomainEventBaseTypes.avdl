@@ -1,0 +1,19 @@
+@namespace("ch.admin.bit.jeap.domainevent.avro")
+protocol DomainEventBaseProtocol {
+
+  record AvroDomainEventPublisher {
+    string system;
+    string service;
+  }
+
+  record AvroDomainEventType {
+    string name;
+    string version;
+  }
+
+  record AvroDomainEventIdentity {
+    string eventId;
+    string idempotenceId;
+    timestamp_ms created;
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "protocol": "TestTestEventKeyProtocol",
+  "namespace": "ch.admin.bit.jeap.domainevent.registry.verifier.testevent",
+  "types": [
+    {
+      "type": "record",
+      "name": "TestTestEventKey",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "messages": {}
+}

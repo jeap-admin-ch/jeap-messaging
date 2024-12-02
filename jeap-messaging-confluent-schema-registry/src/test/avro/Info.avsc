@@ -1,0 +1,43 @@
+{
+    "namespace": "ch.admin.bit.jeap.kafka.examples",
+    "type": "record",
+    "name": "Info",
+    "aliases": [
+        "Payment",
+        "Transaction"
+    ],
+    "fields": [
+        {
+            "name": "first_name",
+            "type": "string",
+            "aliases": [
+                "FirstName",
+                "Vorname"
+            ]
+        },
+        {
+            "name": "last_name",
+            "type": "string",
+            "aliases": [
+                "LastName",
+                "Nachname"
+            ]
+        },
+        {
+            "name": "betrag",
+            "type": "double",
+            "aliases": [
+                "amount",
+                "value"
+            ]
+        },
+        {
+            "name": "alter",
+            "type": "int",
+            "default": 0,
+            "aliases": [
+                "Age"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,4 @@
+ch.admin.bit.jeap.messaging.idempotence.processing.idempotentprocessing.IdempotentProcessingConfig
+ch.admin.bit.jeap.messaging.idempotence.processing.jpa.IdempotentProcessingJpaConfig
+ch.admin.bit.jeap.messaging.idempotence.processing.scheduling.IdempotentProcessingSchedulingConfig
+ch.admin.bit.jeap.messaging.idempotence.messagehandler.IdempotentMessageHandlerConfig

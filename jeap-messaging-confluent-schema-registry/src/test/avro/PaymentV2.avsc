@@ -1,0 +1,23 @@
+{
+  "namespace": "ch.admin.bit.jeap.kafka.examples",
+  "type": "record",
+  "name": "PaymentV2",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "name": "Vorname",
+      "type": "string"
+    },
+    {
+      "name": "Nachname",
+      "type": "string"
+    },
+    {
+      "name": "value",
+      "type": "double"
+    }
+  ]
+}

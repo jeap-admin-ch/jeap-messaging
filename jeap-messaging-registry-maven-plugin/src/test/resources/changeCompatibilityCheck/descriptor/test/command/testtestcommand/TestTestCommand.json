@@ -1,0 +1,25 @@
+{
+  "commandName": "TestTestCommand",
+  "definingSystem": "TEST",
+  "description": "This is a TestCommand",
+  "documentationUrl": "http://example.com",
+  "topic": "test-test",
+  "scope": "public",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "valueSchema": "TestTestCommand_v1.avdl"
+    },
+    {
+      "version": "2.0.0",
+      "valueSchema": "TestTestCommand_v2.avdl",
+      "compatibilityMode": "NONE"
+    },
+    {
+      "version": "3.0.0",
+      "valueSchema": "TestTestCommand_v3.avdl",
+      "compatibilityMode": "FULL",
+      "compatibleVersion": "1.0.0"
+    }
+  ]
+}

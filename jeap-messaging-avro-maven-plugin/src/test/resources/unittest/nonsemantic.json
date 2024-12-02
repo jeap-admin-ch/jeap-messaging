@@ -1,0 +1,11 @@
+{
+  "repoUrl": "https://testhost/projects/TEST/repos/test-message-type-registry/",
+  "branch": "master",
+  "types": [
+    {
+      "definingSystem": "JME",
+      "name": "JmeDeclarationCreatedEvent",
+      "version": "1"
+    }
+  ]
+}

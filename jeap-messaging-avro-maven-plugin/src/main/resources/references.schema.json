@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Eventdescriptor",
+  "description": "An event descriptor file",
+  "type": "object",
+  "properties": {
+    "stashUrl": {
+      "type": "string",
+      "pattern": "https?://.*"
+    },
+    "repoUrl": {
+      "type": "string",
+      "pattern": "https?://.*"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "definingSystem": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "\\d+\\.\\d+\\.\\d+"
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "definingSystem"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "definingSystem": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "\\d+\\.\\d+\\.\\d+"
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "definingSystem"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    }
+  },
+  "required": [
+    "branch"
+  ],
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "required": [
+            "stashUrl"
+          ]
+        },
+        {
+          "required": [
+            "repoUrl"
+          ]
+        }
+      ]
+    },
+    {
+      "oneOf": [
+        {
+          "required": [
+            "events"
+          ]
+        },
+        {
+          "required": [
+            "types"
+          ]
+        }
+      ]
+    }
+  ]
+}
