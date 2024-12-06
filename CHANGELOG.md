@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Update parent from 5.2.5 to 5.3.0
 - Prepare repository for Open Source distribution
 
 ## [8.8.2] - 2024-12-03
