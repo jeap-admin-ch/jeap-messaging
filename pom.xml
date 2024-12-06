@@ -3,9 +3,9 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <url>https://github.com/jeap-admin-ch/jeap-messaging</url>
+    <url>https://github.com/jeap-admin-ch/jeap-messaging/tree/main</url>
     <scm>
-        <url>https://github.com/jeap-admin-ch/jeap-messaging</url>
+        <url>https://github.com/jeap-admin-ch/jeap-messaging.git</url>
     </scm>
     <developers>
         <developer>
