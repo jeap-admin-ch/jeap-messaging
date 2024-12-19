@@ -21,7 +21,7 @@ public class TemplatePathResolver {
     /**
      * Since the template files of the process context service library are always located under classpath:/process/templates/*.json,
      * the path can be automatically determined via the annotated class.
-     * As direct access to directories in the classpath is not supported at compile time, this was resolved through the StandardLocation.CLASS_OUTPUT
+     * As direct access to directories in the classpath is not supported at compile time, this was resolved through the StandardLocation.SOURCE_PATH
      * of the Maven module, where the annotated class is located.
      *
      * @param annotatedElement the annotated element from which the path is determined
@@ -30,24 +30,33 @@ public class TemplatePathResolver {
     public String getTemplatePath(Element annotatedElement) {
         try {
             String className = ((TypeElement) annotatedElement).getQualifiedName().toString();
-            FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", className.replace('.', '/') + ".class");
+            FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", className.replace('.', '/') + ".java");
+
             String path = fileObject.toUri().getPath();
 
-            Path targetClassesPath = Paths.get(path);
-            while (targetClassesPath != null && !targetClassesPath.endsWith("target/classes")) {
-                targetClassesPath = targetClassesPath.getParent();
+            Path sourcePath = Paths.get(path);
+
+            while (sourcePath != null && !sourcePath.endsWith("src/main/java") && !sourcePath.endsWith("src/test/java")) {
+                sourcePath = sourcePath.getParent();
             }
 
-            if (targetClassesPath != null) {
-                Path templatesPath = targetClassesPath.resolve("process/templates");
+            if (sourcePath != null) {
+                Path templatesPath;
+                if (sourcePath.endsWith("src/main/java")) {
+                    templatesPath = sourcePath.getParent().resolve("resources/process/templates");
+                } else {
+                    templatesPath = sourcePath.getParent().resolve("resources/process/templates");
+                }
                 return templatesPath.toAbsolutePath().toString();
             } else {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "target/classes directory not found.");
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "src/main/java or src/test/java directory not found.");
                 return null;
             }
         } catch (IOException e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error finding resource: " + e.getMessage());
-            return null;
+            // The annotated file cannot be found via StandardLocation.SOURCE_PATH because no value is set.
+            // This suggests that it is not running in the compiler context, but rather in a runtime environment, such as for tests.
+            // Therefore, the current relative path can be used.
+            return Paths.get(".").toAbsolutePath().normalize().toString();
         }
     }
 }
