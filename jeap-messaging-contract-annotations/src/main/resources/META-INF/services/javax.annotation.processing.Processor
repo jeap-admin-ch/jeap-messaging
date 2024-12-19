@@ -1,1 +1,2 @@
 ch.admin.bit.jeap.messaging.annotations.processor.JeapMessageAnnotationProcessor
+ch.admin.bit.jeap.messaging.annotations.processor.JeapMessageTemplateAnnotationProcessor

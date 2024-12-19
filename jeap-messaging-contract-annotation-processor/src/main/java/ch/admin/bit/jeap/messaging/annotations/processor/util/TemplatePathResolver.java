@@ -1,0 +1,53 @@
+package ch.admin.bit.jeap.messaging.annotations.processor.util;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+public class TemplatePathResolver {
+
+    private final ProcessingEnvironment processingEnv;
+
+    public TemplatePathResolver(ProcessingEnvironment processingEnv) {
+        this.processingEnv = processingEnv;
+    }
+
+    /**
+     * Since the template files of the process context service library are always located under classpath:/process/templates/*.json,
+     * the path can be automatically determined via the annotated class.
+     * As direct access to directories in the classpath is not supported at compile time, this was resolved through the StandardLocation.CLASS_OUTPUT
+     * of the Maven module, where the annotated class is located.
+     *
+     * @param annotatedElement the annotated element from which the path is determined
+     * @return the path to the templates directory as a String, or null if the path could not be determined
+     */
+    public String getTemplatePath(Element annotatedElement) {
+        try {
+            String className = ((TypeElement) annotatedElement).getQualifiedName().toString();
+            FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", className.replace('.', '/') + ".class");
+            String path = fileObject.toUri().getPath();
+
+            Path targetClassesPath = Paths.get(path);
+            while (targetClassesPath != null && !targetClassesPath.endsWith("target/classes")) {
+                targetClassesPath = targetClassesPath.getParent();
+            }
+
+            if (targetClassesPath != null) {
+                Path templatesPath = targetClassesPath.resolve("process/templates");
+                return templatesPath.toAbsolutePath().toString();
+            } else {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "target/classes directory not found.");
+                return null;
+            }
+        } catch (IOException e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error finding resource: " + e.getMessage());
+            return null;
+        }
+    }
+}
