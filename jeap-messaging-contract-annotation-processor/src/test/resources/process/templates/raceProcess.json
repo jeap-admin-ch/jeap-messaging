@@ -1,0 +1,18 @@
+{
+  "events": [
+    {
+      "eventName": "JmeRaceStartedEvent",
+      "topicName": "jme-race-started"
+    },
+    {
+      "eventName": "JmeRaceStartedEvent",
+      "topicName": "jme-race-started-tv"
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "JmeRacePreparedEvent",
+      "topicName": "jme-race-prepared"
+    }
+  ]
+}
