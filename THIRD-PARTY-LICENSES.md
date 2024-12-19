@@ -234,6 +234,7 @@ Apache License, Version 2.0
  * Plexus Common Utilities - [org.codehaus.plexus:plexus-utils](https://codehaus-plexus.github.io/plexus-utils/)
  * Plexus XML Utilities - [org.codehaus.plexus:plexus-xml](https://codehaus-plexus.github.io/plexus-xml/)
  * flyway-core - [org.flywaydb:flyway-core](https://flywaydb.org/flyway-core)
+ * Javassist - [org.javassist:javassist](http://www.javassist.org/)
  * JBoss Logging 3 - [org.jboss.logging:jboss-logging](http://www.jboss.org)
  * IntelliJ IDEA Annotations - [org.jetbrains:annotations](http://www.jetbrains.org)
  * Kotlin Reflect - [org.jetbrains.kotlin:kotlin-reflect](https://kotlinlang.org/)
@@ -252,6 +253,7 @@ Apache License, Version 2.0
  * LZ4 and xxHash - [org.lz4:lz4-java](https://github.com/lz4/lz4-java)
  * Objenesis - [org.objenesis:objenesis](http://objenesis.org/objenesis)
  * org.opentest4j:opentest4j - [org.opentest4j:opentest4j](https://github.com/ota4j-team/opentest4j)
+ * Reflections - [org.reflections:reflections](http://github.com/ronmamo/reflections)
  * Scala Library - [org.scala-lang:scala-library](https://www.scala-lang.org/)
  * Scala Reflect - [org.scala-lang:scala-reflect](https://www.scala-lang.org/)
  * scala-collection-compat - [org.scala-lang.modules:scala-collection-compat_2.13](http://www.scala-lang.org/)
@@ -422,6 +424,11 @@ Go License
 
  * RE2/J - [com.google.re2j:re2j](http://github.com/google/re2j)
 
+LGPL 2.1
+-------------------------------
+
+ * Javassist - [org.javassist:javassist](http://www.javassist.org/)
+
 Lesser General Public License, version 3 or greater
 -------------------------------
 
@@ -452,6 +459,11 @@ MIT License
  * SLF4J API Module - [org.slf4j:slf4j-api](http://www.slf4j.org)
  * SLF4J Simple Provider - [org.slf4j:slf4j-simple](http://www.slf4j.org)
 
+MPL 1.1
+-------------------------------
+
+ * Javassist - [org.javassist:javassist](http://www.javassist.org/)
+
 Mozilla Public License, Version 2.0
 -------------------------------
 
@@ -464,3 +476,8 @@ Public Domain
  * AOP alliance - [aopalliance:aopalliance](http://aopalliance.sourceforge.net)
  * HdrHistogram - [org.hdrhistogram:HdrHistogram](http://hdrhistogram.github.io/HdrHistogram/)
  * LatencyUtils - [org.latencyutils:LatencyUtils](http://latencyutils.github.io/LatencyUtils/)
+
+WTFPL
+-------------------------------
+
+ * Reflections - [org.reflections:reflections](http://github.com/ronmamo/reflections)
