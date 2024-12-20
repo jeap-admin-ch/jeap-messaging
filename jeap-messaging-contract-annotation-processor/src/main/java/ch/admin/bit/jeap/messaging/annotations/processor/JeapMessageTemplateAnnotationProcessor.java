@@ -5,8 +5,10 @@ import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroClassFinder;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TemplateMessageCollector;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TemplatePathResolver;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TypeRefFinder;
+import lombok.AllArgsConstructor;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
@@ -24,32 +26,41 @@ import static ch.admin.bit.jeap.messaging.annotations.processor.ContractWriter.g
 public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
 
     private static boolean alreadyProcessed = false;
+    private AvroClassFinder avroClassFinder;
+    private TemplatePathResolver templatePathResolver;
+    private TemplateMessageCollector templateMessageCollector;
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        this.avroClassFinder = new AvroClassFinder(processingEnv.getMessager());
+        this.templatePathResolver = new TemplatePathResolver(processingEnv);
+        this.templateMessageCollector = new TemplateMessageCollector();
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        // The processor is triggered for each maven module, ensuring processing is done only once.
         if (alreadyProcessed) {
             return false;
         }
         alreadyProcessed = true;
 
-        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class)) {
-            AvroClassFinder avroClassFinder = new AvroClassFinder(processingEnv.getMessager());
-            Set<Class<?>> annotatedClasses = avroClassFinder.getAvroGeneratedClasses();
+        boolean processed = false;
 
-            TemplatePathResolver templatePathResolver = new TemplatePathResolver(processingEnv);
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class)) {
+            processed = true;
+            Set<Class<?>> annotatedClasses = avroClassFinder.getAvroGeneratedClasses();
             String templatePath = templatePathResolver.getTemplatePath(annotatedElement);
 
             if (templatePath != null && !annotatedClasses.isEmpty()) {
-                TemplateMessageCollector collector = new TemplateMessageCollector();
-                Map<String, List<String>> templateMessages = collector.collectTemplateMessages(templatePath, processingEnv.getMessager());
+                Map<String, List<String>> templateMessages = templateMessageCollector.collectTemplateMessages(templatePath, processingEnv.getMessager());
 
                 if (!templateMessages.isEmpty()) {
                     generateConsumerContracts(annotatedElement, annotatedClasses, templateMessages);
                 }
             }
         }
-        return true;
+        return processed;
     }
 
     private void generateConsumerContracts(Element annotatedElement, Set<Class<?>> annotatedClasses, Map<String, List<String>> templateMessages) {
@@ -67,7 +78,6 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
             }
         }
     }
-
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
