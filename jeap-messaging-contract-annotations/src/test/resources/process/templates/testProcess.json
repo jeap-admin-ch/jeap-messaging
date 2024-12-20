@@ -1,0 +1,14 @@
+{
+  "events": [
+    {
+      "eventName": "JmeDocumentReviewedEvent",
+      "topicName": "topic1"
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "JmeDocumentReviewedEvent",
+      "topicName": "topic2"
+    }
+  ]
+}
