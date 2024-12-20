@@ -27,6 +27,11 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>ch.admin.bit.jme.messagetype.jme</groupId>
+            <artifactId>jme-document-reviewed-event</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
 </project>

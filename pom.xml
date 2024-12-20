@@ -228,11 +228,19 @@
             <plugin>
                 <groupId>org.honton.chas</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>ch.admin.bit.jme.messagetype.jme:jme-document-reviewed-event</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <!-- Generate third-party license list and check for missing license information -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <excludedGroups>ch.admin.bit.jme.messagetype.jme</excludedGroups>
+                </configuration>
             </plugin>
         </plugins>
     </build>

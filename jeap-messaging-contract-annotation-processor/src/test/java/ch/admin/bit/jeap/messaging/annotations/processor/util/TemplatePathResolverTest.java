@@ -66,9 +66,8 @@ class TemplatePathResolverTest {
         assertEquals("/path/to/src/test/resources/process/templates", templatePath);
     }
 
-
     @Test
-    void testGetTemplatePathFromRuntimeEnvironment() throws IOException {
+    void testGetTemplatePathInCompileContextWithOutSourcePathLocation() throws IOException {
         TypeElement annotatedElement = mock(TypeElement.class);
         Name qualifiedName = mock(Name.class);
         when(qualifiedName.toString()).thenReturn("ch.admin.bit.jeap.SomeClass");
@@ -78,7 +77,6 @@ class TemplatePathResolverTest {
 
         String templatePath = resolver.getTemplatePath(annotatedElement);
 
-        assertNotNull(templatePath);
-        assertEquals(Paths.get(".").toAbsolutePath().normalize().toString(), templatePath);
+        assertNull(templatePath);
     }
 }

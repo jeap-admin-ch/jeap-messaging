@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.messaging.annotations.processor;
 
-import ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContract;
 import ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContractsByTemplates;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroClassFinder;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TemplateMessageCollector;

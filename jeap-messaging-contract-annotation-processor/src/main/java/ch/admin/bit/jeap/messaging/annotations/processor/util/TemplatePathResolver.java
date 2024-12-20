@@ -53,10 +53,7 @@ public class TemplatePathResolver {
                 return null;
             }
         } catch (IOException e) {
-            // The annotated file cannot be found via StandardLocation.SOURCE_PATH because no value is set.
-            // This suggests that it is not running in the compiler context, but rather in a runtime environment, such as for tests.
-            // Therefore, the current relative path can be used.
-            return Paths.get(".").toAbsolutePath().normalize().toString();
+            return null;
         }
     }
 }
