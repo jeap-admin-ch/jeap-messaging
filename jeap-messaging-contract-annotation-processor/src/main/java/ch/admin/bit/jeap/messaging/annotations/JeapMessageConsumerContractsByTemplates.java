@@ -1,7 +1,5 @@
 package ch.admin.bit.jeap.messaging.annotations;
 
-import ch.admin.bit.jeap.messaging.avro.MessageTypeMetadata;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -15,7 +13,7 @@ import java.lang.annotation.Target;
  * </li>
  * </ul>
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface JeapMessageConsumerContractsByTemplates {
 
