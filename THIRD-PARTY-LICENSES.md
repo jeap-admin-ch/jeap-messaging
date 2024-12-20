@@ -5,10 +5,15 @@ Third-Party Dependency Licenses
 Third-party dependencies grouped by their license type (see [pom.xml](/pom.xml) for version information):
 
 
+Apache License Version 2.0
+-------------------------------
+
+ * Hibernate Commons Annotations - [org.hibernate.common:hibernate-commons-annotations](http://hibernate.org)
+
 Apache License, Version 2.0
 -------------------------------
 
- * jeap-crypto-core - [ch.admin.bit.jeap:jeap-crypto-core](https://spring.io/projects/spring-boot/jeap-internal-spring-boot-parent/jeap-crypto/jeap-crypto-core)
+ * jeap-crypto-core - [ch.admin.bit.jeap:jeap-crypto-core](https://github.com/jeap-admin-ch/jeap-crypto/tree/main/jeap-crypto-core)
  * jeap-messaging-api - [ch.admin.bit.jeap:jeap-messaging-api](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-api)
  * jeap-messaging-avro - [ch.admin.bit.jeap:jeap-messaging-avro](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-avro)
  * jeap-messaging-avro-compiler - [ch.admin.bit.jeap:jeap-messaging-avro-compiler](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-avro-compiler)
@@ -59,14 +64,11 @@ Apache License, Version 2.0
  * WireMock - [com.github.tomakehurst:wiremock-jre8-standalone](http://wiremock.org)
  * proto-google-common-protos - [com.google.api.grpc:proto-google-common-protos](https://github.com/googleapis/java-iam/proto-google-common-protos)
  * FindBugs-jsr305 - [com.google.code.findbugs:jsr305](http://findbugs.sourceforge.net/)
- * Gson - [com.google.code.gson:gson](https://github.com/google/gson/gson)
+ * Gson - [com.google.code.gson:gson](https://github.com/google/gson)
+ * error-prone annotations - [com.google.errorprone:error_prone_annotations](https://errorprone.info/error_prone_annotations)
  * error-prone annotations - [com.google.errorprone:error_prone_annotations](https://errorprone.info/error_prone_annotations)
  * error-prone annotations - [com.google.errorprone:error_prone_annotations](https://errorprone.info/error_prone_annotations)
  * Guava InternalFutureFailureAccess and InternalFutures - [com.google.guava:failureaccess](https://github.com/google/guava/failureaccess)
- * Guava InternalFutureFailureAccess and InternalFutures - [com.google.guava:failureaccess](https://github.com/google/guava/failureaccess)
- * Guava: Google Core Libraries for Java - [com.google.guava:guava](https://github.com/google/guava)
- * Guava: Google Core Libraries for Java - [com.google.guava:guava](https://github.com/google/guava)
- * Guava: Google Core Libraries for Java - [com.google.guava:guava](https://github.com/google/guava)
  * Guava: Google Core Libraries for Java - [com.google.guava:guava](https://github.com/google/guava)
  * Guava ListenableFuture only - [com.google.guava:listenablefuture](https://github.com/google/guava/listenablefuture)
  * Google Guice - Core Library - [com.google.inject:guice](https://github.com/google/guice/guice)
@@ -139,11 +141,10 @@ Apache License, Version 2.0
  * Prometheus Metrics Core - [io.prometheus:prometheus-metrics-core](http://github.com/prometheus/client_java/prometheus-metrics-core)
  * Prometheus Metrics Exposition Formats - [io.prometheus:prometheus-metrics-exposition-formats](http://github.com/prometheus/client_java/prometheus-metrics-exposition-formats)
  * Prometheus Metrics Model - [io.prometheus:prometheus-metrics-model](http://github.com/prometheus/client_java/prometheus-metrics-model)
- * Shaded Protobuf - [io.prometheus:prometheus-metrics-shaded-protobuf](http://github.com/prometheus/client_java/prometheus-metrics-shaded-dependencies/prometheus-metrics-shaded-protobuf)
  * Prometheus Metrics Tracer Common - [io.prometheus:prometheus-metrics-tracer-common](http://github.com/prometheus/client_java/prometheus-metrics-tracer/prometheus-metrics-tracer-common)
- * json-path - [io.rest-assured:json-path](http://maven.apache.org)
- * REST Assured - [io.rest-assured:rest-assured](http://code.google.com/p/rest-assured)
- * rest-assured-common - [io.rest-assured:rest-assured-common](http://maven.apache.org)
+ * json-path - [io.rest-assured:json-path](https://rest-assured.io/)
+ * REST Assured - [io.rest-assured:rest-assured](https://rest-assured.io/)
+ * rest-assured-common - [io.rest-assured:rest-assured-common](https://rest-assured.io/)
  * xml-path - [io.rest-assured:xml-path](https://rest-assured.io/xml-path/)
  * Jandex: Core - [io.smallrye:jandex](https://smallrye.io)
  * Brave Propagation: Amazon Web Services (AWS) - [io.zipkin.aws:brave-propagation-aws](https://github.com/openzipkin/zipkin-aws/brave-propagation-aws)
@@ -179,6 +180,7 @@ Apache License, Version 2.0
  * Apache HttpClient Mime - [org.apache.httpcomponents:httpmime](http://hc.apache.org/httpcomponents-client)
  * Apache Kafka - [org.apache.kafka:kafka-clients](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-group-coordinator](https://kafka.apache.org)
+ * Apache Kafka - [org.apache.kafka:kafka-group-coordinator-api](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-metadata](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-raft](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-server](https://kafka.apache.org)
@@ -188,9 +190,10 @@ Apache License, Version 2.0
  * Apache Kafka - [org.apache.kafka:kafka-streams](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-streams-test-utils](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-tools-api](https://kafka.apache.org)
+ * Apache Kafka - [org.apache.kafka:kafka-transaction-coordinator](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka_2.13](https://kafka.apache.org)
  * Apache Log4j API - [org.apache.logging.log4j:log4j-api](https://logging.apache.org/log4j/2.x/log4j/log4j-api/)
- * Apache Log4j to SLF4J Adapter - [org.apache.logging.log4j:log4j-to-slf4j](https://logging.apache.org/log4j/2.x/log4j/log4j-to-slf4j/)
+ * Log4j API to SLF4J Adapter - [org.apache.logging.log4j:log4j-to-slf4j](https://logging.apache.org/log4j/2.x/log4j/log4j-to-slf4j/)
  * Maven Artifact - [org.apache.maven:maven-artifact](https://maven.apache.org/ref/3.9.9/maven-artifact/)
  * Maven Builder Support - [org.apache.maven:maven-builder-support](https://maven.apache.org/ref/3.9.9/maven-builder-support/)
  * Maven Compat - [org.apache.maven:maven-compat](https://maven.apache.org/ref/3.9.9/maven-compat/)
@@ -343,6 +346,7 @@ BSD License 3
  * Protocol Buffers [Core] - [com.google.protobuf:protobuf-java](https://developers.google.com/protocol-buffers/protobuf-java/)
  * ANTLR 4 Runtime - [org.antlr:antlr4-runtime](https://www.antlr.org/antlr4-runtime/)
  * JGit - Core - [org.eclipse.jgit:org.eclipse.jgit](https://www.eclipse.org/jgit//org.eclipse.jgit)
+ * JGit - Core - [org.eclipse.jgit:org.eclipse.jgit](https://www.eclipse.org/jgit//org.eclipse.jgit)
  * Hamcrest - [org.hamcrest:hamcrest](http://hamcrest.org/JavaHamcrest/)
  * Hamcrest Core - [org.hamcrest:hamcrest-core](http://hamcrest.org/JavaHamcrest/)
  * asm - [org.ow2.asm:asm](http://asm.ow2.io/)
@@ -365,7 +369,6 @@ Eclipse Distribution License - v 1.0
  * Jakarta Persistence API - [jakarta.persistence:jakarta.persistence-api](https://github.com/eclipse-ee4j/jpa-api)
  * Jakarta XML Binding API - [jakarta.xml.bind:jakarta.xml.bind-api](https://github.com/jakartaee/jaxb-api/jakarta.xml.bind-api)
  * Angus Activation Registries - [org.eclipse.angus:angus-activation](https://github.com/eclipse-ee4j/angus-activation/angus-activation)
- * JGit - Core - [org.eclipse.jgit:org.eclipse.jgit](https://www.eclipse.org/jgit//org.eclipse.jgit)
  * JAXB Core - [org.glassfish.jaxb:jaxb-core](https://eclipse-ee4j.github.io/jaxb-ri/)
  * JAXB Runtime - [org.glassfish.jaxb:jaxb-runtime](https://eclipse-ee4j.github.io/jaxb-ri/)
  * TXW2 Runtime - [org.glassfish.jaxb:txw2](https://eclipse-ee4j.github.io/jaxb-ri/)
@@ -416,7 +419,6 @@ GNU Lesser General Public License
 GNU Library General Public License v2.1 or later
 -------------------------------
 
- * Hibernate Commons Annotations - [org.hibernate.common:hibernate-commons-annotations](http://hibernate.org)
  * Hibernate ORM - hibernate-core - [org.hibernate.orm:hibernate-core](https://hibernate.org/orm)
 
 Go License
