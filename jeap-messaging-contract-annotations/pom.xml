@@ -28,8 +28,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>ch.admin.bit.jme.messagetype.jme</groupId>
-            <artifactId>jme-document-reviewed-event</artifactId>
+            <groupId>ch.admin.jeap.messaging.test.messagetype.jeap</groupId>
+            <artifactId>jeap-initializer-simple-test-event</artifactId>
             <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
