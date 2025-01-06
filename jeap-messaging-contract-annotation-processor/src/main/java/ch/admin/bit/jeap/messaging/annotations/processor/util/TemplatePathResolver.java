@@ -41,12 +41,7 @@ public class TemplatePathResolver {
             }
 
             if (sourcePath != null) {
-                Path templatesPath;
-                if (sourcePath.endsWith("src/main/java")) {
-                    templatesPath = sourcePath.getParent().resolve("resources/process/templates");
-                } else {
-                    templatesPath = sourcePath.getParent().resolve("resources/process/templates");
-                }
+                Path templatesPath = sourcePath.getParent().resolve("resources/process/templates");
                 return templatesPath.toAbsolutePath().toString();
             } else {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "src/main/java or src/test/java directory not found.");

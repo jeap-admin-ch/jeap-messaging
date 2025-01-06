@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class TypeRefFinder {
 
+    @SuppressWarnings("squid:S1872") // Suppress Sonar warning for using getSimpleName() instead of instanceof
     public static TypeMirror findTypeRefOfClassByShortName(ProcessingEnvironment processingEnv, Set<Class<?>> classes, String shortName) {
         Class<?> messageClass = findClassByShortName(classes, shortName);
         if (messageClass != null) {
