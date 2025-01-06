@@ -12,6 +12,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Implemented annotation processor for automated consumer contract generation by json template files.
 - Added @JeapMessageConsumerContractsByTemplates 
 
+## [8.12.0] - 2024-12-31
+
+### Changed
+
+- Update parent from 5.4.0 to 5.4.1
+
 ## [8.11.0] - 2024-12-18
 
 ### Changed
