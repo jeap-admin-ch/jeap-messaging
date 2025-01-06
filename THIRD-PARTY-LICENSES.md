@@ -32,6 +32,7 @@ Apache License, Version 2.0
  * jeap-messaging-infrastructure-kafka-test - [ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka-test](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-infrastructure-kafka-test)
  * jeap-messaging-model - [ch.admin.bit.jeap:jeap-messaging-model](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-model)
  * jeap-messaging-outbox - [ch.admin.bit.jeap:jeap-messaging-outbox](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-outbox)
+ * jeap-initializer-simple-test-event - ch.admin.jeap.messaging.test.messagetype.jeap:jeap-initializer-simple-test-event
  * jme-backward-schema-evolution-test-event - ch.admin.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event
  * jme-backward-schema-evolution-test-event - ch.admin.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event
  * jme-create-declaration-command - ch.admin.jeap.messaging.test.messagetype.jme:jme-create-declaration-command

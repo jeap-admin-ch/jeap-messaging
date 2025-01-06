@@ -1,13 +1,13 @@
 {
   "events": [
     {
-      "eventName": "JmeDocumentReviewedEvent",
+      "eventName": "JeapInitializerSimpleTestEvent",
       "topicName": "topic1"
     }
   ],
   "messages": [
     {
-      "messageName": "JmeDocumentReviewedEvent",
+      "messageName": "JeapInitializerSimpleTestEvent",
       "topicName": "topic2"
     }
   ]

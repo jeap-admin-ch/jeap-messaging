@@ -1,6 +1,6 @@
 package ch.admin.bit.jeap.messaging.annotations;
 
-import ch.admin.bit.jme.document.JmeDocumentReviewedEvent;
+import ch.admin.bit.jeap.initializer.test.JeapInitializerSimpleTestEvent;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -19,7 +19,7 @@ import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHel
 public class ConsumerContractByTemplatesAnnotationTest {
 
     public static final String APP_NAME = "appNameForTest";
-    public static final String EVENT_NAME = "JmeDocumentReviewedEvent";
+    public static final String EVENT_NAME = "JeapInitializerSimpleTestEvent";
     public static final String EVENT_VERSION = "1.0.0";
 
     /**
@@ -42,13 +42,13 @@ public class ConsumerContractByTemplatesAnnotationTest {
 
         JSONAssert.assertEquals("{contractVersion:\"1.0.0\"}", actual, false);
         JSONAssert.assertEquals("{role:\"consumer\"}", actual, false);
-        JSONAssert.assertEquals("{systemName:\"" + JmeDocumentReviewedEvent.TypeRef.SYSTEM_NAME + "\"}", actual, false);
-        JSONAssert.assertEquals("{messageTypeName:\"" + JmeDocumentReviewedEvent.TypeRef.MESSAGE_TYPE_NAME + "\"}", actual, false);
-        JSONAssert.assertEquals("{messageTypeVersion:\"" + JmeDocumentReviewedEvent.TypeRef.MESSAGE_TYPE_VERSION + "\"}", actual, false);
-        JSONAssert.assertEquals("{registryUrl:\"" + JmeDocumentReviewedEvent.TypeRef.REGISTRY_URL + "\"}", actual, false);
-        JSONAssert.assertEquals("{registryBranch:\"" + JmeDocumentReviewedEvent.TypeRef.REGISTRY_BRANCH + "\"}", actual, false);
-        JSONAssert.assertEquals("{registryCommit:\"" + JmeDocumentReviewedEvent.TypeRef.REGISTRY_COMMIT + "\"}", actual, false);
-        JSONAssert.assertEquals("{compatibilityMode:\"" + JmeDocumentReviewedEvent.TypeRef.COMPATIBILITY_MODE + "\"}", actual, false);
+        JSONAssert.assertEquals("{systemName:\"" + JeapInitializerSimpleTestEvent.TypeRef.SYSTEM_NAME + "\"}", actual, false);
+        JSONAssert.assertEquals("{messageTypeName:\"" + JeapInitializerSimpleTestEvent.TypeRef.MESSAGE_TYPE_NAME + "\"}", actual, false);
+        JSONAssert.assertEquals("{messageTypeVersion:\"" + JeapInitializerSimpleTestEvent.TypeRef.MESSAGE_TYPE_VERSION + "\"}", actual, false);
+        JSONAssert.assertEquals("{registryUrl:\"" + JeapInitializerSimpleTestEvent.TypeRef.REGISTRY_URL + "\"}", actual, false);
+        JSONAssert.assertEquals("{registryBranch:\"" + JeapInitializerSimpleTestEvent.TypeRef.REGISTRY_BRANCH + "\"}", actual, false);
+        JSONAssert.assertEquals("{registryCommit:\"" + JeapInitializerSimpleTestEvent.TypeRef.REGISTRY_COMMIT + "\"}", actual, false);
+        JSONAssert.assertEquals("{compatibilityMode:\"" + JeapInitializerSimpleTestEvent.TypeRef.COMPATIBILITY_MODE + "\"}", actual, false);
         JSONAssert.assertEquals("{appName:\"appNameForTest\"}", actual, false);
         JSONAssert.assertEquals("{topics: [ \"topic1\", \"topic2\" ]}", actual, false);
     }
