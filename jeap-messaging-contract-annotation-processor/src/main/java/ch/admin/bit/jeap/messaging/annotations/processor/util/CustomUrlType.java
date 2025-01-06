@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -50,6 +51,9 @@ public class CustomUrlType implements Vfs.UrlType {
 
                     @Override
                     public Vfs.File next() {
+                        if (!hasNext()) {
+                            throw new NoSuchElementException("No more elements in the collection");
+                        }
                         ZipEntry entry = entries.nextElement();
                         return new ZipFileVfsFile(entry, zipFile);
                     }
