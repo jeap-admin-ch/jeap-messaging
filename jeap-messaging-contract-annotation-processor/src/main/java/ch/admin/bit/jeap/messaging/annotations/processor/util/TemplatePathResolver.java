@@ -7,6 +7,7 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -41,8 +42,18 @@ public class TemplatePathResolver {
             }
 
             if (sourcePath != null) {
-                Path templatesPath = sourcePath.getParent().resolve("resources/process/templates");
-                return templatesPath.toAbsolutePath().toString();
+                Path processContextTemplatesPath = sourcePath.getParent().resolve("resources/process/templates");
+                if (Files.exists(processContextTemplatesPath)) {
+                    return processContextTemplatesPath.toAbsolutePath().toString();
+                } else {
+                    Path processArchiveTemplatesPath = sourcePath.getParent().resolve("resources/processarchive");
+                    if (Files.exists(processArchiveTemplatesPath)) {
+                        return processArchiveTemplatesPath.toAbsolutePath().toString();
+                    } else {
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Template directory not found.");
+                        return null;
+                    }
+                }
             } else {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "src/main/java or src/test/java directory not found.");
                 return null;
