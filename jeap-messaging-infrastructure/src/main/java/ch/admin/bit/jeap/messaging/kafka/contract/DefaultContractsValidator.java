@@ -49,12 +49,12 @@ public class DefaultContractsValidator implements ContractsValidator {
     }
 
     @Override
-    public void ensureConsumerContract(MessageType messageType, String topic) {
-        if (ContractValidationExemptions.isExemptedFromReceiverValidation(messageType)) {
+    public void ensureConsumerContract(String messageTypeName, String topic) {
+        if (ContractValidationExemptions.isExemptedFromReceiverValidation(messageTypeName)) {
             return;
         }
-        if (!hasConsumerContractFor(messageType, topic)) {
-            throw NoContractException.noContract(appName, ROLE_CONSUMER, messageType, topic);
+        if (!hasConsumerContractFor(messageTypeName, topic)) {
+            throw NoContractException.noContract(appName, ROLE_CONSUMER, messageTypeName, topic);
         }
     }
 
@@ -64,8 +64,8 @@ public class DefaultContractsValidator implements ContractsValidator {
                 .anyMatch(contractTopic -> contractTopic.equals(topic));
     }
 
-    private boolean hasConsumerContractFor(MessageType messageType, String topic) {
-        return consumerContracts.getOrDefault(messageType.getName(), List.of()).stream()
+    private boolean hasConsumerContractFor(String messageTypeName, String topic) {
+        return consumerContracts.getOrDefault(messageTypeName, List.of()).stream()
                 .flatMap(contract -> Arrays.stream(contract.getTopics()))
                 .anyMatch(contractTopic -> contractTopic.equals(topic));
     }

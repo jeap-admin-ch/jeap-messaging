@@ -6,6 +6,9 @@ public interface ContractsValidator {
 
     void ensurePublisherContract(MessageType messageType, String topic);
 
-    void ensureConsumerContract(MessageType messageType, String topic);
+    void ensureConsumerContract(String messageTypeName, String topic);
 
+    default void ensureConsumerContract(MessageType messageType, String topic) {
+        ensureConsumerContract(messageType.getName(), topic);
+    }
 }

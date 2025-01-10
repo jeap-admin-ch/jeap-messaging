@@ -22,6 +22,12 @@ public class NoContractException extends RuntimeException {
         return new NoContractException(message);
     }
 
+    public static NoContractException noContract(String appName, String role, String messageTypeName, String topic) {
+        String message = String.format("Application %s does not have a contract as %s for messages of type %s on topic %s.",
+                appName, role, messageTypeName, topic);
+        return new NoContractException(message);
+    }
+
     public static NoContractException noContract(String appName, MessageType type) {
         String message = String.format("Application %s does not have a contract for events of type %s",
                 appName, type.toString());

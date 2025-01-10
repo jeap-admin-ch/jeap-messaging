@@ -123,12 +123,7 @@ class DefaultContractsValidatorContractsTests {
 
     @Test
     void test_whenConsumerContractDifferentVersionDifferentTopic_thenDoesNotThrowException() {
-        MessageType messageType = AvroDomainEventType.newBuilder()
-                .setName(TEST_APP_CONSUMED_TYPE)
-                .setVersion(TEST_APP_CONSUMED_TYPE_VERSION_1)
-                .build();
-
-        assertThatCode(() -> contractsValidator.ensureConsumerContract(messageType, TEST_APP_CONSUMED_TYPE_VERSION_2_TOPIC))
+        assertThatCode(() -> contractsValidator.ensureConsumerContract(TEST_APP_CONSUMED_TYPE, TEST_APP_CONSUMED_TYPE_VERSION_2_TOPIC))
                 .doesNotThrowAnyException();
     }
 

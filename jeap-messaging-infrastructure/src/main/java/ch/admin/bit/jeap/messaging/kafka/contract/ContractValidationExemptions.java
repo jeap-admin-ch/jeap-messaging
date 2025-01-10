@@ -18,8 +18,8 @@ public class ContractValidationExemptions {
         return SHARED_MESSAGES_ALLOWED_TO_SEND.contains(messageType.getName());
     }
 
-    public static boolean isExemptedFromReceiverValidation(MessageType messageType) {
-        return SHARED_MESSAGES_ALLOWED_TO_RECEIVE.contains(messageType.getName());
+    public static boolean isExemptedFromReceiverValidation(String messageTypeName) {
+        return SHARED_MESSAGES_ALLOWED_TO_RECEIVE.contains(messageTypeName);
     }
 
 }
