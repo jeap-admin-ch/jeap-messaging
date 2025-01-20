@@ -1,7 +1,6 @@
 @namespace("ch.admin.bit.jeap.domainevent.registry.verifier.testevent")
 protocol TestTestEventProtocol {
   import idl "ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestReference.avdl";
-  import idl "ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestEnum.avdl";
 
   @namespace("ch.admin.bit.jeap.domainevent.avro")
   record AvroDomainEventPublisher {

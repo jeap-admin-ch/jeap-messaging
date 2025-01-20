@@ -38,6 +38,10 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
     @Getter(AccessLevel.PROTECTED)
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject project;
+    @Getter(AccessLevel.PROTECTED)
+    @Parameter(defaultValue = "true")
+    @SuppressWarnings("unused")
+    private boolean failOnUnusedImports;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -47,6 +51,7 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
                     .descriptorDir(descriptorDirectory)
                     .oldDescriptorDir(getFolderToCompareTo())
                     .importClassLoader(importClassLoader)
+                    .failOnUnusedImports(failOnUnusedImports)
                     .log(getLog())
                     .build();
             ValidationResult overallResult = DescriptorDirectoryValidator.validate(validationContext);

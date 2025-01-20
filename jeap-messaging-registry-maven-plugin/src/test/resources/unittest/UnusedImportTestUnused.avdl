@@ -1,0 +1,29 @@
+@namespace("ch.admin.test")
+protocol UnusedImportTestUnused {
+  import idl "UnusedImportTestUsedInUnion.avdl";
+
+  // ###############
+  // ## PAYLOAD
+  // ###############
+  record UnusedImportTestUnusedPayload {
+    union { null, string } messageFunctionType = null;
+    union { null, string } functionalReference = null;
+    union { null, timestamp_ms } documentIssueDate = null;
+    union { null, timestamp_ms } controlResultDate = null;
+    union { null, string } masterReferenceNumber = null;
+    union { null, string } customsOfficeOfControlReferenceNumber = null;
+  }
+
+  // ###############
+  // ## META-INFO
+  // ###############
+
+  record UnusedImportTestUnusedReferences {
+  }
+
+  record UnusedImportTestUnusedEvent {
+    UnusedImportTestUnusedPayload payload;
+    UnusedImportTestUnusedReferences references;
+    string domainEventVersion;
+  }
+}

@@ -227,7 +227,6 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
 
     private void compileCommonSchemas(AvroCompiler avroCompiler, Set<String> changedSystemsToCompile) throws MojoExecutionException {
         getLog().info("Compile common schemas for " + commonDefinitionsPerSystem.entrySet().size() + " systems");
-
         for (Map.Entry<String, List<Path>> entry : commonDefinitionsPerSystem.entrySet()) {
 
             if (!changedSystemsToCompile.isEmpty() && !changedSystemsToCompile.contains(entry.getKey())) {

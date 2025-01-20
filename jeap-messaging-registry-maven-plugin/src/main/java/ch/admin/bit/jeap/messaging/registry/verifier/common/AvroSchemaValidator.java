@@ -40,7 +40,7 @@ public class AvroSchemaValidator {
                                             JsonNode messageTypeDescriptor,
                                             Optional<JsonNode> oldMessageTypeDescriptor) {
 
-        try (ImportClassLoader importClassLoader = generateImportClassLoader(validationContext)) {
+        try (ImportClassLoader importClassLoader = ImportClassLoaderHelper.generateImportClassLoader(validationContext)) {
             return AvroSchemaValidator.builder()
                     .validationContext(validationContext)
                     .messageTypeDescriptor(messageTypeDescriptor)
@@ -51,13 +51,6 @@ public class AvroSchemaValidator {
         } catch (IOException e) {
             return ValidationResult.fail("Cannot import files: " + e.getMessage());
         }
-    }
-
-    private static ImportClassLoader generateImportClassLoader(ValidationContext validationContext) {
-        File commonRootDir = new File(validationContext.getDescriptorDir(), MessageTypeRegistryConstants.COMMON_DIR_NAME);
-        File commonSystemDir = new File(validationContext.getSystemDir(), MessageTypeRegistryConstants.COMMON_DIR_NAME);
-        return new ImportClassLoader(validationContext.getImportClassLoader(), commonRootDir, commonSystemDir);
-
     }
 
     private ValidationResult validate() {

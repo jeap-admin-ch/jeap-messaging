@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -171,6 +172,7 @@ class SystemValidatorTest {
                 .messageTypeName(eventName)
                 .systemDir(tmpDir)
                 .descriptorDir(tmpDir)
+                .log(new SystemStreamLog())
                 .build();
 
         ValidationResult result = SystemValidator.validate(validationContext);
@@ -191,6 +193,7 @@ class SystemValidatorTest {
                 .messageTypeName(eventName)
                 .systemDir(tmpDir)
                 .descriptorDir(tmpDir)
+                .log(new SystemStreamLog())
                 .build();
 
         ValidationResult result = SystemValidator.validate(validationContext);

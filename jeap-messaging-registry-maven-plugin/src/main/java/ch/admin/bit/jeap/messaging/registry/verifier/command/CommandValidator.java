@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.verifier.FileNotChangedValidator;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidatorUtils;
+import ch.admin.bit.jeap.messaging.registry.verifier.common.AvroImportsValidator;
 import ch.admin.bit.jeap.messaging.registry.verifier.common.AvroSchemaValidator;
 import ch.admin.bit.jeap.messaging.registry.verifier.common.DefiningSystemValidator;
 import ch.admin.bit.jeap.messaging.registry.verifier.common.NoDanglingSchemaValidator;
@@ -35,6 +36,7 @@ public class CommandValidator {
         return ValidationResult.merge(
                 CommandNameValidator.validate(validationContext, commandDescriptorJson),
                 DefiningSystemValidator.validate(validationContext, commandDescriptorJson),
+                AvroImportsValidator.validate(validationContext),
                 AvroSchemaValidator.validate(validationContext, commandDescriptorJson, oldCommandDescriptorJson),
                 FileNotChangedValidator.noExistingSchemasChanged(validationContext),
                 NoDanglingSchemaValidator.validate(validationContext.getMessageTypeDirectory(), commandDescriptorJson)

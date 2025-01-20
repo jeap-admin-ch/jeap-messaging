@@ -1,0 +1,30 @@
+@namespace("ch.admin.test")
+protocol UnusedImportTestUsedFullyQualifiedName {
+  import idl "ch.admin.test.UnusedImportTestFullyQualifiedUsed.avdl";
+
+  // ###############
+  // ## PAYLOAD
+  // ###############
+  record UnusedImportTestUsedFullyQualifiedNamePayload {
+    union { null, string } messageFunctionType = null;
+    union { null, string } functionalReference = null;
+    union { null, timestamp_ms } documentIssueDate = null;
+    union { null, timestamp_ms } controlResultDate = null;
+    union { null, string } masterReferenceNumber = null;
+    union { null, string } customsOfficeOfControlReferenceNumber = null;
+  }
+
+  // ###############
+  // ## META-INFO
+  // ###############
+
+  record UnusedImportTestUsedFullyQualifiedNameReferences {
+  }
+
+  record UnusedImportTestUsedFullyQualifiedNameEvent {
+    UnusedImportTestUsedFullyQualifiedNamePayload payload;
+    UnusedImportTestUsedFullyQualifiedNameReferences references;
+    ch.admin.test.UnusedImportTestFullyQualifiedUsedReferences otherReferences;
+    string domainEventVersion;
+  }
+}

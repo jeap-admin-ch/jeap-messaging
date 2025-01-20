@@ -20,5 +20,6 @@ public class ValidationContext {
     File descriptorFile;
     String messageTypeName;
     MessagingType messagingType;
+    boolean failOnUnusedImports;
     Log log;
 }

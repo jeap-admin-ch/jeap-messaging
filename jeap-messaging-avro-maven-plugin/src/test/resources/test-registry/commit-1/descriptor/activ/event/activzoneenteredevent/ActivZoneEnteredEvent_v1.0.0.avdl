@@ -1,7 +1,6 @@
 @namespace("ch.admin.bazg.activ.test.event")
 protocol ActivZoneEnteredEventProtocol {
 	import idl "DomainEventBaseTypes.avdl";
-	import idl "ch.admin.bazg.activ.test.common.SystemCommon.avdl";
 
 	record ZoneReference {
 		string type;

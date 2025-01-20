@@ -1,0 +1,30 @@
+@namespace("ch.admin.test")
+protocol UnusedImportTestUsedSimpleName {
+  import idl "UnusedImportTestUnused.avdl";
+
+  // ###############
+  // ## PAYLOAD
+  // ###############
+  record UnusedImportTestUsedSimpleNamePayload {
+    union { null, string } messageFunctionType = null;
+    union { null, string } functionalReference = null;
+    union { null, timestamp_ms } documentIssueDate = null;
+    union { null, timestamp_ms } controlResultDate = null;
+    union { null, string } masterReferenceNumber = null;
+    union { null, string } customsOfficeOfControlReferenceNumber = null;
+  }
+
+  // ###############
+  // ## META-INFO
+  // ###############
+
+  record UnusedImportTestUsedSimpleNameReferences {
+  }
+
+  record UnusedImportTestUsedSimpleNameEvent {
+    UnusedImportTestUsedSimpleNamePayload payload;
+    UnusedImportTestUsedSimpleNameReferences references;
+    UnusedImportTestUnusedReferences otherReferences;
+    string domainEventVersion;
+  }
+}

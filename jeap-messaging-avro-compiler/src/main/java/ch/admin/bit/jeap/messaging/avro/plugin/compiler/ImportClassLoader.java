@@ -65,6 +65,17 @@ public class ImportClassLoader extends URLClassLoader {
         if (importFiles.containsKey(name)) {
             return importFiles.get(name);
         }
-        return super.findResource(name);
+        URL resource = super.findResource(name);
+        if (resource != null) {
+            return resource;
+        }
+        return getParent().getResource(name);
+    }
+
+    @Override
+    public String toString() {
+        return "ImportClassLoader{" +
+                "importFiles=" + importFiles +
+                '}';
     }
 }

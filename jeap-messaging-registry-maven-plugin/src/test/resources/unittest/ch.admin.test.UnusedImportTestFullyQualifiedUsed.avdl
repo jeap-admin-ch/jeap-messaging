@@ -1,0 +1,28 @@
+@namespace("ch.admin.test")
+protocol UnusedImportTestFullyQualifiedUsed {
+
+  // ###############
+  // ## PAYLOAD
+  // ###############
+  record UnusedImportTestFullyQualifiedUsedPayload {
+    union { null, string } messageFunctionType = null;
+    union { null, string } functionalReference = null;
+    union { null, timestamp_ms } documentIssueDate = null;
+    union { null, timestamp_ms } controlResultDate = null;
+    union { null, string } masterReferenceNumber = null;
+    union { null, string } customsOfficeOfControlReferenceNumber = null;
+  }
+
+  // ###############
+  // ## META-INFO
+  // ###############
+
+  record UnusedImportTestFullyQualifiedUsedReferences {
+  }
+
+  record UnusedImportTestFullyQualifiedUsedEvent {
+    UnusedImportTestFullyQualifiedUsedPayload payload;
+    UnusedImportTestFullyQualifiedUsedReferences references;
+    string domainEventVersion;
+  }
+}

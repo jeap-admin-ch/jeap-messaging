@@ -5,14 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [8.13.2] - 2024-01-10
+## [8.14.0] - 2025-01-27
+
+### Added
+
+- Added possibility to find unused imports in IDL (Avro) files.
+
+## [8.13.2] - 2025-01-10
 
 ### Added
 
 - Added method to ensure a consumer contract just by the message type name in the ContractValidator interface.
 
 
-## [8.13.1] - 2024-01-07
+## [8.13.1] - 2025-01-07
 
 ### Added
 

@@ -17,14 +17,6 @@
       ]
     },
     {
-      "type": "enum",
-      "name": "TestEnum",
-      "symbols": [
-        "VALUE1",
-        "VALUE2"
-      ]
-    },
-    {
       "type": "record",
       "name": "AvroDomainEventPublisher",
       "namespace": "ch.admin.bit.jeap.domainevent.avro",

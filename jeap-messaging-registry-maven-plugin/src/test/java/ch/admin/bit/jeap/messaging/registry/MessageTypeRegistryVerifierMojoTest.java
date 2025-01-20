@@ -117,6 +117,16 @@ class MessageTypeRegistryVerifierMojoTest extends AbstractMojoTestCase {
         assertDoesNotThrow(target::execute);
     }
 
+    @Test
+    void unusedImport(@TempDir File tmpDir) throws Exception {
+        File testDir = new File(RESOURCES_DIR, "unusedImport");
+        FileUtils.copyDirectory(testDir, tmpDir);
+        Mojo target = open(tmpDir);
+        assertThatThrownBy(target::execute)
+                .hasMessageContaining("Unused imports")
+                .hasMessageContaining("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestEnum.avdl");
+    }
+
     private Mojo open(File basedir) throws Exception {
         MavenExecutionRequest request = new DefaultMavenExecutionRequest();
         request.setBaseDirectory(basedir);
