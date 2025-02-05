@@ -1,0 +1,3 @@
+ch.admin.bit.jeap.messaging.sequentialinbox.spring.SequentialInboxConfig
+ch.admin.bit.jeap.messaging.sequentialinbox.jpa.SequentialInboxJpaConfig
+ch.admin.bit.jeap.messaging.sequentialinbox.kafka.SequentialInboxKafkaConfig

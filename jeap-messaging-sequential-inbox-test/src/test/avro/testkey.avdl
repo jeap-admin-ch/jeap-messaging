@@ -1,0 +1,6 @@
+@namespace("ch.admin.bit.jeap.messaging.sequentialinbox.test")
+protocol TestMessageKeyProtocol {
+  record TestMessageKey {
+    string someProperty;
+  }
+}

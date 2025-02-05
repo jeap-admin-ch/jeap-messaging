@@ -1,0 +1,20 @@
+@namespace("ch.admin.bit.jeap.messaging.sequentialinbox.test")
+protocol Test2Protocol {
+  import idl "DomainEventBaseTypes.avdl";
+
+  record Test2References {
+  }
+
+  record Test2Payload {
+    union{null, string} message = null;
+  }
+
+  record TestEvent2 {
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity identity;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType type;
+    ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher publisher;
+    Test2References references;
+    Test2Payload payload;
+    string domainEventVersion;
+  }
+}
