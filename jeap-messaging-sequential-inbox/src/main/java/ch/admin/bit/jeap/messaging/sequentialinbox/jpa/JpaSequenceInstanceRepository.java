@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ class JpaSequenceInstanceRepository implements SequenceInstanceRepository {
     }
 
     @Override
-    public List<SequenceInstance> findByTypeAndContextId(String type, String contextId) {
+    public Optional<SequenceInstance> findByTypeAndContextId(String type, String contextId) {
         return springDataJpaSequenceInstanceRepository.findByTypeAndContextId(type, contextId);
     }
 

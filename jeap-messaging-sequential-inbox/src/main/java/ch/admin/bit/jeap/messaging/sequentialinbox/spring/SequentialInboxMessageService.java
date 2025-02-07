@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.deserializer.Se
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequencedMessageType;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequentialInboxConfiguration;
 import ch.admin.bit.jeap.messaging.sequentialinbox.kafka.KafkaSequentialInboxMessageConsumerFactory;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -27,22 +28,26 @@ class SequentialInboxMessageService {
     private final SequentialInboxConfigurationLoader sequentialInboxConfigurationLoader;
     private final ApplicationContext applicationContext;
 
+    private SequentialInboxConfiguration sequentialInboxConfiguration;
+
     public SequentialInboxMessageService(KafkaSequentialInboxMessageConsumerFactory messageConsumerFactory, ApplicationContext applicationContext) {
         this.messageConsumerFactory = messageConsumerFactory;
         this.applicationContext = applicationContext;
         this.sequentialInboxConfigurationLoader = new SequentialInboxConfigurationLoader();
     }
 
+    @PostConstruct
+    void setup(){
+        sequentialInboxConfiguration = sequentialInboxConfigurationLoader.loadSequenceDeclaration();
+    }
+
     @EventListener
     @SuppressWarnings("unused")
     public void onAppStarted(ApplicationStartedEvent event) {
-        startDomainEventListeners();
+        startMessageListeners();
     }
 
-    void startDomainEventListeners() {
-
-        SequentialInboxConfiguration sequentialInboxConfiguration = sequentialInboxConfigurationLoader.loadSequenceDeclaration();
-
+    void startMessageListeners() {
         Set<SequencedMessageType> messageTypes = sequentialInboxConfiguration.getSequences().stream()
                 .flatMap(sequence -> sequence.getMessages().stream())
                 .collect(toSet());

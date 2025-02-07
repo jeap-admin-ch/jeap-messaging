@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext
 @AutoConfigureObservability
 @SpringBootTest
-@ContextConfiguration(classes = {SequentialInboxTestConfiguration.class})
 @Slf4j
 class SequentialInboxIT extends KafkaIntegrationTestBase {
 

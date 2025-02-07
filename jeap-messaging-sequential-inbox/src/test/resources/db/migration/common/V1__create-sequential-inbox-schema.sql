@@ -1,6 +1,6 @@
-CREATE SEQUENCE sequence_instance_sequence START WITH 1 INCREMENT 1;
-CREATE SEQUENCE buffered_message_sequence START WITH 1 INCREMENT 1;
-CREATE SEQUENCE sequenced_message_sequence START WITH 1 INCREMENT 1;
+CREATE SEQUENCE sequence_instance_sequence START WITH 1 INCREMENT 1 CYCLE;
+CREATE SEQUENCE buffered_message_sequence START WITH 1 INCREMENT 1 CYCLE;
+CREATE SEQUENCE sequenced_message_sequence START WITH 1 INCREMENT 1 CYCLE;
 
 CREATE TABLE sequence_instance
 (
@@ -28,6 +28,7 @@ CREATE TABLE sequenced_message
         constraint sequenced_message_pkey primary key,
     type                 text not null,
     sequenced_message_id UUID not null,
+    idempotence_id       text not null,
     state                text not null,
     max_delay_period     text not null,
     trace_id_high        bigint,
@@ -41,6 +42,7 @@ CREATE TABLE sequenced_message
 );
 
 create index sequenced_message_sequence_instance_id ON sequenced_message (sequence_instance_id);
+create index sequenced_message_idempotence_id ON sequenced_message (idempotence_id);
 create index sequenced_message_message_id ON sequenced_message (message_id);
 
 

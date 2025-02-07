@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,9 +67,9 @@ class JpaSequenceInstanceRepositoryTest {
         testEntityManager.persist(createSequenceInstance(type, contextId));
         testEntityManager.persist(createSequenceInstance(UUID.randomUUID().toString(), UUID.randomUUID().toString()));
 
-        List<SequenceInstance> results = jpaSequenceInstanceRepository.findByTypeAndContextId(type, contextId);
+        Optional<SequenceInstance> result = jpaSequenceInstanceRepository.findByTypeAndContextId(type, contextId);
 
-        assertThat(results).hasSize(1);
+        assertThat(result).isPresent();
     }
 
     private SequenceInstance createSequenceInstance(String type, String contextId) {
@@ -86,6 +87,7 @@ class JpaSequenceInstanceRepositoryTest {
         sequenceInstance.getMessages().add(new SequencedMessage(
                 "MyEvent1",
                 UUID.randomUUID(),
+                UUID.randomUUID().toString(),
                 SequencedMessageState.PROCESSING,
                 Duration.ofHours(1),
                 SequentialInboxTraceContext.builder().traceId(1L).spanId(1L).parentSpanId(1L).build(),
@@ -96,6 +98,7 @@ class JpaSequenceInstanceRepositoryTest {
         sequenceInstance.getMessages().add(new SequencedMessage(
                 "MyEvent2",
                 UUID.randomUUID(),
+                UUID.randomUUID().toString(),
                 SequencedMessageState.PROCESSING,
                 Duration.ofMinutes(55),
                 SequentialInboxTraceContext.builder().traceId(1L).spanId(1L).parentSpanId(1L).build(),

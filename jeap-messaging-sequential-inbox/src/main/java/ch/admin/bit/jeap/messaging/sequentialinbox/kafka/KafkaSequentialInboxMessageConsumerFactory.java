@@ -9,7 +9,6 @@ import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.listener.AcknowledgingMessageListener;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
@@ -23,8 +22,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class KafkaSequentialInboxMessageConsumerFactory {
 
-    private final String appName;
-
     private final KafkaProperties kafkaProperties;
 
     private final BeanFactory beanFactory;
@@ -33,8 +30,7 @@ public class KafkaSequentialInboxMessageConsumerFactory {
 
     private final List<ConcurrentMessageListenerContainer<?, ?>> containers = new CopyOnWriteArrayList<>();
 
-    public KafkaSequentialInboxMessageConsumerFactory(@Value("${spring.application.name}") String appName, KafkaProperties kafkaProperties, BeanFactory beanFactory) {
-        this.appName = appName;
+    public KafkaSequentialInboxMessageConsumerFactory(KafkaProperties kafkaProperties, BeanFactory beanFactory) {
         this.kafkaProperties = kafkaProperties;
         this.beanFactory = beanFactory;
         this.jeapKafkaBeanNames = new JeapKafkaBeanNames(kafkaProperties.getDefaultClusterName());
@@ -48,9 +44,9 @@ public class KafkaSequentialInboxMessageConsumerFactory {
             topicName = getDefaultTopicForMessageType(messageType);
         }
 
-        log.info("Starting domain event listener for event '{}' on topic '{}' on cluster '{}'", messageType, topicName, clusterName);
+        log.info("Starting domain message listener for messageType '{}' on topic '{}' on cluster '{}'", messageType, topicName, clusterName);
         KafkaSequentialInboxMessageListener listener = new KafkaSequentialInboxMessageListener(messageType, messageHandler);
-        startConsumer(topicName, messageType, clusterName, listener);
+        startConsumer(topicName, clusterName, listener);
     }
 
     private String getDefaultTopicForMessageType(String messageType) {
@@ -59,15 +55,12 @@ public class KafkaSequentialInboxMessageConsumerFactory {
             return (String) messageDescriptor.getField("DEFAULT_TOPIC").get(messageDescriptor);
         } catch (Exception e) {
             log.error("Could not default topic for message type '{}'", messageType, e);
-            return null;
+            throw new IllegalStateException("Could not default topic for message type " + messageType, e);
         }
     }
 
-    private void startConsumer(String topicName, String eventName, String clusterName, AcknowledgingMessageListener<AvroMessageKey, AvroMessage> messageListener) {
+    private void startConsumer(String topicName, String clusterName, AcknowledgingMessageListener<AvroMessageKey, AvroMessage> messageListener) {
         ConcurrentMessageListenerContainer<AvroMessageKey, AvroMessage> container = getKafkaListenerContainerFactory(clusterName).createContainer(topicName);
-        // Set a unique group ID per topic/event pair, in case the same topic is consumed by multiple listeners with
-        // different events. Otherwise, they would share the topic offset and records would be distributed among listeners.
-        container.getContainerProperties().setGroupId(appName + "_" + topicName + "_" + eventName);
         container.setupMessageListener(messageListener);
         container.start();
         containers.add(container);
@@ -85,7 +78,7 @@ public class KafkaSequentialInboxMessageConsumerFactory {
 
     @PreDestroy
     public void stop() {
-        log.info("Stopping all domain event listener containers...");
+        log.info("Stopping all message listener containers...");
         containers.forEach(concurrentMessageListenerContainer -> concurrentMessageListenerContainer.stop(true));
     }
 }

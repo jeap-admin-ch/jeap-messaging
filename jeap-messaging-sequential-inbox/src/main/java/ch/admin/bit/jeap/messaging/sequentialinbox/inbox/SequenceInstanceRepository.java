@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.messaging.sequentialinbox.inbox;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SequenceInstanceRepository {
 
@@ -8,6 +9,6 @@ public interface SequenceInstanceRepository {
 
     List<SequenceInstance> findAll();
 
-    List<SequenceInstance> findByTypeAndContextId(String type, String contextId);
+    Optional<SequenceInstance> findByTypeAndContextId(String type, String contextId);
 
 }

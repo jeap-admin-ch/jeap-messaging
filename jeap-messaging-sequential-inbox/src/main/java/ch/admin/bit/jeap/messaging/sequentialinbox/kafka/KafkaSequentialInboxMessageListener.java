@@ -27,7 +27,6 @@ public class KafkaSequentialInboxMessageListener implements AcknowledgingMessage
 
     @Override
     public void onMessage(@NotNull ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, Acknowledgment acknowledgment) {
-        log.info("Message {} on topic {}", consumerRecord.value().getType().getName(), consumerRecord.topic());
 
         try {
             messageHandler.method().invoke(consumerRecord.value(), acknowledgment);

@@ -33,6 +33,9 @@ public class SequencedMessage {
     @Column(name = "sequenced_message_id")
     private UUID sequencedMessageId;
 
+    @Column(name = "idempotence_id")
+    private String idempotenceId;
+
     @Column(name = "state")
     @Enumerated(EnumType.STRING)
     private SequencedMessageState state;
@@ -54,9 +57,11 @@ public class SequencedMessage {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private BufferedMessage message;
 
-    public SequencedMessage(String type, UUID sequencedMessageId, SequencedMessageState state, Duration maxDelayPeriod, SequentialInboxTraceContext traceContext, SequenceInstance sequenceInstance, BufferedMessage message) {
+    @SuppressWarnings("java:S107")
+    public SequencedMessage(String type, UUID sequencedMessageId, String idempotenceId, SequencedMessageState state, Duration maxDelayPeriod, SequentialInboxTraceContext traceContext, SequenceInstance sequenceInstance, BufferedMessage message) {
         this.type = type;
         this.sequencedMessageId = sequencedMessageId;
+        this.idempotenceId = idempotenceId;
         this.state = state;
         this.maxDelayPeriod = maxDelayPeriod;
         this.traceContext = traceContext;
