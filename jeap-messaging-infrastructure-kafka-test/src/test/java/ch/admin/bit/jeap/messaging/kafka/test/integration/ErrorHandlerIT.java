@@ -7,7 +7,11 @@ import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaTestConstants;
-import ch.admin.bit.jeap.messaging.kafka.test.integration.common.*;
+import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeCreateDeclarationCommandBuilder;
+import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeDeclarationCreatedEventBuilder;
+import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestConfig;
+import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestEventConsumer;
+import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestMessageConsumer;
 import ch.admin.bit.jeap.test.avro.message.TestMessage;
 import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
@@ -28,11 +32,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,11 +49,11 @@ import java.util.function.Consumer;
 @DirtiesContext
 class ErrorHandlerIT extends KafkaIntegrationTestBase {
     //Register some event listener
-    @MockBean
+    @MockitoBean
     private MessageListener<MessageProcessingFailedEvent> errorEventProcessor;
-    @MockBean
+    @MockitoBean
     private MessageListener<JmeDeclarationCreatedEvent> testEventProcessor;
-    @MockBean
+    @MockitoBean
     private Consumer<TestMessage> testMessageConsumer;
     @Autowired
     protected KafkaTemplate<Object, Object> kafkaTemplate;

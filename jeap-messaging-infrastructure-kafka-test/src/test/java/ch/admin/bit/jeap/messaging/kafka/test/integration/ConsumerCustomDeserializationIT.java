@@ -18,8 +18,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,11 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DirtiesContext
 class ConsumerCustomDeserializationIT extends KafkaIntegrationTestBase {
 
-    @MockBean
+    @MockitoBean
     private MessageListener<JmeSimpleTestV2Event> jmeEventProcessor;
 
 
-    @MockBean
+    @MockitoBean
     private MessageListener<JmeDeclarationCreatedEvent> jmeDeclarationCreatedEventProcessor;
 
     @Autowired

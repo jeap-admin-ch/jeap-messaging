@@ -27,10 +27,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,9 +41,9 @@ import java.util.Map;
 @DirtiesContext
 class ErrorHandlerCommandIT extends KafkaIntegrationTestBase {
     //Register some listener
-    @MockBean
+    @MockitoBean
     private MessageListener<MessageProcessingFailedEvent> errorEventProcessor;
-    @MockBean
+    @MockitoBean
     private MessageListener<JmeCreateDeclarationCommand> testCommandProcessor;
 
     //The kafka configuration needed to send invalid messages

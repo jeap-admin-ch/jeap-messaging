@@ -22,6 +22,7 @@ abstract public class KafkaIntegrationTestBase {
     @Autowired
     protected KafkaTemplate<AvroMessageKey, AvroMessage> kafkaTemplate;
     @Autowired
+    @SuppressWarnings("unused")
     protected KafkaAdmin kafkaAdmin;
     @Autowired
     private KafkaListenerEndpointRegistry registry;

@@ -13,10 +13,10 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +49,7 @@ class TransactionalOutboxMockKafkaIT {
     private static final Object TEST_KEY_2 = "test-key-2";
     private static final Object TEST_KEY_3 = "test-key-3";
 
-    @MockBean
+    @MockitoBean
     OutboxTracing outboxTracing;
 
     @Autowired
@@ -63,17 +63,17 @@ class TransactionalOutboxMockKafkaIT {
 
     @Autowired
     TransactionalOutboxConfiguration config;
-    
-    @MockBean
+
+    @MockitoBean
     DeferredMessageSender deferredMessageSenderMock;
 
-    @MockBean
+    @MockitoBean
     ContractsValidator contractsValidator;
 
     @Captor
     ArgumentCaptor<DeferredMessage> deferredMessageCaptor;
 
-    @MockBean
+    @MockitoBean
     KafkaMessagingMetrics kafkaMessagingMetrics;
 
     @BeforeEach
@@ -83,12 +83,12 @@ class TransactionalOutboxMockKafkaIT {
 
 
     @Test
-    @Transactional(propagation= Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void testSendOneMessage_WhenNoTransactionActive_ThenThrowsException() {
         assertThat(TestTransaction.isActive()).isFalse();
 
-        assertThatThrownBy( () -> transactionalOutbox.sendMessage(TEST_MESSAGE_1, TEST_KEY_1, TOPIC_1));
-   }
+        assertThatThrownBy(() -> transactionalOutbox.sendMessage(TEST_MESSAGE_1, TEST_KEY_1, TOPIC_1));
+    }
 
     @Test
     void testSendOneMessage_WhenMessageSentImmediatelyInTransaction_ThenPersistedAsDeferredMessageWithinCurrentTransaction() {
@@ -147,7 +147,7 @@ class TransactionalOutboxMockKafkaIT {
     @Commit
     @Test
     void testSendOneMessage_WhenMessageSentImmediatelyInTransaction_ThenSentAsDeferredMessageAndMarkedSentImmediatelyAfterTransactionCommit() {
-        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter( () -> {
+        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter(() -> {
             assertThat(deferredMessageRepository.findAll()).isEmpty();
             final ZonedDateTime beforeSend = ZonedDateTime.now();
 
@@ -174,7 +174,7 @@ class TransactionalOutboxMockKafkaIT {
     @Commit
     @Test
     void testSendOneMessage_WhenMessageSentScheduledInTransaction_ThenNotImmediatelySentAfterTransactionCommit() {
-        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter( () -> {
+        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter(() -> {
             assertThat(deferredMessageRepository.findAll()).isEmpty();
             final ZonedDateTime beforeSend = ZonedDateTime.now();
 
@@ -198,7 +198,7 @@ class TransactionalOutboxMockKafkaIT {
     @Commit
     @Test
     void testSendThreeMessages_WhenTwoMessagesSentImmediatelyInTransaction_ThenTwoSentAsDeferredMessagesAndMarkedSentImmediatelyAfterTransactionCommit() {
-        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter( () -> {
+        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter(() -> {
             assertThat(deferredMessageRepository.findAll()).isEmpty();
             final ZonedDateTime beforeSend = ZonedDateTime.now();
 
@@ -231,7 +231,7 @@ class TransactionalOutboxMockKafkaIT {
     @Commit
     @Test
     void testSendOneMessage_WhenDeferredMessageSendingThrowsException_DeferredMessageHasBeenPersistedButNotMarkedSent() {
-        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter( () -> {
+        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter(() -> {
             assertThat(deferredMessageRepository.findAll()).isEmpty();
             final ZonedDateTime beforeSend = ZonedDateTime.now();
             Mockito.doThrow(TransactionalOutboxException.class).when(deferredMessageSenderMock).sendAsImmediate(any(DeferredMessage.class));
@@ -258,7 +258,7 @@ class TransactionalOutboxMockKafkaIT {
     @Commit
     @Test
     void testSendMessages_WhenDeferredMessageSendingThrowsExceptions_ThenHandledCorrectly() {
-        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter( () -> {
+        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter(() -> {
             assertThat(deferredMessageRepository.findAll()).isEmpty();
             Mockito.doAnswer(invocation -> {
                 DeferredMessage deferredMessage = invocation.getArgument(0, DeferredMessage.class);
@@ -316,7 +316,7 @@ class TransactionalOutboxMockKafkaIT {
     @Commit
     @Test
     void testSendFailResendMessages() {
-        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter( () -> {
+        DeferredMessageTestUtil.with(deferredMessageRepository).deleteAllMessagesAfter(() -> {
             assertThat(deferredMessageRepository.findAll()).isEmpty();
             Mockito.doAnswer(invocation -> {
                 DeferredMessage deferredMessage = invocation.getArgument(0, DeferredMessage.class);
@@ -368,15 +368,15 @@ class TransactionalOutboxMockKafkaIT {
             TestTransaction.end();
         });
     }
-    
+
     private void assertFailedMessages(ZonedDateTime startingFrom, ZonedDateTime before, int expectedNumFailedNotInResend, int expectedNumFailedInResend) {
         assertThat(transactionalOutbox.countFailedMessages(false)).isEqualTo(expectedNumFailedNotInResend);
         assertThat(transactionalOutbox.countFailedMessages(true)).isEqualTo(expectedNumFailedInResend);
         assertThat(transactionalOutbox.countFailedMessages(startingFrom, before, false)).isEqualTo(expectedNumFailedNotInResend);
         assertThat(transactionalOutbox.countFailedMessages(startingFrom, before, true)).isEqualTo(expectedNumFailedInResend);
-        List<FailedMessage> failedMessages = transactionalOutbox.findFailedMessages(startingFrom, before, false, expectedNumFailedNotInResend+1);
+        List<FailedMessage> failedMessages = transactionalOutbox.findFailedMessages(startingFrom, before, false, expectedNumFailedNotInResend + 1);
         assertThat(failedMessages).hasSize(expectedNumFailedNotInResend);
-        List<FailedMessage> failedMessagesInResend = transactionalOutbox.findFailedMessages(startingFrom, before, true, expectedNumFailedInResend+1);
+        List<FailedMessage> failedMessagesInResend = transactionalOutbox.findFailedMessages(startingFrom, before, true, expectedNumFailedInResend + 1);
         assertThat(failedMessagesInResend).hasSize(expectedNumFailedInResend);
         if (failedMessages.size() > 1) {
             List<FailedMessage> failedMessagesSublist = transactionalOutbox.findFailedMessages(failedMessages.get(0).getId(), before, false, failedMessages.size());
@@ -393,8 +393,7 @@ class TransactionalOutboxMockKafkaIT {
         assertThat(deferredMessage.getMessage()).isEqualTo(messageSerializer.serializeMessage(message, topic));
         if (key != null) {
             assertThat(deferredMessage.getKey()).isEqualTo(messageSerializer.serializeKey(key, topic));
-        }
-        else {
+        } else {
             assertThat(deferredMessage.getKey()).isNull();
         }
         assertThat(deferredMessage.getId()).isNotNull();
@@ -411,14 +410,12 @@ class TransactionalOutboxMockKafkaIT {
             Duration relayDelay = getRelayDelay(numMessagesSentImmediately);
             assertThat(deferredMessage.getScheduleAfter()).isAfterOrEqualTo(afterCreate.plus(relayDelay));
             assertThat(deferredMessage.getScheduleAfter()).isBeforeOrEqualTo(afterCommit.plus(relayDelay));
-        }
-        else {
+        } else {
             assertThat(deferredMessage.getSentImmediately()).isNull();
         }
         if (failed) {
             assertThat(deferredMessage.getFailed()).isAfterOrEqualTo(afterCreate);
-        }
-        else {
+        } else {
             assertThat(deferredMessage.getFailed()).isNull();
         }
     }

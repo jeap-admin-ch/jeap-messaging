@@ -6,12 +6,14 @@ import ch.admin.bit.jeap.messaging.kafka.properties.cluster.ClusterProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroSerializer;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureService;
 import ch.admin.bit.jeap.messaging.kafka.spring.AbstractSchemaRegistryBeanRegistrar;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.avro.generic.GenericData;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,10 +37,12 @@ class ConfluentSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanReg
         KafkaConfluentAvroSerdeProperties serdeProperties = createKafkaConfluentAvroSerdeProperties(kafkaProperties, cryptoConfig);
         CustomKafkaAvroSerializerConfig serializerConfig = new CustomKafkaAvroSerializerConfig(serdeProperties.avroSerializerProperties(clusterName));
         SchemaRegistryClient registryClient = SchemaRegistryClientUtil.createSchemaRegistryClient(serializerConfig);
+        ObjectProvider<SignatureService> beanProvider = beanFactory.getBeanProvider(SignatureService.class);
+        SignatureService signatureService = beanProvider.getIfAvailable();
 
-        KafkaAvroSerializer valueSerializer = new CustomKafkaAvroSerializer(registryClient, cryptoConfig);
+        KafkaAvroSerializer valueSerializer = new CustomKafkaAvroSerializer(registryClient, cryptoConfig, signatureService);
         valueSerializer.configure(serdeProperties.avroSerializerProperties(clusterName), false);
-        KafkaAvroSerializer keySerializer = new CustomKafkaAvroSerializer(registryClient, null);
+        KafkaAvroSerializer keySerializer = new CustomKafkaAvroSerializer(registryClient, null, signatureService);
         keySerializer.configure(serdeProperties.avroSerializerProperties(clusterName), true);
 
         Deserializer<GenericData.Record> genericDataRecordDeserializer =

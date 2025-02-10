@@ -9,7 +9,11 @@ import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.test.TestEvent;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.test.TestMessageKey;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.junit.jupiter.api.AfterEach;
@@ -19,9 +23,9 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,9 +56,9 @@ class TransactionalOutboxIT extends KafkaIntegrationTestBase {
     @Autowired
     private TransactionalOutbox transactionalOutbox;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private ContractsValidator contractsValidator; // Disable contract checking by mocking the contracts validator
-    @MockBean
+    @MockitoBean
     private TestEventListener testEventListener;
     @Captor
     private ArgumentCaptor<TestEvent> testEventArgumentCaptor;

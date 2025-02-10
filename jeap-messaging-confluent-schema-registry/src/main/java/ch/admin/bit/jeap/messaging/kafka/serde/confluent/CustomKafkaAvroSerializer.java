@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.confluent;
 import ch.admin.bit.jeap.crypto.api.KeyId;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroSerializerConfig;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureService;
 import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import io.confluent.kafka.schemaregistry.avro.AvroSchemaUtils;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
@@ -34,18 +35,22 @@ public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
 
     protected JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
 
+    private SignatureService signatureService;
+
     public CustomKafkaAvroSerializer() {
         super();
     }
 
-    public CustomKafkaAvroSerializer(SchemaRegistryClient schemaRegistryClient, JeapKafkaAvroSerdeCryptoConfig cryptoConfig) {
+    public CustomKafkaAvroSerializer(SchemaRegistryClient schemaRegistryClient, JeapKafkaAvroSerdeCryptoConfig cryptoConfig, SignatureService signatureService) {
         super(schemaRegistryClient);
         this.cryptoConfig = cryptoConfig;
+        this.signatureService = signatureService;
     }
 
-    public CustomKafkaAvroSerializer(SchemaRegistryClient schemaRegistryClient, JeapKafkaAvroSerdeCryptoConfig cryptoConfig, Map<String, ?> props) {
+    public CustomKafkaAvroSerializer(SchemaRegistryClient schemaRegistryClient, JeapKafkaAvroSerdeCryptoConfig cryptoConfig, SignatureService signatureService, Map<String, ?> props) {
         super(schemaRegistryClient, props);
         this.cryptoConfig = cryptoConfig;
+        this.signatureService = signatureService;
         configureFromPropertyMap(props);
     }
 
@@ -82,6 +87,9 @@ public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
             AvroSchema messageSchema = new AvroSchema(
                     AvroSchemaUtils.getSchema(record, this.useSchemaReflection, this.avroReflectionAllowNull, this.removeJavaProperties, true));
             byte[] payload = this.serializeImpl(this.getSubjectName(topic, isKey, record, messageSchema), record, messageSchema);
+            if (signatureService != null) {
+                signatureService.injectSignature(headers, payload, isKey);
+            }
             if (!isKey && (cryptoConfig != null)) {
                 Optional<KeyId> keyIdOptional = cryptoConfig.getKeyIdForMessageTypeName(messageSchema.rawSchema().getName());
                 if (keyIdOptional.isPresent()) {

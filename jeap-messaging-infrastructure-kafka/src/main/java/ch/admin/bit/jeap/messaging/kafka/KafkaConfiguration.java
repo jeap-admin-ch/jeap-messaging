@@ -16,6 +16,7 @@ import ch.admin.bit.jeap.messaging.kafka.properties.KafkaConsumerPropertiesValid
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.EmptyKeyDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureProducerProperties;
 import ch.admin.bit.jeap.messaging.kafka.spring.JeapKafkaBeanNames;
 import ch.admin.bit.jeap.messaging.kafka.tracing.KafkaTracingConfiguration;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TracerBridge;
@@ -152,16 +153,22 @@ public class KafkaConfiguration {
         KafkaAvroSerdeProvider kafkaAvroSerdeProvider = (KafkaAvroSerdeProvider) beanFactory.getBean(
                 beanNames.getKafkaAvroSerdeProviderBeanName(clusterName));
         props.putAll(kafkaAvroSerdeProvider.getSerdeProperties().avroSerializerProperties(clusterName));
-        interceptors.add(ProducerContractInterceptor.class);
-        props.put(ProducerLoggerInterceptor.CLUSTER_NAME_CONFIG, clusterName);
-        interceptors.add(ProducerLoggerInterceptor.class);
+
         props.put(ProducerContractInterceptor.ALLOW_NO_CONTRACT_EVENTS, kafkaProperties.isPublishWithoutContractAllowed());
         props.put(ProducerContractInterceptor.ALLOW_NO_CONTRACT_EVENTS_SILENT, false);
         props.put(ProducerContractInterceptor.CONTRACTS_VALIDATOR, contractsValidator);
+        interceptors.add(ProducerContractInterceptor.class);
+
+        props.put(ProducerLoggerInterceptor.CLUSTER_NAME_CONFIG, clusterName);
+        interceptors.add(ProducerLoggerInterceptor.class);
+
         if (kafkaMessagingMetrics != null) {
+            SignatureProducerProperties signatureProducerProperties = beanFactory.getBean(SignatureProducerProperties.class);
+
             props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, producerBootstrapServers);
             props.put(ProducerMetricsInterceptor.METER_REGISTRY, kafkaMessagingMetrics);
             props.put(ProducerMetricsInterceptor.APPLICATION_NAME, applicationName);
+            props.put(ProducerMetricsInterceptor.SIGNATURE_ENABLED, signatureProducerProperties.isSigningEnabled());
             interceptors.add(ProducerMetricsInterceptor.class);
         }
         props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, commaSeparatedClassList(interceptors));

@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -28,7 +28,7 @@ class TransactionalOutboxTracingIT {
     private static final StringMessage TEST_MESSAGE_1 = StringMessage.from("test-message-1");
     private static final Object TEST_KEY_1 = "test-key-1";
 
-    @MockBean
+    @MockitoBean
     OutboxTracing outboxTracing;
 
     TransactionalOutbox transactionalOutbox;
@@ -48,16 +48,16 @@ class TransactionalOutboxTracingIT {
     @Autowired
     TestEntityManager testEntityManager;
 
-    @MockBean
+    @MockitoBean
     DeferredMessageSender deferredMessageSenderMock;
 
-    @MockBean
+    @MockitoBean
     ContractsValidator contractsValidator;
 
     @Autowired
     AfterCommitMessageSender afterCommitMessageSender;
 
-    @MockBean
+    @MockitoBean
     KafkaMessagingMetrics kafkaMessagingMetrics;
 
     @Test

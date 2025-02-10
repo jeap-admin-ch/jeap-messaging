@@ -4,19 +4,19 @@ import ch.admin.bit.jeap.messaging.idempotence.processing.idempotentprocessing.I
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest(classes = {IdempotentMessageHandlerConfig.class},
-                properties = {"jeap.messaging.idempotent-message-handler.advice-order=42"})
+        properties = {"jeap.messaging.idempotent-message-handler.advice-order=42"})
 public class IdempotenceHandlerTest {
 
     @Autowired
     IdempotentMessageHandlerAspect idempotentMessageHandlerAspect;
 
-    @MockBean
+    @MockitoBean
     IdempotentProcessingRepository idempotentProcessingRepository;
 
     @Test

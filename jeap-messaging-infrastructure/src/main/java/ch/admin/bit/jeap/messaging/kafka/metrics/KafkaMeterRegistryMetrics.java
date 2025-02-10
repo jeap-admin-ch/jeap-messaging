@@ -16,21 +16,22 @@ public class KafkaMeterRegistryMetrics implements KafkaMessagingMetrics {
     private static final String TAG_MESSAGE = "message";
     private static final String TAG_TOPIC = "topic";
     private static final String TAG_VERSION = "version";
+    private static final String TAG_SIGNED = "signed";
     private static final String NOT_AVAILABLE = "na";
     private static final String PRODUCER = "producer";
     private static final String CONSUMER = "consumer";
 
     @Override
-    public void incrementSend(String boostrapServers, String applicationName, String topic, String messageType, String messageTypeVersion) {
-        meterRegistry.counter(METRIC_NAME, getTags(boostrapServers, applicationName, topic, messageType, messageTypeVersion, PRODUCER)).increment();
+    public void incrementSend(String boostrapServers, String applicationName, String topic, String messageType, String messageTypeVersion, Boolean signatureEnabled) {
+        meterRegistry.counter(METRIC_NAME, getTags(boostrapServers, applicationName, topic, messageType, messageTypeVersion, signatureEnabled, PRODUCER)).increment();
     }
 
     @Override
     public void incrementConsume(String boostrapServers, String applicationName, String topic, String messageType, String messageTypeVersion) {
-        meterRegistry.counter(METRIC_NAME, getTags(boostrapServers, applicationName, topic, messageType, messageTypeVersion, CONSUMER)).increment();
+        meterRegistry.counter(METRIC_NAME, getTags(boostrapServers, applicationName, topic, messageType, messageTypeVersion, false, CONSUMER)).increment();
     }
 
-    private Tags getTags(String bootstrapServers, String applicationName, String topic, String messageType, String messageTypeVersion, String type) {
+    private Tags getTags(String bootstrapServers, String applicationName, String topic, String messageType, String messageTypeVersion, Boolean signatureEnabled, String type) {
         if (bootstrapServers == null) {
             bootstrapServers = NOT_AVAILABLE;
         }
@@ -42,6 +43,7 @@ public class KafkaMeterRegistryMetrics implements KafkaMessagingMetrics {
                 TAG_APPLICATION, applicationName,
                 TAG_TOPIC, topic,
                 TAG_MESSAGE, messageType,
+                TAG_SIGNED, (signatureEnabled != null && signatureEnabled) ? "1" : "0",
                 TAG_TYPE, type,
                 TAG_VERSION, messageTypeVersion
         );

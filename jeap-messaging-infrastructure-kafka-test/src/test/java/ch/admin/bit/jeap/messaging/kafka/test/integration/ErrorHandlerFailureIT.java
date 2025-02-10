@@ -15,11 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,11 +36,11 @@ import static org.mockito.Mockito.*;
 @DirtiesContext
 class ErrorHandlerFailureIT extends KafkaIntegrationTestBase {
     //Register some event listener
-    @MockBean
+    @MockitoBean
     private MessageListener<JmeDeclarationCreatedEvent> testEventProcessor;
-    @MockBean
+    @MockitoBean
     private ErrorServiceFailedHandler errorServiceFailedHandler;
-    @SpyBean
+    @MockitoSpyBean
     private KafkaTemplate<?, ?> kafkaTemplate;
     @Mock
     private CompletableFuture<SendResult<Void, MessageProcessingFailedEvent>> completableFuture;

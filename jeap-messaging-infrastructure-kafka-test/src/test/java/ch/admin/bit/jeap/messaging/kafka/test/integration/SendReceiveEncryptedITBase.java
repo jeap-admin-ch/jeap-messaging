@@ -15,8 +15,8 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
         classes = {JmeCreateDeclarationCommandConsumer.class, CryptoServiceTestConfig.class},
@@ -34,7 +34,7 @@ class SendReceiveEncryptedITBase extends KafkaIntegrationTestBase {
     @Autowired
     protected KeyReferenceCryptoService keyReferenceCryptoService;
 
-    @MockBean
+    @MockitoBean
     protected MessageListener<JmeCreateDeclarationCommand> messageProcessor;
 
     @Captor

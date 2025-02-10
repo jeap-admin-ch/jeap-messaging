@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
@@ -19,6 +18,7 @@ import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.test.annotation.Commit;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +70,7 @@ class TransactionalOutboxDifferentProducerClusterIT {
     @Autowired
     private KafkaListenerEndpointRegistry registry;
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private ContractsValidator contractsValidator; // Disable contract checking by mocking the contracts validator
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired

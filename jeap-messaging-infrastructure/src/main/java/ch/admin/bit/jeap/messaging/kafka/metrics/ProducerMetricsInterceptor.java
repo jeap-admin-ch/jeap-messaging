@@ -13,16 +13,20 @@ public class ProducerMetricsInterceptor implements ProducerInterceptor<Object, O
 
     public static final String METER_REGISTRY = "producerMetricsInterceptor.meterRegistry";
     public static final String APPLICATION_NAME = "producerMetricsInterceptor.applicationName";
+    public static final String SIGNATURE_ENABLED = "producerMetricsInterceptor.signature.enabled";
 
     private KafkaMessagingMetrics kafkaMessagingMetrics;
 
     private String applicationName;
     private String boostrapServers;
 
+    private Boolean signatureEnabled;
+
     @Override
     public void configure(Map<String, ?> configs) {
         kafkaMessagingMetrics = (KafkaMessagingMetrics) configs.get(METER_REGISTRY);
         applicationName = (String) configs.get(APPLICATION_NAME);
+        signatureEnabled = (Boolean) configs.get(SIGNATURE_ENABLED);
         boostrapServers = (String) configs.get(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG);
     }
 
@@ -37,7 +41,7 @@ public class ProducerMetricsInterceptor implements ProducerInterceptor<Object, O
             type = record.value().getClass().getSimpleName();
             version = "na";
         }
-        kafkaMessagingMetrics.incrementSend(boostrapServers, applicationName, record.topic(), type, version);
+        kafkaMessagingMetrics.incrementSend(boostrapServers, applicationName, record.topic(), type, version, signatureEnabled);
         return record;
     }
 

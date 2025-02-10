@@ -11,6 +11,7 @@ import ch.admin.bit.jeap.messaging.kafka.serde.glue.JeapGlueAvroSerializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.auth.GlueAssumeRoleAuthProvider;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.auth.GlueAuthProvider;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.properties.GlueKafkaAvroSerdeProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureService;
 import ch.admin.bit.jeap.messaging.kafka.spring.AbstractSchemaRegistryBeanRegistrar;
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants;
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.generic.GenericData;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
+import org.springframework.beans.factory.ObjectProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 import java.util.HashMap;
@@ -41,6 +43,8 @@ public class GlueSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanR
         GlueProperties glueProperties = kafkaProperties.clusterProperties(clusterName).orElseThrow()
                 .getAws().getGlue();
         AwsCredentialsProvider awsCredentialsProvider = beanFactory.getBean(AwsCredentialsProvider.class);
+        ObjectProvider<SignatureService> beanProvider = beanFactory.getBeanProvider(SignatureService.class);
+        SignatureService signatureService = beanProvider.getIfAvailable();
 
         GlueAuthProvider glueAuthProvider = glueAuthProvider(awsCredentialsProvider, glueProperties);
         AwsCredentialsProvider glueCredentialsProvider = glueAuthProvider.getAwsCredentialsProvider();
@@ -50,10 +54,10 @@ public class GlueSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanR
         log.debug("Creating Avro deserializers with config {}", serdeProperties.avroDeserializerProperties(clusterName));
 
 
-        Serializer<Object> valueSerializer = new JeapGlueAvroSerializer(glueCredentialsProvider, cryptoConfig);
+        Serializer<Object> valueSerializer = new JeapGlueAvroSerializer(glueCredentialsProvider, cryptoConfig, signatureService);
         valueSerializer.configure(serdeProperties.avroSerializerProperties(clusterName), IS_VALUE);
 
-        Serializer<Object> keySerializer = new JeapGlueAvroSerializer(glueCredentialsProvider, cryptoConfig);
+        Serializer<Object> keySerializer = new JeapGlueAvroSerializer(glueCredentialsProvider, cryptoConfig, signatureService);
         keySerializer.configure(serdeProperties.avroSerializerProperties(clusterName), IS_KEY);
 
         Deserializer<GenericData.Record> genericRecordDataDeserializer = createGenericRecordDataDeserializer(clusterName, glueCredentialsProvider, serdeProperties);

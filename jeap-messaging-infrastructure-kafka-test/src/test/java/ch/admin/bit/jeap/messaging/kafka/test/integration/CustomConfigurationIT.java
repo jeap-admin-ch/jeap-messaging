@@ -12,12 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -38,7 +38,7 @@ import static org.springframework.kafka.listener.ContainerProperties.AckMode.MAN
 @Slf4j
 @DirtiesContext
 class CustomConfigurationIT extends KafkaIntegrationTestBase {
-    @MockBean
+    @MockitoBean
     private MessageListener<JmeDeclarationCreatedEvent> jmeEventProcessor;
     @Autowired
     private ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory;

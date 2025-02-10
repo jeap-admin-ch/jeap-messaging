@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,7 +36,8 @@ class AwsConfigurationIT {
     KafkaAuthProperties kafkaAuthProperties;
     @Autowired
     KafkaAvroSerdeProvider kafkaAvroSerdeProvider;
-    @MockBean
+    @MockitoBean
+    @SuppressWarnings("unused")
     KeyIdCryptoService keyIdCryptoService;
 
     @Test

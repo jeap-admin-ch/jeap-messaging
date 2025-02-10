@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +37,7 @@ class OutboxMetricsIT extends KafkaIntegrationTestBase {
     OutboxMetrics outboxMetrics;
 
     @SuppressWarnings("unused")
-    @MockBean
+    @MockitoBean
     private ContractsValidator contractsValidator; // Disable contract checking by mocking the contracts validator
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -61,50 +61,50 @@ class OutboxMetricsIT extends KafkaIntegrationTestBase {
     @Test
     void testOutboxMetrics() {
 
-            assertThat(deferredMessageRepository.findAll()).isEmpty();
+        assertThat(deferredMessageRepository.findAll()).isEmpty();
 
-            final String metricsBefore = RestAssured.given().port(localServerPort).get("/actuator/prometheus").getBody().asString();
-            assertReadyToBeSentCount(metricsBefore, 0);
-            assertFailedCountResendDisabled(metricsBefore, 0);
-            assertFailedCountResendEnabled(metricsBefore, 0);
-            assertPostTotalImmediateCommitted(metricsBefore, 0);
-            assertPostTotalImmediateRolledBack(metricsBefore, 0);
-            assertPostTotalImmediateUnknown(metricsBefore, 0);
-            assertPostTotalScheduledCommitted(metricsBefore, 0);
-            assertPostTotalScheduledRolledBack(metricsBefore, 0);
-            assertPostTotalScheduledUnknown(metricsBefore, 0);
+        final String metricsBefore = RestAssured.given().port(localServerPort).get("/actuator/prometheus").getBody().asString();
+        assertReadyToBeSentCount(metricsBefore, 0);
+        assertFailedCountResendDisabled(metricsBefore, 0);
+        assertFailedCountResendEnabled(metricsBefore, 0);
+        assertPostTotalImmediateCommitted(metricsBefore, 0);
+        assertPostTotalImmediateRolledBack(metricsBefore, 0);
+        assertPostTotalImmediateUnknown(metricsBefore, 0);
+        assertPostTotalScheduledCommitted(metricsBefore, 0);
+        assertPostTotalScheduledRolledBack(metricsBefore, 0);
+        assertPostTotalScheduledUnknown(metricsBefore, 0);
 
-            final TestEvent testEvent1 = TestEventBuilder.create().idempotenceId("idempotenceId1").build();
-            final TestEvent testEvent2 = TestEventBuilder.create().idempotenceId("idempotenceId2").build();
-            final TestEvent testEvent3 = TestEventBuilder.create().idempotenceId("idempotenceId3").build();
-            transactionalOutbox.sendMessage(testEvent1, TestEventConsumer.TOPIC);
-            transactionalOutbox.sendMessageScheduled(testEvent2, TestEventConsumer.TOPIC);
-            transactionalOutbox.sendMessage(testEvent3, TestEventConsumer.TOPIC);
-            TestTransaction.end();
-            TestTransaction.start();
-            final TestEvent testEvent4 = TestEventBuilder.create().idempotenceId("idempotenceId4").build();
-            final TestEvent testEvent5 = TestEventBuilder.create().idempotenceId("idempotenceId5").build();
-            final TestEvent testEvent6 = TestEventBuilder.create().idempotenceId("idempotenceId6").build();
-            transactionalOutbox.sendMessage(testEvent4, TestEventConsumer.TOPIC);
-            transactionalOutbox.sendMessageScheduled(testEvent5, TestEventConsumer.TOPIC);
-            transactionalOutbox.sendMessageScheduled(testEvent6, TestEventConsumer.TOPIC);
-            TestTransaction.flagForRollback();
-            TestTransaction.end();
-            deferredMessageTestUtil.waitTillAllMessagesProcessed();
-            outboxMetrics.updateGauges();
+        final TestEvent testEvent1 = TestEventBuilder.create().idempotenceId("idempotenceId1").build();
+        final TestEvent testEvent2 = TestEventBuilder.create().idempotenceId("idempotenceId2").build();
+        final TestEvent testEvent3 = TestEventBuilder.create().idempotenceId("idempotenceId3").build();
+        transactionalOutbox.sendMessage(testEvent1, TestEventConsumer.TOPIC);
+        transactionalOutbox.sendMessageScheduled(testEvent2, TestEventConsumer.TOPIC);
+        transactionalOutbox.sendMessage(testEvent3, TestEventConsumer.TOPIC);
+        TestTransaction.end();
+        TestTransaction.start();
+        final TestEvent testEvent4 = TestEventBuilder.create().idempotenceId("idempotenceId4").build();
+        final TestEvent testEvent5 = TestEventBuilder.create().idempotenceId("idempotenceId5").build();
+        final TestEvent testEvent6 = TestEventBuilder.create().idempotenceId("idempotenceId6").build();
+        transactionalOutbox.sendMessage(testEvent4, TestEventConsumer.TOPIC);
+        transactionalOutbox.sendMessageScheduled(testEvent5, TestEventConsumer.TOPIC);
+        transactionalOutbox.sendMessageScheduled(testEvent6, TestEventConsumer.TOPIC);
+        TestTransaction.flagForRollback();
+        TestTransaction.end();
+        deferredMessageTestUtil.waitTillAllMessagesProcessed();
+        outboxMetrics.updateGauges();
 
-            final String metricsAfter = RestAssured.given().port(localServerPort).get("/actuator/prometheus").getBody().asString();
-            assertReadyToBeSentCount(metricsAfter, 0);
-            assertFailedCountResendEnabled(metricsAfter, 0);
-            assertFailedCountResendDisabled(metricsAfter, 0);
-            assertPostTotalImmediateCommitted(metricsAfter, 2);
-            assertPostTotalImmediateRolledBack(metricsAfter, 1);
-            assertPostTotalImmediateUnknown(metricsAfter, 0);
-            assertPostTotalScheduledCommitted(metricsAfter, 1);
-            assertPostTotalScheduledRolledBack(metricsAfter, 2);
-            assertPostTotalScheduledUnknown(metricsAfter, 0);
-            assertTransmitSecondsCountImmediate(metricsAfter, 2);
-            assertTransmitSecondsCountScheduled(metricsAfter, 1);
+        final String metricsAfter = RestAssured.given().port(localServerPort).get("/actuator/prometheus").getBody().asString();
+        assertReadyToBeSentCount(metricsAfter, 0);
+        assertFailedCountResendEnabled(metricsAfter, 0);
+        assertFailedCountResendDisabled(metricsAfter, 0);
+        assertPostTotalImmediateCommitted(metricsAfter, 2);
+        assertPostTotalImmediateRolledBack(metricsAfter, 1);
+        assertPostTotalImmediateUnknown(metricsAfter, 0);
+        assertPostTotalScheduledCommitted(metricsAfter, 1);
+        assertPostTotalScheduledRolledBack(metricsAfter, 2);
+        assertPostTotalScheduledUnknown(metricsAfter, 0);
+        assertTransmitSecondsCountImmediate(metricsAfter, 2);
+        assertTransmitSecondsCountScheduled(metricsAfter, 1);
     }
 
     private void assertReadyToBeSentCount(String metrics, int count) {

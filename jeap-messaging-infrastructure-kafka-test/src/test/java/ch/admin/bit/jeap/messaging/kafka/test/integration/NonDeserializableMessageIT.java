@@ -19,11 +19,11 @@ import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
 import java.util.Map;
@@ -42,7 +42,7 @@ import static org.mockito.Mockito.verify;
 @DirtiesContext
 class NonDeserializableMessageIT extends KafkaIntegrationTestBase {
     //Register some event listener
-    @MockBean
+    @MockitoBean
     MessageListener<MessageProcessingFailedEvent> messageProcessingFailedListener;
     @Autowired
     ProducerFactory<AvroMessageKey, AvroMessage> producerFactory;

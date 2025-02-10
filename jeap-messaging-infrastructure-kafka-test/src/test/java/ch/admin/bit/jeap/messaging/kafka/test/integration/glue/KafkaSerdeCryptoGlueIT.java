@@ -48,6 +48,7 @@ class KafkaSerdeCryptoGlueIT extends KafkaGlueIntegrationTestBase {
     protected KeyIdCryptoService keyIdCryptoService;
 
     @Autowired
+    @SuppressWarnings("unused")
     protected KeyReferenceCryptoService keyReferenceCryptoService;
 
     @Qualifier("aws")
@@ -56,6 +57,7 @@ class KafkaSerdeCryptoGlueIT extends KafkaGlueIntegrationTestBase {
 
     @Qualifier("aws")
     @Autowired
+    @SuppressWarnings("unused")
     protected KafkaAdmin awsKafkaAdmin;
 
     @Captor
@@ -81,7 +83,7 @@ class KafkaSerdeCryptoGlueIT extends KafkaGlueIntegrationTestBase {
 
         await().until(() -> testConsumer.getCreateDeclarationCommands().size() == 1);
 
-        Mockito.verify(keyIdCryptoService).encrypt(plainMessageCaptor.capture(), eq(testKeyId) );
+        Mockito.verify(keyIdCryptoService).encrypt(plainMessageCaptor.capture(), eq(testKeyId));
         Mockito.verify(keyIdCryptoService).decrypt(encryptedMessageCaptor.capture());
         byte[] plainMessage = plainMessageCaptor.getValue();
         byte[] encryptedMessage = encryptedMessageCaptor.getValue();

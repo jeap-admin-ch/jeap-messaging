@@ -8,27 +8,29 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @EnableAutoConfiguration
 @DataJpaTest
 @ContextConfiguration(classes = {OutboxSchedulingConfig.class, TransactionalOutboxConfigurationProperties.class})
 public class OutboxHouseKeepingSchedulerIT {
 
-    @MockBean
+    @MockitoBean
     OutboxHouseKeeping outboxHouseKeepingMock;
 
-    @MockBean
+    @MockitoBean
     MessageRelay messageRelayMock;
 
-    @MockBean
+    @MockitoBean
     OutboxMetrics outboxMetricsMock;
 
     @SneakyThrows

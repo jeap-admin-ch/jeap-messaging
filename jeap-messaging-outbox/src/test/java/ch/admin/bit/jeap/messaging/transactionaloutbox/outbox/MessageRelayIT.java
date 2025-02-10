@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,16 +40,16 @@ class MessageRelayIT {
     @Autowired
     DeferredMessageRepository deferredMessageRepository;
 
-    @MockBean
+    @MockitoBean
     DeferredMessageSender deferredMessageSenderMock;
 
-    @MockBean
+    @MockitoBean
     ContractsValidator contractsValidator;
 
-    @MockBean
+    @MockitoBean
     OutboxTracing outboxTracing;
 
-    @MockBean
+    @MockitoBean
     KafkaMessagingMetrics kafkaMessagingMetrics;
 
     @Commit

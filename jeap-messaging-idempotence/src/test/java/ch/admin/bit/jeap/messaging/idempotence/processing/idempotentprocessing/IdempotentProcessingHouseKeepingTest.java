@@ -7,17 +7,19 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest( classes = {IdempotentProcessingConfig.class},
-                 properties = {"jeap.messaging.idempotent-processing.idempotent-processing-retention-duration=P14D"})
+@SpringBootTest(classes = {IdempotentProcessingConfig.class},
+        properties = {"jeap.messaging.idempotent-processing.idempotent-processing-retention-duration=P14D"})
 public class IdempotentProcessingHouseKeepingTest {
 
     @Autowired
@@ -26,7 +28,7 @@ public class IdempotentProcessingHouseKeepingTest {
     @Autowired
     private IdempotentProcessingConfig config;
 
-    @MockBean
+    @MockitoBean
     private IdempotentProcessingRepository repository;
 
     @Captor
@@ -41,7 +43,7 @@ public class IdempotentProcessingHouseKeepingTest {
 
         verify(repository, Mockito.times(1)).deleteAllCreatedBefore(zonedDateTimeCaptor.capture());
         verifyNoMoreInteractions(repository);
-        final ZonedDateTime approximateCutOffTimePoint =  beforeHouseKeeping.minus(config.getIdempotentProcessingRetentionDuration());
+        final ZonedDateTime approximateCutOffTimePoint = beforeHouseKeeping.minus(config.getIdempotentProcessingRetentionDuration());
         assertThat(zonedDateTimeCaptor.getValue()).isBetween(approximateCutOffTimePoint, approximateCutOffTimePoint.plus(500, ChronoUnit.MILLIS));
     }
 

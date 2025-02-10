@@ -108,7 +108,7 @@ public class MicrometerOutboxMetrics implements OutboxMetrics {
 
     @Override
     public void countMessagingSend(String bootstrapServers, String topic, String messageType, String messageTypeVersion) {
-        kafkaMessagingMetrics.incrementSend(bootstrapServers, applicationName, topic, messageType, messageTypeVersion);
+        kafkaMessagingMetrics.incrementSend(bootstrapServers, applicationName, topic, messageType, messageTypeVersion, false);
     }
 
     void incrementMessagesPostImmediateDeliveryCommittedCount(int amount) {

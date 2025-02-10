@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 import java.util.Optional;
@@ -26,7 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class JeapGlueSerdeConfigurationMinimalPropertiesIT {
 
-    @MockBean
+    @MockitoBean
+    @SuppressWarnings("unused")
     private AwsCredentialsProvider awsCredentialsProvider;
 
     @Autowired

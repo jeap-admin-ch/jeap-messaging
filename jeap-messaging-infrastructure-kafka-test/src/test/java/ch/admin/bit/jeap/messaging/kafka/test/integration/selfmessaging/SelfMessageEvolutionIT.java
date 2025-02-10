@@ -8,9 +8,9 @@ import ch.admin.bit.jme.test.JmeBackwardSchemaEvolutionTestEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * This test shows the intermediate step of a self-messaging schema evolution, by sending an event with V1 schema
@@ -32,7 +32,7 @@ import org.springframework.test.annotation.DirtiesContext;
 @DirtiesContext
 class SelfMessageEvolutionIT extends KafkaIntegrationTestBase {
 
-    @MockBean
+    @MockitoBean
     private MessageListener<ch.admin.bit.jme.test.v2.JmeBackwardSchemaEvolutionTestEvent> testV2EventProcessors;
 
     @Test

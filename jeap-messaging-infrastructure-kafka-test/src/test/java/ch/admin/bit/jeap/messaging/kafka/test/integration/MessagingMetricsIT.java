@@ -16,9 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext
 class MessagingMetricsIT extends KafkaIntegrationTestBase {
 
-    @MockBean
+    @MockitoBean
     private ContractsValidator contractsValidator; // Disable contract checking by mocking the contracts validator
 
     @LocalServerPort
@@ -40,7 +40,7 @@ class MessagingMetricsIT extends KafkaIntegrationTestBase {
     private KafkaProperties kafkaProperties;
 
     //Register some event listener
-    @MockBean
+    @MockitoBean
     private MessageListener<JmeDeclarationCreatedEvent> jmeEventProcessor;
 
     @Test
@@ -60,8 +60,8 @@ class MessagingMetricsIT extends KafkaIntegrationTestBase {
     private void assertMessagingMetricsCreated(String metrics) {
         String bootstrapServers = kafkaProperties.getBootstrapServers(KafkaProperties.DEFAULT_CLUSTER);
         assertThat(metrics).contains(
-                "jeap_messaging_total{application=\"jme-messaging-subscriber-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeDeclarationCreatedEvent\",topic=\"jme-messaging-declaration-created\",type=\"producer\",version=\"1.4.0\"}");
+                "jeap_messaging_total{application=\"jme-messaging-subscriber-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeDeclarationCreatedEvent\",signed=\"0\",topic=\"jme-messaging-declaration-created\",type=\"producer\",version=\"1.4.0\"}");
         assertThat(metrics).contains(
-                "jeap_messaging_total{application=\"jme-messaging-subscriber-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeDeclarationCreatedEvent\",topic=\"jme-messaging-declaration-created\",type=\"consumer\",version=\"1.4.0\"}");
+                "jeap_messaging_total{application=\"jme-messaging-subscriber-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeDeclarationCreatedEvent\",signed=\"0\",topic=\"jme-messaging-declaration-created\",type=\"consumer\",version=\"1.4.0\"}");
     }
 }

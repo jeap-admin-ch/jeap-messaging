@@ -44,6 +44,7 @@ class KafkaSerdeGlueIT extends KafkaGlueIntegrationTestBase {
 
     @Qualifier("aws")
     @Autowired
+    @SuppressWarnings("unused")
     protected KafkaAdmin awsKafkaAdmin;
 
     static final String CREATE_DECLARATION_COMMAND_AVRO_SCHEMA = JmeCreateDeclarationCommand.SCHEMA$.toString().replace("\"", "\\\"");

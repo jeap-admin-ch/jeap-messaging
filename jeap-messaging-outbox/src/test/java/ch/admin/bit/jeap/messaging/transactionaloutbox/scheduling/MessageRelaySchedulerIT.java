@@ -1,29 +1,31 @@
 package ch.admin.bit.jeap.messaging.transactionaloutbox.scheduling;
 
 import ch.admin.bit.jeap.messaging.transactionaloutbox.config.TransactionalOutboxConfigurationProperties;
-import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.*;
+import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.MessageRelay;
+import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.OutboxHouseKeeping;
+import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.OutboxMetrics;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @EnableAutoConfiguration
 @DataJpaTest
 @ContextConfiguration(classes = {OutboxSchedulingConfig.class, TransactionalOutboxConfigurationProperties.class})
 public class MessageRelaySchedulerIT {
 
-    @MockBean
+    @MockitoBean
     MessageRelay messageRelayMock;
 
-    @MockBean
+    @MockitoBean
     OutboxHouseKeeping outboxHouseKeepingMock;
 
-    @MockBean
+    @MockitoBean
     OutboxMetrics outboxMetricsMock;
 
     @SneakyThrows
