@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>%1$s</groupId>
-    <artifactId>%2$s</artifactId>
-    <version>%4$s</version>
+    <groupId>${groupId}</groupId>
+    <artifactId>${artifactId}</artifactId>
+    <version>${version}</version>
     <packaging>jar</packaging>
 
     <licenses>
@@ -25,10 +25,10 @@
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>
             <artifactId>jeap-messaging-infrastructure-kafka</artifactId>
-            <version>%5$s</version>
+            <version>${jeapMessagingVersion}</version>
             <scope>provided</scope>
         </dependency>
-        %3$s
+        <!-- ${dependency} -->
     </dependencies>
     <build>
         <plugins>
@@ -65,7 +65,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <classifier>%4$s</classifier>
+                            <classifier>${version}</classifier>
                         </configuration>
                     </execution>
                 </executions>

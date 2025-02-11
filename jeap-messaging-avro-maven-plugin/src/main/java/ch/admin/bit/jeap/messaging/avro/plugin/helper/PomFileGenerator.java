@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.messaging.avro.plugin.helper;
 
 import lombok.experimental.UtilityClass;
+import org.apache.commons.text.StringSubstitutor;
 import org.apache.maven.plugin.MojoExecutionException;
 
 import java.io.IOException;
@@ -9,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 @UtilityClass
 public class PomFileGenerator {
@@ -29,8 +32,16 @@ public class PomFileGenerator {
 
     private static String getPomXmlContent(String groupId, String artifactId, String dependency, String version, String jeapMessagingVersion) throws IOException {
         String pomTemplate = loadPomTemplate();
+        // Allow comment-quoting the dependency element to make sure the template is valid xml
+        pomTemplate = pomTemplate.replace("<!-- ${dependency} -->", "${dependency}");
 
-        return String.format(pomTemplate, groupId, artifactId, dependency, version, jeapMessagingVersion);
+        Map<String, String> params = new HashMap<>();
+        params.put("groupId", groupId);
+        params.put("artifactId", artifactId);
+        params.put("dependency", dependency);
+        params.put("version", version);
+        params.put("jeapMessagingVersion", jeapMessagingVersion);
+        return StringSubstitutor.replace(pomTemplate, params);
     }
 
     private static String loadPomTemplate() throws IOException {
@@ -44,12 +55,15 @@ public class PomFileGenerator {
     public static String getCommonDependency(String groupId, String artifactId, String version) {
         String template = """
                                   <dependency>
-                                      <groupId>%1$s</groupId>
-                                      <artifactId>%2$s-messaging-common</artifactId>
-                                      <version>%3$s</version>
+                                      <groupId>${groupId}</groupId>
+                                      <artifactId>${artifactId}-messaging-common</artifactId>
+                                      <version>${version}</version>
                                   </dependency>""";
 
-        return String.format(template, groupId, artifactId, version);
+        Map<String, String> params = new HashMap<>();
+        params.put("groupId", groupId);
+        params.put("artifactId", artifactId);
+        params.put("version", version);
+        return  StringSubstitutor.replace(template, params);
     }
-
 }
