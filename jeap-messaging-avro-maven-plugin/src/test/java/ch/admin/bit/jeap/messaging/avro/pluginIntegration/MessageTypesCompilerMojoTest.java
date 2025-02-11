@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -103,6 +102,45 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
     }
 
     @Test
+    public void execute_generateAllMessageTypes_customPomTemplate() throws Exception {
+        // arrange
+        final File testDirectory = syncWithNewTempDirectory("src/test/resources/sample-message-type-registry-custom-pom");
+        //with the real plugin these 2 definitions are available in the classpath
+        Files.createDirectories(Paths.get(testDirectory.getAbsolutePath(), "target", "classes"));
+        Files.copy(Paths.get(testDirectory.getAbsolutePath(), "MessagingBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "MessagingBaseTypes.avdl"));
+        Files.copy(Paths.get(testDirectory.getAbsolutePath(), "DomainEventBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "DomainEventBaseTypes.avdl"));
+
+        FileUtils.copyDirectory(Paths.get(Paths.get("").toAbsolutePath().getParent().toString(), ".git").toFile(), Paths.get(testDirectory.getAbsolutePath(), ".git").toFile());
+
+        MessageTypesCompilerMojo myMojo = (MessageTypesCompilerMojo) mojoRule.lookupConfiguredMojo(testDirectory, "compile-message-types");
+
+        myMojo.setGenerateAllMessageTypes(true);
+        myMojo.setCurrentBranch("my-branch");
+        myMojo.setCommitId("cafebabe");
+        myMojo.setGitUrl("gitUrl");
+        myMojo.setGroupIdPrefix("ch.bit.admin.test");
+        myMojo.setPomTemplateFile(new File(testDirectory, "messagetype-template.pom.xml"));
+
+        // act
+        myMojo.execute();
+
+        // assert
+        final List<String> filenames = readAllFiles(new File(testDirectory, "target/generated-sources"));
+        Assert.assertFalse(filenames.isEmpty());
+        assertAllCommonEventFilesRemoved(filenames);
+
+        assertEquals(1, filenames.stream().filter(f -> f.endsWith("/pom.xml")).count());
+        assertContentOfCreatedSourceDirectory(testDirectory,
+                "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.1.0/src/main/java/ch/admin/bit/jme/declaration", 4);
+        assertFileContains(testDirectory,
+                "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.1.0/pom.xml",
+                "<version>1.1.0-my-branch-SNAPSHOT</version>");
+        assertFileContains(testDirectory,
+                "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.1.0/pom.xml",
+                "<custom.property>value</custom.property>");
+    }
+
+    @Test
     public void execute_generateAllMessageTypes_correctClassifierForMasterBranch() throws Exception {
         // arrange
         final File testDirectory = syncWithNewTempDirectory("src/test/resources/sample-message-type-registry");
@@ -134,7 +172,7 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
     private void assertSystemCommonFilesRemoved(List<String> filenames) {
         List<String> classes = filenames.stream()
                 .filter(this::isSystemCommonFile)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(4, classes.size());
     }
 
@@ -150,6 +188,7 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
 
     private void assertFileContains(File baseDirectory, String filename, String text) throws IOException {
         String fileContent = Files.readString(new File(baseDirectory, filename).toPath());
-        assertTrue(fileContent.contains(text));
+        assertThat(fileContent)
+                .contains(text);
     }
 }

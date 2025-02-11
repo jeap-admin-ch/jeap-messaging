@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.avro.plugin.helper;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -114,7 +115,7 @@ class PomFileGeneratorTest {
                 </project>""";
 
         Path outputPath = Path.of("", "target", "unit-test-pom");
-        PomFileGenerator.generatePomFile(outputPath, "myGroupId", "myArtifactId", "", "myVersion", "jeapMessagingVersion");
+        PomFileGenerator.generatePomFile(outputPath, null, "myGroupId", "myArtifactId", "", "myVersion", "jeapMessagingVersion");
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();
@@ -231,7 +232,79 @@ class PomFileGeneratorTest {
 
         String dependency = PomFileGenerator.getCommonDependency("myDepGroupId", "myDepArtifactId", "myDepVersion");
         Path outputPath = Path.of("", "target", "unit-test-pom");
-        PomFileGenerator.generatePomFile(outputPath, "myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
+        PomFileGenerator.generatePomFile(outputPath, null, "myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
+        Path filename = Path.of(outputPath.toString(), "pom.xml");
+        assertThat(Files.exists(filename))
+                .isTrue();
+        assertThat(Files.readString(filename))
+                .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    void generatePomFile_fromCustomTemplateFile_withDependency() throws MojoExecutionException, IOException {
+        String expected = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                    <modelVersion>4.0.0</modelVersion>
+                
+                    <groupId>myGroupId</groupId>
+                    <artifactId>myArtifactId</artifactId>
+                    <version>myVersion</version>
+                    <packaging>jar</packaging>
+                
+                    <dependencies>
+                        <dependency>
+                            <groupId>ch.admin.bit.jeap</groupId>
+                            <artifactId>jeap-messaging-infrastructure-kafka</artifactId>
+                            <version>jeapMessagingVersion</version>
+                            <scope>provided</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>myDepGroupId</groupId>
+                            <artifactId>myDepArtifactId-messaging-common</artifactId>
+                            <version>myDepVersion</version>
+                        </dependency>
+                    </dependencies>
+                
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-jar-plugin</artifactId>
+                                <configuration>
+                                    <archive>
+                                        <manifest>
+                                            <addDefaultEntries>true</addDefaultEntries>
+                                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                                        </manifest>
+                                        <manifestEntries>
+                                            <Bundle-License>https://www.apache.org/licenses/LICENSE-2.0</Bundle-License>
+                                        </manifestEntries>
+                                    </archive>
+                                </configuration>
+                                <executions>
+                                    <execution>
+                                        <id>additional-artifact-with-classifier</id>
+                                        <goals>
+                                            <goal>jar</goal>
+                                        </goals>
+                                        <configuration>
+                                            <classifier>myVersion</classifier>
+                                        </configuration>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """;
+
+        String dependency = PomFileGenerator.getCommonDependency("myDepGroupId", "myDepArtifactId", "myDepVersion");
+        Path outputPath = Path.of("", "target", "unit-test-pom");
+        File pomTemplateFile = new File("src/test/resources/pom-template/custom.pom.xml");
+        PomFileGenerator.generatePomFile(outputPath, pomTemplateFile, "myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();

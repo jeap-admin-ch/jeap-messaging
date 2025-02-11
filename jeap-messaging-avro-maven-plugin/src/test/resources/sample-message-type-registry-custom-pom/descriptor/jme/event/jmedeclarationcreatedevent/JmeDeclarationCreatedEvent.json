@@ -1,0 +1,18 @@
+{
+  "eventName": "JmeDeclarationCreatedEvent",
+  "publishingSystem": "JME",
+  "description": "Customs declaration created event",
+  "documentationUrl": "https://testhost",
+  "topic": "jme-messaging-declaration-created",
+  "topics": [
+    "additional-topic"
+  ],
+  "scope": "internal",
+  "versions": [
+    {
+      "version": "1.1.0",
+      "valueSchema": "JmeDeclarationCreatedEvent_v1.1.0.avdl",
+      "compatibilityMode": "BACKWARD"
+    }
+  ]
+}

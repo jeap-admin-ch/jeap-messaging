@@ -86,6 +86,9 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
     @Parameter(name = "trunkBranchName", defaultValue = "master", required = true)
     @Setter
     private String trunkBranchName;
+    @Parameter(name = "pomTemplateFile", required = false)
+    @Setter
+    private File pomTemplateFile;
     @Parameter(name = "skip", defaultValue = "false", required = true)
     @Setter
     private boolean skip;
@@ -244,7 +247,7 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
                 }
 
                 final Path outputPath = Paths.get(avroCompiler.getOutputDirectory().getAbsolutePath(), entry.getKey(), MessageTypeRegistryConstants.COMMON_DIR_NAME);
-                PomFileGenerator.generatePomFile(outputPath, getGroupIdPrefixWithTrailingDot() + entry.getKey().toLowerCase(Locale.ROOT), entry.getKey() + "-messaging-common", "", getCommonLibVersionAsProjectVersion(), this.jeapMessagingVersion);
+                PomFileGenerator.generatePomFile(outputPath, pomTemplateFile, getGroupIdPrefixWithTrailingDot() + entry.getKey().toLowerCase(Locale.ROOT), entry.getKey() + "-messaging-common", "", getCommonLibVersionAsProjectVersion(), this.jeapMessagingVersion);
 
                 getLog().info("+++ Compiled " + entry.getValue().size() + " common schemas for system " + entry.getKey());
             }
@@ -340,7 +343,7 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
             final TypeReference typeReference = retrieveTypeReference(schema);
             final Path outputPath = Paths.get(avroCompiler.getOutputDirectory().getAbsolutePath(), typeReference.getDefiningSystem().toLowerCase(Locale.ROOT), typeReference.getName(), typeReference.getVersion());
             String groupId = getGroupIdPrefixWithTrailingDot() + typeReference.getDefiningSystem().toLowerCase(Locale.ROOT);
-            PomFileGenerator.generatePomFile(outputPath, groupId,
+            PomFileGenerator.generatePomFile(outputPath, pomTemplateFile, groupId,
                     camelCase2Snake(typeReference.getName()),
                     getDependencyDefinition(typeReference),
                     getArtifactVersion(typeReference.getVersion()),

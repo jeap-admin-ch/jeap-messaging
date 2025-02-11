@@ -4,6 +4,8 @@ import lombok.experimental.UtilityClass;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.maven.plugin.MojoExecutionException;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -18,9 +20,10 @@ public class PomFileGenerator {
 
     public static final String POM_XML_FILE_NAME = "pom.xml";
 
-    public static void generatePomFile(Path outputPath, String groupId, String artefactId, String dependency, String version, String jeapMessagingVersion) throws MojoExecutionException {
+    public static void generatePomFile(Path outputPath, File pomTemplateFile, String groupId, String artefactId,
+                                       String dependency, String version, String jeapMessagingVersion) throws MojoExecutionException {
         try {
-            String pomContent = getPomXmlContent(groupId, artefactId, dependency, version, jeapMessagingVersion);
+            String pomContent = getPomXmlContent(pomTemplateFile, groupId, artefactId, dependency, version, jeapMessagingVersion);
             Path path = Paths.get(outputPath.toString(), POM_XML_FILE_NAME);
             Files.createDirectories(outputPath);
             Files.write(path, pomContent.getBytes(StandardCharsets.UTF_8));
@@ -30,8 +33,8 @@ public class PomFileGenerator {
 
     }
 
-    private static String getPomXmlContent(String groupId, String artifactId, String dependency, String version, String jeapMessagingVersion) throws IOException {
-        String pomTemplate = loadPomTemplate();
+    private static String getPomXmlContent(File pomTemplateFile, String groupId, String artifactId, String dependency, String version, String jeapMessagingVersion) throws IOException {
+        String pomTemplate = loadPomTemplate(pomTemplateFile);
         // Allow comment-quoting the dependency element to make sure the template is valid xml
         pomTemplate = pomTemplate.replace("<!-- ${dependency} -->", "${dependency}");
 
@@ -44,12 +47,23 @@ public class PomFileGenerator {
         return StringSubstitutor.replace(pomTemplate, params);
     }
 
-    private static String loadPomTemplate() throws IOException {
-        try (InputStream resourceAsStream = PomFileGenerator.class.getClassLoader()
-                .getResourceAsStream("pom.template.messagetype.xml")) {
+    private static String loadPomTemplate(File pomTemplateFile) throws IOException {
+        try (InputStream resourceAsStream = openPomTemplateStream(pomTemplateFile)) {
             byte[] content = resourceAsStream.readAllBytes();
             return new String(content);
         }
+    }
+
+    private static InputStream openPomTemplateStream(File pomTemplateFile) throws IOException {
+        if (pomTemplateFile != null) {
+            if (!pomTemplateFile.isFile()) {
+                throw new IllegalArgumentException("Messagetype pom.xml template file does not exist at %s"
+                        .formatted(pomTemplateFile.getAbsolutePath()));
+            }
+            return new FileInputStream(pomTemplateFile);
+        }
+        return PomFileGenerator.class.getClassLoader()
+                .getResourceAsStream("pom.template.messagetype.xml");
     }
 
     public static String getCommonDependency(String groupId, String artifactId, String version) {
