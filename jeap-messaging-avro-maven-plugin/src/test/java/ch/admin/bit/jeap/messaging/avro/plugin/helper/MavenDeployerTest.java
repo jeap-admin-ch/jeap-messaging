@@ -42,7 +42,7 @@ class MavenDeployerTest {
 
     @BeforeEach
     void setUp() throws MavenInvocationException {
-        mavenDeployer = new MavenDeployer(new SystemStreamLog(), GOAL, true, MAVEN_EXECUTABLE, SETTINGS_FILE, "-P my-profile") {
+        mavenDeployer = new MavenDeployer(new SystemStreamLog(), GOAL, true, MAVEN_EXECUTABLE, SETTINGS_FILE, "my-profile") {
             @Override
             Invoker createInvoker() {
                 return invoker;
@@ -63,7 +63,7 @@ class MavenDeployerTest {
         InvocationRequest invocationRequest = invocationRequestArgument.getValue();
         assertEquals(new File(MAVEN_EXECUTABLE), invocationRequest.getMavenExecutable());
         assertEquals(new File(SETTINGS_FILE), invocationRequest.getGlobalSettingsFile());
-        assertEquals(List.of("-P", "my-profile"), invocationRequest.getArgs());
+        assertEquals(List.of("my-profile"), invocationRequest.getProfiles());
         assertEquals(List.of(GOAL), invocationRequest.getGoals());
     }
 

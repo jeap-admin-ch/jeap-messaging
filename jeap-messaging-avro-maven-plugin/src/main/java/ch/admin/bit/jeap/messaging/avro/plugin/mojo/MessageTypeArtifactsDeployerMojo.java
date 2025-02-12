@@ -54,9 +54,9 @@ public class MessageTypeArtifactsDeployerMojo extends AbstractMojo {
     @Setter
     private String trunkBranchName;
 
-    @Parameter(name = "trunkMavenArgs")
+    @Parameter(name = "trunkProfile")
     @Setter
-    private String trunkMavenArgs;
+    private String trunkProfile;
 
     /**
      * Whether to deploy message type artifacts to the repository with parallel threads or not. Mostly useful when
@@ -71,8 +71,8 @@ public class MessageTypeArtifactsDeployerMojo extends AbstractMojo {
         if (!sourcesDirectory.exists()) {
             return;
         }
-        String mavenArgs = isBuildOnTrunk() ? trunkMavenArgs : null;
-        MavenDeployer deployer = new MavenDeployer(getLog(), mavenDeployGoal, parallel, mavenExecutable, mavenGlobalSettingsFile, mavenArgs);
+        String profile = isBuildOnTrunk() ? trunkProfile : null;
+        MavenDeployer deployer = new MavenDeployer(getLog(), mavenDeployGoal, parallel, mavenExecutable, mavenGlobalSettingsFile, profile);
         deployCommonLibraries(deployer);
         deployLibraries(deployer);
     }

@@ -10,7 +10,9 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,15 +25,15 @@ public class MavenDeployer {
     private final boolean parallel;
     private final String mavenExecutable;
     private final String mavenGlobalSettingsFile;
-    private final String mavenArgs;
+    private final String profile;
 
-    public MavenDeployer(Log log, String mavenDeployGoal, boolean parallel, String mavenExecutable, String mavenGlobalSettingsFile, String mavenArgs) {
+    public MavenDeployer(Log log, String mavenDeployGoal, boolean parallel, String mavenExecutable, String mavenGlobalSettingsFile, String profile) {
         this.log = log;
         this.mavenDeployGoal = mavenDeployGoal;
         this.parallel = parallel;
         this.mavenExecutable = mavenExecutable;
         this.mavenGlobalSettingsFile = mavenGlobalSettingsFile;
-        this.mavenArgs = mavenArgs;
+        this.profile = profile;
     }
 
     public List<InvocationResult> deployProjects(List<Path> poms) {
@@ -72,6 +74,9 @@ public class MavenDeployer {
     }
 
     private Future<InvocationResult> runMavenInvoker(ExecutorService executorService, InvocationRequest request) {
+        log.info("Executing maven request for pom %s: mnv=%s args=%s profiles=%s goals=%s props=%s".formatted(
+                request.getPomFile(), getMavenExecutable(), request.getArgs(),
+                request.getProfiles() == null ? "" : request.getProfiles(), request.getGoals(), request.getProperties()));
         return executorService.submit(() -> executeRequest(request));
     }
 
@@ -99,7 +104,9 @@ public class MavenDeployer {
         request.setPomFile(pomPath.toFile());
         request.setMavenExecutable(getMavenExecutable());
         request.setGlobalSettingsFile(getMavenGlobalSettingsFile());
-        request.addArgs(mavenArgs());
+        if (profile != null) {
+            request.setProfiles(List.of(profile));
+        }
         request.setGoals(List.of(mavenDeployGoal));
         Properties properties = new Properties();
         // No tests in generated message types, skip
@@ -109,14 +116,6 @@ public class MavenDeployer {
         properties.setProperty("jansi.force", "true");
         request.setProperties(properties);
         return request;
-    }
-
-    private Collection<String> mavenArgs() {
-        if (mavenArgs == null) {
-            return List.of();
-        }
-        String[] args = mavenArgs.split("\\s");
-        return Arrays.asList(args);
     }
 
     private File getMavenExecutable() {
