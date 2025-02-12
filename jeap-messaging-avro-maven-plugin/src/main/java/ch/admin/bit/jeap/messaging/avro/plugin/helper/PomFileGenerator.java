@@ -42,7 +42,7 @@ public class PomFileGenerator {
 
     private String getPomXmlContent(String groupId, String artifactId, String dependency, String version, String jeapMessagingVersion) throws IOException {
         String pomTemplate = loadPomTemplate();
-        // Allow comment-quoting the dependency element to make sure the template is valid xml
+        // Allow xml-commenting the dependency replacement variable as '<!-- ${dependency} -->' to make sure the template file represents a valid xml document
         pomTemplate = pomTemplate.replace("<!-- ${dependency} -->", "${dependency}");
 
         Map<String, String> params = new HashMap<>();
