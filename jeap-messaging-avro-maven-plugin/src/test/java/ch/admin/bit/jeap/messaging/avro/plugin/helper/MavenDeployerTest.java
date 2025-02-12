@@ -6,6 +6,8 @@ import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +32,8 @@ class MavenDeployerTest {
     private static final String GOAL = "deploy";
     // Note: This would be a settings.xml file. As the file must exist, pom.xml is used for the test.
     private static final String SETTINGS_FILE = "pom.xml";
+    private static final String HTTP_FAKE_PROXY_PROPERTY = "http.fake.proxy.property";
+    private static final String HTTP_FAKE_NON_PROXY_PROPERTY = "http.fake.nonProxy.property";
 
     @Mock
     private Invoker invoker;
@@ -50,6 +54,18 @@ class MavenDeployerTest {
         };
     }
 
+    @BeforeAll
+    static void prepareFakeProxyProperties() throws MojoExecutionException {
+        System.setProperty(HTTP_FAKE_PROXY_PROPERTY, "foo-proxy");
+        System.setProperty(HTTP_FAKE_NON_PROXY_PROPERTY, "non-proxy");
+    }
+
+    @AfterAll
+    static void resetFakeProxyProperties() {
+        System.clearProperty(HTTP_FAKE_PROXY_PROPERTY);
+        System.clearProperty(HTTP_FAKE_NON_PROXY_PROPERTY);
+    }
+
     @Test
     void deployProjects() throws Exception {
         List<Path> twoPoms = List.of(Paths.get("proj-1"), Paths.get("proj-2"));
@@ -65,6 +81,9 @@ class MavenDeployerTest {
         assertEquals(new File(SETTINGS_FILE), invocationRequest.getGlobalSettingsFile());
         assertEquals(List.of("my-profile"), invocationRequest.getProfiles());
         assertEquals(List.of(GOAL), invocationRequest.getGoals());
+        assertEquals("foo-proxy", invocationRequest.getProperties().get(HTTP_FAKE_PROXY_PROPERTY));
+        assertEquals("non-proxy", invocationRequest.getProperties().get(HTTP_FAKE_NON_PROXY_PROPERTY));
+        assertEquals("true", invocationRequest.getProperties().get("maven.test.skip"));
     }
 
     @Test

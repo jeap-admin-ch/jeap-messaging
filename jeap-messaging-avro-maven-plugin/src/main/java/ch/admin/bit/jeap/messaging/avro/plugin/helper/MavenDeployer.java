@@ -12,11 +12,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public class MavenDeployer {
 
@@ -114,6 +116,11 @@ public class MavenDeployer {
         // Colored output
         properties.setProperty("style.color", "always");
         properties.setProperty("jansi.force", "true");
+        // Pass proxy properties to invoked maven instance
+        Map<String, String> proxyProperties = System.getProperties().entrySet().stream()
+                .filter(e -> e.getKey().toString().matches("^http.*[pP]roxy.*$"))
+                .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
+        properties.putAll(proxyProperties);
         request.setProperties(properties);
         return request;
     }
