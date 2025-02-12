@@ -33,9 +33,10 @@ class PomFileGeneratorTest {
                     </licenses>
                 
                     <properties>
-                        <java.version>17</java.version>
+                        <java.version>21</java.version>
                         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
                         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+                        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
                         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                     </properties>
                     <dependencies>
@@ -62,6 +63,7 @@ class PomFileGeneratorTest {
                             <plugin>
                                 <groupId>org.apache.maven.plugins</groupId>
                                 <artifactId>maven-jar-plugin</artifactId>
+                                <version>${maven-jar-plugin.version}</version>
                                 <configuration>
                                     <archive>
                                         <manifest>
@@ -145,9 +147,10 @@ class PomFileGeneratorTest {
                     </licenses>
                 
                     <properties>
-                        <java.version>17</java.version>
+                        <java.version>21</java.version>
                         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
                         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+                        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
                         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                     </properties>
                     <dependencies>
@@ -179,6 +182,7 @@ class PomFileGeneratorTest {
                             <plugin>
                                 <groupId>org.apache.maven.plugins</groupId>
                                 <artifactId>maven-jar-plugin</artifactId>
+                                <version>${maven-jar-plugin.version}</version>
                                 <configuration>
                                     <archive>
                                         <manifest>

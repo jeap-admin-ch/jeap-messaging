@@ -74,13 +74,13 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
     @Parameter(name = "jeapMessagingVersion", defaultValue = "${jeap-messaging.version}", required = true)
     @SuppressWarnings("unused")
     private String jeapMessagingVersion;
-    @Parameter(name = "currentBranch", defaultValue = "${git.branch}", required = true, readonly = true)
+    @Parameter(name = "currentBranch", defaultValue = "${git.branch}", required = true)
     @Setter
     private String currentBranch;
-    @Parameter(name = "commitId", defaultValue = "${git.commit.id}", required = true, readonly = true)
+    @Parameter(name = "commitId", defaultValue = "${git.commit.id}", required = true)
     @Setter
     private String commitId;
-    @Parameter(name = "gitUrl", required = true, readonly = true)
+    @Parameter(name = "gitUrl", required = true)
     @Setter
     private String gitUrl;
     @Parameter(name = "trunkBranchName", defaultValue = "master", required = true)

@@ -9,7 +9,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,10 +29,6 @@ public class MessageTypeArtifactsDeployerMojo extends AbstractMojo {
     @SuppressWarnings("unused")
     private File sourcesDirectory;
 
-    @Parameter(defaultValue = "${project}", required = true, readonly = true)
-    @SuppressWarnings("unused")
-    private MavenProject project;
-
     @Parameter(name = "mavenDeployGoal", defaultValue = "install")
     @SuppressWarnings("unused")
     private String mavenDeployGoal;
@@ -46,7 +41,7 @@ public class MessageTypeArtifactsDeployerMojo extends AbstractMojo {
     @SuppressWarnings("unused")
     private String mavenGlobalSettingsFile;
 
-    @Parameter(name = "currentBranch", defaultValue = "${git.branch}", required = true, readonly = true)
+    @Parameter(name = "currentBranch", defaultValue = "${git.branch}", required = true)
     @Setter
     private String currentBranch;
 
