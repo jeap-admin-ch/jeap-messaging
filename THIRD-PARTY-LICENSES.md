@@ -27,14 +27,14 @@ Apache License Version 2.0
  * jeap-messaging-infrastructure-kafka-test - [ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka-test](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-infrastructure-kafka-test)
  * jeap-messaging-model - [ch.admin.bit.jeap:jeap-messaging-model](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-model)
  * jeap-messaging-outbox - [ch.admin.bit.jeap:jeap-messaging-outbox](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-outbox)
- * jeap-initializer-simple-test-event - ch.admin.bit.jeap.messaging.test.messagetype.jeap:jeap-initializer-simple-test-event
- * jme-backward-schema-evolution-test-event - ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event
- * jme-backward-schema-evolution-test-event - ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event
- * jme-create-declaration-command - ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-create-declaration-command
- * jme-declaration-created-event - ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-declaration-created-event
- * jme-messaging-common - ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common
- * jme-simple-test-event - ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-event
- * jme-simple-test-v2-event - ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-v2-event
+ * jeap-initializer-simple-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jeap:jeap-initializer-simple-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-backward-schema-evolution-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-backward-schema-evolution-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-create-declaration-command - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-create-declaration-command](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-declaration-created-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-declaration-created-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-messaging-common - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-simple-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * jme-simple-test-v2-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-v2-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * AWS SDK for Java - Core - [com.amazonaws:aws-java-sdk-core](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK for AWS STS - [com.amazonaws:aws-java-sdk-sts](https://aws.amazon.com/sdkforjava)
  * JMES Path Query library - [com.amazonaws:jmespath-java](https://aws.amazon.com/sdkforjava)
