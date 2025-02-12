@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.messaging.avro.plugin.helper;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -115,7 +116,8 @@ class PomFileGeneratorTest {
                 </project>""";
 
         Path outputPath = Path.of("", "target", "unit-test-pom");
-        PomFileGenerator.generatePomFile(outputPath, null, "myGroupId", "myArtifactId", "", "myVersion", "jeapMessagingVersion");
+        PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, null, new SystemStreamLog());
+        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", "", "myVersion", "jeapMessagingVersion");
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();
@@ -232,7 +234,8 @@ class PomFileGeneratorTest {
 
         String dependency = PomFileGenerator.getCommonDependency("myDepGroupId", "myDepArtifactId", "myDepVersion");
         Path outputPath = Path.of("", "target", "unit-test-pom");
-        PomFileGenerator.generatePomFile(outputPath, null, "myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
+        PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, null, new SystemStreamLog());
+        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();
@@ -304,7 +307,8 @@ class PomFileGeneratorTest {
         String dependency = PomFileGenerator.getCommonDependency("myDepGroupId", "myDepArtifactId", "myDepVersion");
         Path outputPath = Path.of("", "target", "unit-test-pom");
         File pomTemplateFile = new File("src/test/resources/pom-template/custom.pom.xml");
-        PomFileGenerator.generatePomFile(outputPath, pomTemplateFile, "myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
+        PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, pomTemplateFile, new SystemStreamLog());
+        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();

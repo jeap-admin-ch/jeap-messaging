@@ -86,7 +86,7 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
     @Parameter(name = "trunkBranchName", defaultValue = "master", required = true)
     @Setter
     private String trunkBranchName;
-    @Parameter(name = "pomTemplateFile", required = false)
+    @Parameter(name = "pomTemplateFile")
     @Setter
     private File pomTemplateFile;
     @Parameter(name = "skip", defaultValue = "false", required = true)
@@ -229,7 +229,7 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
     }
 
     private void compileCommonSchemas(AvroCompiler avroCompiler, Set<String> changedSystemsToCompile) throws MojoExecutionException {
-        getLog().info("Compile common schemas for " + commonDefinitionsPerSystem.entrySet().size() + " systems");
+        getLog().info("Compile common schemas for " + commonDefinitionsPerSystem.size() + " systems");
         for (Map.Entry<String, List<Path>> entry : commonDefinitionsPerSystem.entrySet()) {
 
             if (!changedSystemsToCompile.isEmpty() && !changedSystemsToCompile.contains(entry.getKey())) {
@@ -247,7 +247,8 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
                 }
 
                 final Path outputPath = Paths.get(avroCompiler.getOutputDirectory().getAbsolutePath(), entry.getKey(), MessageTypeRegistryConstants.COMMON_DIR_NAME);
-                PomFileGenerator.generatePomFile(outputPath, pomTemplateFile, getGroupIdPrefixWithTrailingDot() + entry.getKey().toLowerCase(Locale.ROOT), entry.getKey() + "-messaging-common", "", getCommonLibVersionAsProjectVersion(), this.jeapMessagingVersion);
+                PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, pomTemplateFile, getLog());
+                pomFileGenerator.generatePomFile(getGroupIdPrefixWithTrailingDot() + entry.getKey().toLowerCase(Locale.ROOT), entry.getKey() + "-messaging-common", "", getCommonLibVersionAsProjectVersion(), this.jeapMessagingVersion);
 
                 getLog().info("+++ Compiled " + entry.getValue().size() + " common schemas for system " + entry.getKey());
             }
@@ -343,7 +344,8 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
             final TypeReference typeReference = retrieveTypeReference(schema);
             final Path outputPath = Paths.get(avroCompiler.getOutputDirectory().getAbsolutePath(), typeReference.getDefiningSystem().toLowerCase(Locale.ROOT), typeReference.getName(), typeReference.getVersion());
             String groupId = getGroupIdPrefixWithTrailingDot() + typeReference.getDefiningSystem().toLowerCase(Locale.ROOT);
-            PomFileGenerator.generatePomFile(outputPath, pomTemplateFile, groupId,
+            PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, pomTemplateFile, getLog());
+            pomFileGenerator.generatePomFile( groupId,
                     camelCase2Snake(typeReference.getName()),
                     getDependencyDefinition(typeReference),
                     getArtifactVersion(typeReference.getVersion()),
