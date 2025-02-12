@@ -15,37 +15,37 @@
 
     <dependencies>
         <dependency>
-            <groupId>ch.admin.jeap.messaging.test.messagetype.jme</groupId>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jme</groupId>
             <artifactId>jme-declaration-created-event</artifactId>
             <version>1.4.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>ch.admin.jeap.messaging.test.messagetype.jme</groupId>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jme</groupId>
             <artifactId>jme-create-declaration-command</artifactId>
             <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>ch.admin.jeap.messaging.test.messagetype.jme</groupId>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jme</groupId>
             <artifactId>jme-simple-test-event</artifactId>
             <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>ch.admin.jeap.messaging.test.messagetype.jme</groupId>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jme</groupId>
             <artifactId>jme-simple-test-v2-event</artifactId>
             <version>2.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>ch.admin.jeap.messaging.test.messagetype.jme</groupId>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jme</groupId>
             <artifactId>jme-backward-schema-evolution-test-event</artifactId>
             <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>ch.admin.jeap.messaging.test.messagetype.jme</groupId>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jme</groupId>
             <artifactId>jme-backward-schema-evolution-test-event</artifactId>
             <scope>test</scope>
             <version>4.0.0</version>

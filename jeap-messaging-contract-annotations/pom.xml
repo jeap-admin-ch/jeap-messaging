@@ -28,7 +28,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>ch.admin.jeap.messaging.test.messagetype.jeap</groupId>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jeap</groupId>
             <artifactId>jeap-initializer-simple-test-event</artifactId>
             <version>1.0.0</version>
             <scope>test</scope>
