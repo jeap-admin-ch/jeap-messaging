@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.avro.plugin.mojo;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.helper.MavenDeployer;
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.MessageTypeRegistryConstants;
+import lombok.Setter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -45,6 +46,18 @@ public class MessageTypeArtifactsDeployerMojo extends AbstractMojo {
     @SuppressWarnings("unused")
     private String mavenGlobalSettingsFile;
 
+    @Parameter(name = "currentBranch", defaultValue = "${git.branch}", required = true, readonly = true)
+    @Setter
+    private String currentBranch;
+
+    @Parameter(name = "trunkBranchName", defaultValue = "master", required = true)
+    @Setter
+    private String trunkBranchName;
+
+    @Parameter(name = "trunkMavenArgs")
+    @Setter
+    private String trunkMavenArgs;
+
     /**
      * Whether to deploy message type artifacts to the repository with parallel threads or not. Mostly useful when
      * deploying a full message type repository with a lot of message types initially.
@@ -58,7 +71,8 @@ public class MessageTypeArtifactsDeployerMojo extends AbstractMojo {
         if (!sourcesDirectory.exists()) {
             return;
         }
-        MavenDeployer deployer = new MavenDeployer(getLog(), mavenDeployGoal, parallel, mavenExecutable, mavenGlobalSettingsFile);
+        String mavenArgs = isBuildOnTrunk() ? trunkMavenArgs : null;
+        MavenDeployer deployer = new MavenDeployer(getLog(), mavenDeployGoal, parallel, mavenExecutable, mavenGlobalSettingsFile, mavenArgs);
         deployCommonLibraries(deployer);
         deployLibraries(deployer);
     }
@@ -87,5 +101,9 @@ public class MessageTypeArtifactsDeployerMojo extends AbstractMojo {
 
     private boolean isCommonLibrary(Path path) {
         return path.toString().contains(MessageTypeRegistryConstants.COMMON_DIR_NAME);
+    }
+
+    private boolean isBuildOnTrunk() {
+        return trunkBranchName.equals(currentBranch);
     }
 }

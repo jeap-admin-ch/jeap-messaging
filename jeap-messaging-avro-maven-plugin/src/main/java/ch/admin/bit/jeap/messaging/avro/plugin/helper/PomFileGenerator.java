@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,7 +34,7 @@ public class PomFileGenerator {
             String pomContent = getPomXmlContent(groupId, artefactId, dependency, version, jeapMessagingVersion);
             Path path = Paths.get(outputPath.toString(), POM_XML_FILE_NAME);
             Files.createDirectories(outputPath);
-            Files.write(path, pomContent.getBytes(StandardCharsets.UTF_8));
+            Files.writeString(path, pomContent);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot write pom.xml to directory: " + e.getMessage(), e);
         }

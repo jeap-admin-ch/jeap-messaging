@@ -10,10 +10,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,13 +23,15 @@ public class MavenDeployer {
     private final boolean parallel;
     private final String mavenExecutable;
     private final String mavenGlobalSettingsFile;
+    private final String mavenArgs;
 
-    public MavenDeployer(Log log, String mavenDeployGoal, boolean parallel, String mavenExecutable, String mavenGlobalSettingsFile) {
+    public MavenDeployer(Log log, String mavenDeployGoal, boolean parallel, String mavenExecutable, String mavenGlobalSettingsFile, String mavenArgs) {
         this.log = log;
         this.mavenDeployGoal = mavenDeployGoal;
         this.parallel = parallel;
         this.mavenExecutable = mavenExecutable;
         this.mavenGlobalSettingsFile = mavenGlobalSettingsFile;
+        this.mavenArgs = mavenArgs;
     }
 
     public List<InvocationResult> deployProjects(List<Path> poms) {
@@ -44,7 +43,7 @@ public class MavenDeployer {
 
         // Run one build to cache the dependencies in the local repository
         // The local repository does not support concurrency (all message types have the same set of dependencies)
-        Path path = poms.get(0);
+        Path path = poms.getFirst();
         poms = poms.subList(1, poms.size());
         InvocationRequest invocationRequest = toInvocationRequest(path);
         List<InvocationResult> results = new ArrayList<>();
@@ -100,7 +99,8 @@ public class MavenDeployer {
         request.setPomFile(pomPath.toFile());
         request.setMavenExecutable(getMavenExecutable());
         request.setGlobalSettingsFile(getMavenGlobalSettingsFile());
-        request.setGoals(Collections.singletonList(this.mavenDeployGoal));
+        request.addArgs(mavenArgs());
+        request.setGoals(List.of(mavenDeployGoal));
         Properties properties = new Properties();
         // No tests in generated message types, skip
         properties.setProperty("maven.test.skip", "true");
@@ -109,6 +109,14 @@ public class MavenDeployer {
         properties.setProperty("jansi.force", "true");
         request.setProperties(properties);
         return request;
+    }
+
+    private Collection<String> mavenArgs() {
+        if (mavenArgs == null) {
+            return List.of();
+        }
+        String[] args = mavenArgs.split("\\s");
+        return Arrays.asList(args);
     }
 
     private File getMavenExecutable() {
