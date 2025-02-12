@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Add support for custom messagetype pom templates in the jeap-messaging-avro-maven-plugin
+- Add configuration option for maven profile when publishing messagetypes on the trunk 
 
 ## [8.16.0] - 2025-02-10
 
