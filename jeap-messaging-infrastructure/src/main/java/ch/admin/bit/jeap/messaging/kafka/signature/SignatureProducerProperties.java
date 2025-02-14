@@ -19,9 +19,10 @@ public class SignatureProducerProperties {
     public SignatureProducerProperties(@Nullable String signatureKey, @Nullable String signatureCertificate) {
         this.signatureKey = signatureKey == null ? null : signatureKey.getBytes(StandardCharsets.UTF_8);
         this.signatureCertificate = signatureCertificate == null ? null : signatureCertificate.getBytes(StandardCharsets.UTF_8);
+        log.info("Signing enabled: {}", isSigningEnabled());
     }
 
-    public boolean isSigningEnabled() {
+    public final boolean isSigningEnabled() {
         return signatureKey != null && signatureCertificate != null;
     }
 

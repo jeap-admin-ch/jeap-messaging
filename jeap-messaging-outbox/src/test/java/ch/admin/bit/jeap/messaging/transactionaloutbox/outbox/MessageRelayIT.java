@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.transactionaloutbox.outbox;
 
 import ch.admin.bit.jeap.messaging.kafka.contract.ContractsValidator;
 import ch.admin.bit.jeap.messaging.kafka.metrics.KafkaMessagingMetrics;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureProducerProperties;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.testsupport.DeferredMessageTestUtil;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.testsupport.OutboxMockKafkaTestConfig;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.testsupport.StringMessage;
@@ -51,6 +52,10 @@ class MessageRelayIT {
 
     @MockitoBean
     KafkaMessagingMetrics kafkaMessagingMetrics;
+
+    @MockitoBean
+    @SuppressWarnings("unused")
+    SignatureProducerProperties signatureProducerProperties;
 
     @Commit
     @Transactional

@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.messaging.transactionaloutbox.metrics;
 
 import ch.admin.bit.jeap.messaging.kafka.metrics.KafkaMessagingMetrics;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureProducerProperties;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.DeferredMessageRepository;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.FailedMessageRepository;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.OutboxMetrics;
@@ -21,6 +22,7 @@ public class MicrometerOutboxMetrics implements OutboxMetrics {
     private final DeferredMessageRepository deferredMessageRepository;
     private final FailedMessageRepository failedMessageRepository;
     private final KafkaMessagingMetrics kafkaMessagingMetrics;
+    private final SignatureProducerProperties signatureProducerProperties;
     private final String applicationName;
 
     private int messagesReadyToBeSentCount = -1;
@@ -108,7 +110,7 @@ public class MicrometerOutboxMetrics implements OutboxMetrics {
 
     @Override
     public void countMessagingSend(String bootstrapServers, String topic, String messageType, String messageTypeVersion) {
-        kafkaMessagingMetrics.incrementSend(bootstrapServers, applicationName, topic, messageType, messageTypeVersion, false);
+        kafkaMessagingMetrics.incrementSend(bootstrapServers, applicationName, topic, messageType, messageTypeVersion, signatureProducerProperties.isSigningEnabled());
     }
 
     void incrementMessagesPostImmediateDeliveryCommittedCount(int amount) {

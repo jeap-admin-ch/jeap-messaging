@@ -25,16 +25,23 @@ public class TestEventConsumer {
     @Autowired(required = false)
     private final List<TestEventListener> testEventListeners;
 
+    @Autowired(required = false)
+    private final List<TestEventSignatureListener> testEventSignatureListeners;
+
     @KafkaListener(topics = TOPIC)
     public void consume(@Payload TestEvent event,
                         @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) TestMessageKey key,
                         @Header(name = "jeapClusterName", required = false) String clusterName,
+                        @Header(name = "jeap-sign", required = false) String jeapSignature,
+                        @Header(name = "jeap-sign-key", required = false) String jeapSignatureKey,
+                        @Header(name = "jeap-cert", required = false) String jeapCertificate,
                         Acknowledgment ack) {
         log.debug("Consuming event {} sent with key {} from cluster {} (msg: {}).",
                 event.getType().getName(), key != null ? key.getSomeProperty() : "n/a",
                 clusterName,
                 event.getOptionalPayload().map(TestPayload::getMessage).orElse(""));
         testEventListeners.forEach(listener -> listener.receive(event, key));
+        testEventSignatureListeners.forEach(listener -> listener.receive(event, key, jeapSignature, jeapSignatureKey, jeapCertificate));
         ack.acknowledge();
     }
 }

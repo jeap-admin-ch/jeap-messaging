@@ -42,7 +42,7 @@ public class JeapGlueAvroSerializer implements Serializer<Object> {
         }
 
         byte[] payload = delegate.serialize(topic, headers, record);
-        if (signatureService != null) {
+        if (signatureService != null && headers != null) {
             signatureService.injectSignature(headers, payload, isKey);
         }
         return SerdeUtils.encryptPayloadIfRequired(isKey, cryptoConfig, headers, record, payload);
