@@ -5,7 +5,10 @@ import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
+import ch.admin.bit.jeap.messaging.kafka.test.KafkaTestConstants;
+import ch.admin.bit.jeap.messaging.kafka.test.TestMessageSender;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeCreateDeclarationCommandBuilder;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeDeclarationCreatedEventBuilder;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestCommandConsumer;
@@ -18,6 +21,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.test.MockSerializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,6 +36,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -145,6 +150,36 @@ class ErrorHandlerCommandIT extends KafkaIntegrationTestBase {
         Assertions.assertNotNull(resultingError.getOptionalPayload().get().getOriginalMessage().array());
         Assertions.assertNull(resultingError.getOptionalPayload().get().getOriginalKey());
         Assertions.assertNotNull(resultingError.getOptionalPayload().get().getStackTrace());
+    }
+
+    @Test
+    void preserveSignatureHeaders() {
+        //Command handler will generate an exception
+        Mockito.doThrow(new RuntimeException("something")).when(testCommandProcessor).receive(Mockito.any());
+
+        //Publish a normal command, listener is executed and an error is generated
+        AvroMessage message = JmeCreateDeclarationCommandBuilder.create().idempotenceId("idempotenceId").text("message").build();
+
+        TestMessageSender.sendSyncWithHeaders(kafkaTemplate, TestCommandConsumer.TOPIC_NAME, null, message,
+                KafkaTestConstants.TEST_PRODUCER_DISABLE_CONTRACT_CHECK_HEADER,
+                new RecordHeader("dummy1", new byte[]{1}),
+                new RecordHeader(SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY, new byte[]{1, 2, 3}),
+                new RecordHeader(SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY, new byte[]{1, 2, 3, 4}),
+                new RecordHeader(SignatureHeaders.SIGNATURE_KEY_HEADER_KEY, new byte[]{1, 2, 3, 4, 5}),
+                new RecordHeader("dummy2", new byte[]{1, 2, 3, 4, 5, 6, 7})
+        );
+        MessageProcessingFailedEvent resultingError = expectError();
+        Mockito.verify(testCommandProcessor, Mockito.timeout(TEST_TIMEOUT)).receive(Mockito.any());
+
+        Assertions.assertNotNull(resultingError);
+        Assertions.assertNotNull(resultingError.getPayload());
+        Assertions.assertNotNull(resultingError.getPayload().getFailedMessageMetadata());
+        Map<String, ByteBuffer> headers = resultingError.getPayload().getFailedMessageMetadata().getHeaders();
+        Assertions.assertNotNull(headers);
+        Assertions.assertEquals(3, headers.size());
+        Assertions.assertNotNull(headers.get(SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY));
+        Assertions.assertNotNull(headers.get(SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY));
+        Assertions.assertNotNull(headers.get(SignatureHeaders.SIGNATURE_KEY_HEADER_KEY));
     }
 
     private MessageProcessingFailedEvent expectError() {

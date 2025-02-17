@@ -134,16 +134,12 @@ class KafkaDeferredMessageSender implements DeferredMessageSender {
         outboxTracing.updateCurrentTraceContext(deferredMessage.getTraceContext());
 
 
-        ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(topic, key, message);
+        ProducerRecord<byte[], byte[]> producerRecord =  new ProducerRecord<>(topic, key, message);
         injectSignatureHeadersIfNeeded(producerRecord, message, key);
 
         try {
             log.debug("Sending message {} to Kafka with a timeout of {} millis.", deferredMessageLogArgument, sendFutureTimeoutMillis);
-            if (key != null) {
-                kafkaTemplate.send(producerRecord).get(sendFutureTimeoutMillis, TimeUnit.MILLISECONDS);
-            } else {
-                kafkaTemplate.send(producerRecord).get(sendFutureTimeoutMillis, TimeUnit.MILLISECONDS);
-            }
+            kafkaTemplate.send(producerRecord).get(sendFutureTimeoutMillis, TimeUnit.MILLISECONDS);
 
             outboxMetrics.ifPresent(metrics ->
                     metrics.countMessagingSend(bootstrapServers, topic, deferredMessage.getMessageTypeName(), deferredMessage.getMessageTypeVersion()));

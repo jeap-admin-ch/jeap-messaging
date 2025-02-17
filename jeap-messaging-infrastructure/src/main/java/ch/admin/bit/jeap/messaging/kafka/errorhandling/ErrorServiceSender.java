@@ -2,9 +2,14 @@ package ch.admin.bit.jeap.messaging.kafka.errorhandling;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
-import ch.admin.bit.jeap.messaging.avro.errorevent.*;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerException;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEventBuilder;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedMessageKey;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import ch.admin.bit.jeap.messaging.kafka.spring.JeapKafkaBeanNames;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TracerBridge;
 import ch.admin.bit.jeap.messaging.model.Message;
@@ -119,7 +124,12 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         MessageProcessingFailedEvent event = MessageProcessingFailedEventBuilder.create()
                 .systemName(kafkaProperties.getSystemName())
                 .serviceName(kafkaProperties.getServiceName())
-                .originalMessage(consumerRecord, JeapKafkaAvroSerdeCryptoConfig.ENCRYPTED_VALUE_HEADER_NAME)
+                .originalMessage(consumerRecord,
+                        JeapKafkaAvroSerdeCryptoConfig.ENCRYPTED_VALUE_HEADER_NAME,
+                        SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY,
+                        SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY,
+                        SignatureHeaders.SIGNATURE_KEY_HEADER_KEY
+                )
                 .eventHandleException(exceptionInformation)
                 .stackTraceMaxLength(kafkaProperties.getErrorEventStackTraceMaxLength())
                 .stackTraceHash(getStackTraceHash(exception))

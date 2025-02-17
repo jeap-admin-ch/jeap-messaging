@@ -33,7 +33,6 @@ public class SignatureService {
             CryptoProviderHelper.installCryptoProvider();
             certificateHandling = SignatureCertificateHandling.create(properties.signatureCertificate(), taskScheduler, signatureMetricsService, applicationName);
             signatureInjector = new SignatureInjector(new ByteSigner(properties.signatureKey()), certificateHandling.getCertificateSerialNumber());
-            log.info("Signing messages is enabled");
         }
     }
 

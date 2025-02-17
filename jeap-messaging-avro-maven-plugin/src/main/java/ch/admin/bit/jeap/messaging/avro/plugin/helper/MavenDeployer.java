@@ -118,7 +118,7 @@ public class MavenDeployer {
         properties.setProperty("jansi.force", "true");
         // Pass proxy properties to invoked maven instance
         Map<String, String> proxyProperties = System.getProperties().entrySet().stream()
-                .filter(e -> e.getKey().toString().matches("^http.*[pP]roxy.*$"))
+                .filter(e -> e.getKey().toString().matches("^http.*[pP]roxy.*$")) // NOSONAR
                 .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
         properties.putAll(proxyProperties);
         request.setProperties(properties);

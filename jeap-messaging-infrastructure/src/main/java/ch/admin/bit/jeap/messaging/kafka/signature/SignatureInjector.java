@@ -4,10 +4,6 @@ import org.apache.kafka.common.header.Headers;
 
 public class SignatureInjector {
 
-    private static final String SIGNATURE_PAYLOAD_HEADER_KEY = "jeap-sign";
-    private static final String SIGNATURE_KEY_HEADER_KEY = "jeap-sign-key";
-    private static final String SIGNATURE_CERTIFICATE_HEADER_KEY = "jeap-cert";
-
     private final ByteSigner byteSigner;
     private final byte[] certificateSerialNumber;
 
@@ -20,11 +16,11 @@ public class SignatureInjector {
         byte[] signature = byteSigner.createSignature(bytesToSign);
         headers.add(determineHeaderKey(isKey), signature);
         if (!isKey) {
-            headers.add(SIGNATURE_CERTIFICATE_HEADER_KEY, certificateSerialNumber);
+            headers.add(SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY, certificateSerialNumber);
         }
     }
 
     private String determineHeaderKey(boolean isKey) {
-        return isKey ? SIGNATURE_KEY_HEADER_KEY : SIGNATURE_PAYLOAD_HEADER_KEY;
+        return isKey ? SignatureHeaders.SIGNATURE_KEY_HEADER_KEY : SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY;
     }
 }
