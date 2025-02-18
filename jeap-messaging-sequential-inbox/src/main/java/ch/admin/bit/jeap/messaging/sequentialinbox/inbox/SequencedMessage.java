@@ -23,7 +23,7 @@ public class SequencedMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sm_sequence")
-    @SequenceGenerator(name = "sm_sequence", sequenceName = "sequenced_message_sequence", allocationSize = 1)
+    @SequenceGenerator(name = "sm_sequence", sequenceName = "sequenced_message_sequence", allocationSize = 50)
     @Column(name = "id")
     private Long id;
 

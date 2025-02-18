@@ -22,7 +22,7 @@ public class SequenceInstance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "si_sequence")
-    @SequenceGenerator(name = "si_sequence", sequenceName = "sequence_instance_sequence", allocationSize = 1)
+    @SequenceGenerator(name = "si_sequence", sequenceName = "sequence_instance_sequence", allocationSize = 50)
     @Column(name = "id")
     private Long id;
 

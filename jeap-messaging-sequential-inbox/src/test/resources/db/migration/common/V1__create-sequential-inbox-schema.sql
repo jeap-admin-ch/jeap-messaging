@@ -1,6 +1,6 @@
-CREATE SEQUENCE sequence_instance_sequence START WITH 1 INCREMENT 1 CYCLE;
-CREATE SEQUENCE buffered_message_sequence START WITH 1 INCREMENT 1 CYCLE;
-CREATE SEQUENCE sequenced_message_sequence START WITH 1 INCREMENT 1 CYCLE;
+CREATE SEQUENCE sequence_instance_sequence START WITH 1 INCREMENT 50 CYCLE;
+CREATE SEQUENCE buffered_message_sequence START WITH 1 INCREMENT 50 CYCLE;
+CREATE SEQUENCE sequenced_message_sequence START WITH 1 INCREMENT 50 CYCLE;
 
 CREATE TABLE sequence_instance
 (

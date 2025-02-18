@@ -19,7 +19,7 @@ public class BufferedMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "bm_sequence")
-    @SequenceGenerator(name = "bm_sequence", sequenceName = "buffered_message_sequence", allocationSize = 1)
+    @SequenceGenerator(name = "bm_sequence", sequenceName = "buffered_message_sequence", allocationSize = 50)
     @Column(name = "id")
     private Long id;
 
