@@ -27,8 +27,8 @@ public class KafkaMeterRegistryMetrics implements KafkaMessagingMetrics {
     }
 
     @Override
-    public void incrementConsume(String boostrapServers, String applicationName, String topic, String messageType, String messageTypeVersion) {
-        meterRegistry.counter(METRIC_NAME, getTags(boostrapServers, applicationName, topic, messageType, messageTypeVersion, false, CONSUMER)).increment();
+    public void incrementConsume(String boostrapServers, String applicationName, String topic, String messageType, String messageTypeVersion, boolean signed) {
+        meterRegistry.counter(METRIC_NAME, getTags(boostrapServers, applicationName, topic, messageType, messageTypeVersion, signed, CONSUMER)).increment();
     }
 
     private Tags getTags(String bootstrapServers, String applicationName, String topic, String messageType, String messageTypeVersion, Boolean signatureEnabled, String type) {

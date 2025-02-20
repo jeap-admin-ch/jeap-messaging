@@ -42,13 +42,11 @@ public class MessageProcessingFailedEventBuilder extends AvroDomainEventBuilder<
         return new MessageProcessingFailedEventBuilder();
     }
 
-    public MessageProcessingFailedEventBuilder originalMessage(ConsumerRecord<?, ?> originalMessage, String... preservedHeaderNames) {
+    public MessageProcessingFailedEventBuilder originalMessage(ConsumerRecord<?, ?> originalMessage, Message message, String... preservedHeaderNames) {
         this.originalMessage = originalMessage;
-
-        Object recordValue = originalMessage.value();
-        if (recordValue instanceof Message msg) {
-            this.processId = msg.getOptionalProcessId().orElse(null);
-            this.causingMessageMetadata = CausingMessageMetadata.from(msg, originalMessage.headers(), preservedHeaderNames);
+        if (message != null) {
+            this.processId = message.getOptionalProcessId().orElse(null);
+            this.causingMessageMetadata = CausingMessageMetadata.from(message, originalMessage.headers(), preservedHeaderNames);
         }
         return self();
     }
@@ -125,7 +123,7 @@ public class MessageProcessingFailedEventBuilder extends AvroDomainEventBuilder<
         return super.build();
     }
 
-    private String truncateStackTrace(String stacktrace){
+    private String truncateStackTrace(String stacktrace) {
         if (stacktrace == null || stacktrace.length() <= stackTraceMaxLength) {
             return stacktrace;
         }

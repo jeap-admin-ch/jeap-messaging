@@ -41,6 +41,35 @@ public final class SigningTestHelper {
             "FanvQxuc/m9zml2fsja9ZQ==\n" +
             "-----END PRIVATE KEY-----\n"; // trufflehog:ignore
 
+    public static final String MESSAGE_RECEIVER_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\n" + // trufflehog:ignore
+            "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCveo5uK8Aw54pI\n" +
+            "oC8h2HyBPq/8+0z5II7XxpEjLVs8RMXBl7A9wxUuan+PtWYk1hDzB3GQTc9ci48v\n" +
+            "JTK858oX8Q41ava++yseYsjqg7zDc/9NV9b2O+ON4rHuOmgh1/OrTRA/zxSzzHKp\n" +
+            "4FHK5cqE/pC3GjCr+XHcs7bcOI6jo4DUMwJjifyxlj/Cr92nKNmYRoyHcVPCChOC\n" +
+            "GjWAXB+haxvug7/aCa0/vtOkLUxuz2WZ7aAY2U7eHkwdnmpaceba4GZIGqZ/eBqn\n" +
+            "stl+aciWQWyoM/Isp+wzFDmsNBHSEpX2Yb0Oppd5ln7DCgeMTFsWM8dYWySAfAxy\n" +
+            "dI3WWDnnAgMBAAECggEARqHqrc7fe+/fGg+cGSAGMZHVjdtrZsXjqVfseL/bfv1h\n" +
+            "qmSP1LRvFLFaajKGjGI8DU7cN80SH/qu5jevXhlgn9VwNjE5Y7M+7mqt27OuKfBJ\n" +
+            "fczTImcF18k9fJo26xR9KOEKntyQRTUQnG9GDQkExRagkoswtzBfVApkmu0LATN1\n" +
+            "te2Z6VljM72K2OY9X04Xo7otpm+hT8yTzYFwBsruA6zDfG0nS7Y9SdIATzjdDSsH\n" +
+            "IjsdxOoL9aUcgR7KUxXPDBUVAkZK4LxcagfPW7WeyTg872ERa0z/RVed1oh3Jlck\n" +
+            "4TOTABIr5bx74dRG+Xn7RjnStjHUnw3BkbEivjIIoQKBgQC81MAIK/1Fd7XaYrm0\n" +
+            "2gW4GVRHqlrXDD/A/1r7GrhFBJdSChEY2cHmd42OGUsd+2peWTBtE5rwucEaftY5\n" +
+            "0G54+tbQjFgjlZFDtfcVSoGp44bQhtgZrTZBB9DhAm5iED2cHBBPo4fpfbwrwpST\n" +
+            "6FKdbJNdXiXl9M9X4OL+NWspBwKBgQDt5exabE9m9DrTmqJYAim5wGorWq5K1aHC\n" +
+            "5xRcTqQLiW9cKWRk7yMUMvkielwj4dr70YchcgD5MaTa9O5N+V3Pkksb3F0wpLnG\n" +
+            "eg4p4avDRgiM1HwIW1vO/CsPHvh37JZOmBNYgjhBk17UEZSygPyDkIeiVgvRTFqa\n" +
+            "okNh1uyQIQKBgFR6ug7t3zmc/PbfBEYs5DIg4tvNEybyi/NESufcZGQ8UZaaelur\n" +
+            "0FvTULkqB7k6KbRcIpYqFz9rW0EHTcA/x6zITCKxJx2EZKDuX8ReuPPQnxfbvAKA\n" +
+            "w60EWibQd6HXsjiNNZ7rgnqrjevl+aLSZWOYl7VF0Z63j6u5KNSiAXcxAoGBANSb\n" +
+            "qVFefs/Z8UDvb6sLs9KoHbpFPoLuzbRr5Axi08TjvLw22dxCw6znqTOg+vuue5CV\n" +
+            "vxiq1CfgsB5myxqwg6Bgc/OgS0CP1t+EcWgIoQLRcg66T2cAjto7Dxhia1hx/hqb\n" +
+            "Wp69Mh2Y4STR2Xx2PjYuUqlIESOqA0czQNkNxTlBAoGATbNhjJkJoexFrD64O4wq\n" +
+            "Y/cUwyecmdHrh7qP6rP2fGrDA0Nzqb4G3/9YY8J5YViMI/A4sItdg1YzJC+Gizut\n" +
+            "TNcNKs07qZzhEea6F3oo+lUCteQd4wGWIzkuH5WtBcyZxYeul+BVjK9SeukYoozO\n" +
+            "3ilinwK9j5qHDGPwOOgbmk0=\n" +
+            "-----END PRIVATE KEY-----";
+
     public static byte[] readBytesFromFile(String path) {
         try {
             return Files.readAllBytes(

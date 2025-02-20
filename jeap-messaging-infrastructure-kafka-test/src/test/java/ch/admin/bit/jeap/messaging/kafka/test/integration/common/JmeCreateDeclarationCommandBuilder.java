@@ -8,6 +8,7 @@ import ch.admin.bit.jme.declaration.*;
 public class JmeCreateDeclarationCommandBuilder extends AvroCommandBuilder<JmeCreateDeclarationCommandBuilder, JmeCreateDeclarationCommand> {
 
     private String text;
+    private String serviceName = "jeap-microservice-examples-kafka";
 
     private JmeCreateDeclarationCommandBuilder() {
         super(JmeCreateDeclarationCommand::new);
@@ -22,9 +23,14 @@ public class JmeCreateDeclarationCommandBuilder extends AvroCommandBuilder<JmeCr
         return this;
     }
 
+    public JmeCreateDeclarationCommandBuilder serviceName(String serviceName) {
+        this.serviceName = serviceName;
+        return this;
+    }
+
     @Override
     protected String getServiceName() {
-        return "jeap-microservice-examples-kafka";
+        return serviceName;
     }
 
     @Override

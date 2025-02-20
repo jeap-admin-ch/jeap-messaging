@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
 import org.apache.kafka.common.header.Headers;
 import org.junit.jupiter.api.BeforeEach;

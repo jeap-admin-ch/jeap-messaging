@@ -6,13 +6,13 @@ import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.Message;
 
 import java.util.List;
 
-@Configuration
+@TestConfiguration
 @RequiredArgsConstructor
 @Slf4j
 public class MessagingMessageConsumer {

@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.messaging.transactionaloutbox.outbox;
 
 import ch.admin.bit.jeap.messaging.kafka.contract.ContractsValidator;
 import ch.admin.bit.jeap.messaging.kafka.metrics.KafkaMessagingMetrics;
-import ch.admin.bit.jeap.messaging.kafka.signature.SignatureProducerProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.testsupport.OutboxMockKafkaNoSchedulingTestConfig;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.testsupport.StringMessage;
 import org.junit.jupiter.api.Test;
@@ -63,7 +63,7 @@ class TransactionalOutboxTracingIT {
 
     @MockitoBean
     @SuppressWarnings("unused")
-    SignatureProducerProperties signatureProducerProperties;
+    SignaturePublisherProperties signaturePublisherProperties;
 
     @Test
     void testSend_WhenTraceContextProviderNotPresent_ThenNoTraceInDeferredMessage() {

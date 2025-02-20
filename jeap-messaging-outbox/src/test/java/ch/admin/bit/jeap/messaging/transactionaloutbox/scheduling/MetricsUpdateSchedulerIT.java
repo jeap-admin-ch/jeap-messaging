@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.messaging.transactionaloutbox.scheduling;
 
 import ch.admin.bit.jeap.messaging.kafka.metrics.KafkaMessagingMetrics;
-import ch.admin.bit.jeap.messaging.kafka.signature.SignatureProducerProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.config.TransactionalOutboxConfigurationProperties;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.metrics.OutboxMetricsConfig;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.DeferredMessageRepository;
@@ -44,7 +44,7 @@ public class MetricsUpdateSchedulerIT {
 
     @MockitoBean
     @SuppressWarnings("unused")
-    SignatureProducerProperties signatureProducerProperties;
+    SignaturePublisherProperties signaturePublisherProperties;
 
     @SneakyThrows
     @Test

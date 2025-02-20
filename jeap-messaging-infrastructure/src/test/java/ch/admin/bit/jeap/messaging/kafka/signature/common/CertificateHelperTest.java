@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.common;
 
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.CertificateException;
 import org.junit.jupiter.api.Test;
@@ -22,5 +22,10 @@ class CertificateHelperTest {
     @Test
     void getCommonName_fail_whenNotValid() {
         assertThrows(CertificateException.class, () -> CertificateHelper.getCommonName("Some dummy text"));
+    }
+
+    @Test
+    void generateCertificate_fail_whenDummy() {
+        assertThrows(CertificateException.class, () -> CertificateHelper.generateCertificate("Some dummy text".getBytes()));
     }
 }

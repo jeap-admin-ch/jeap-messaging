@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerException;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerMessageExceptionInformation;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEventBuilder;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedMessageKey;
@@ -62,15 +63,6 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         this.stackTraceHasher = stackTraceHasher;
     }
 
-    private static MessageHandlerExceptionInformation createSerializationExceptionInformation(ErrorSerializedMessageHolder errorSerializedMessageHolder, String errorMessage) {
-        Throwable cause = new Exception(errorMessage, errorSerializedMessageHolder.getCause());
-        return MessageHandlerException.builder()
-                .errorCode(MessageHandlerExceptionInformation.StandardErrorCodes.DESERIALIZATION_FAILED.name())
-                .temporality(MessageHandlerExceptionInformation.Temporality.PERMANENT)
-                .cause(cause)
-                .build();
-    }
-
     @Override
     public void accept(ConsumerRecord<?, ?> consumerRecord, Exception exception) {
         // Spring Cloud Sleuth already closed the span in which the exception occurred and does not activate a new tracing
@@ -121,13 +113,15 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
 
     private MessageProcessingFailedEvent createMessageProcessingFailedEvent(ConsumerRecord<?, ?> consumerRecord, Exception exception) {
         MessageHandlerExceptionInformation exceptionInformation = getExceptionInformation(consumerRecord, exception);
+        Message message = extractMessageIfPossible(consumerRecord);
         MessageProcessingFailedEvent event = MessageProcessingFailedEventBuilder.create()
                 .systemName(kafkaProperties.getSystemName())
                 .serviceName(kafkaProperties.getServiceName())
                 .originalMessage(consumerRecord,
+                        message,
                         JeapKafkaAvroSerdeCryptoConfig.ENCRYPTED_VALUE_HEADER_NAME,
                         SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY,
-                        SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY,
+                        SignatureHeaders.SIGNATURE_VALUE_HEADER_KEY,
                         SignatureHeaders.SIGNATURE_KEY_HEADER_KEY
                 )
                 .eventHandleException(exceptionInformation)
@@ -136,6 +130,18 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
                 .build();
         logError(consumerRecord.value(), exception);
         return event;
+    }
+
+    private Message extractMessageIfPossible(ConsumerRecord<?, ?> consumerRecord) {
+        Object recordValue = consumerRecord.value();
+        if (recordValue instanceof Message message) {
+            return message;
+        } else if (recordValue instanceof ErrorSerializedMessageHolder serializedMessageHolder) {
+            if (serializedMessageHolder.getCause() instanceof MessageHandlerMessageExceptionInformation exception) {
+                return exception.getMessagingMessage();
+            }
+        }
+        return null;
     }
 
     private String getStackTraceHash(Exception exception) {
@@ -279,6 +285,19 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
                 .description(inf.getDescription())
                 .errorCode(inf.getErrorCode() != null ? inf.getErrorCode() : MessageHandlerExceptionInformation.StandardErrorCodes.INVALID_EXCEPTION.name())
                 .temporality(inf.getTemporality() != null ? inf.getTemporality() : MessageHandlerExceptionInformation.Temporality.UNKNOWN)
+                .cause(cause)
+                .build();
+    }
+
+    private static MessageHandlerExceptionInformation createSerializationExceptionInformation(ErrorSerializedMessageHolder errorSerializedMessageHolder, String errorMessage) {
+        Throwable cause = new Exception(errorMessage, errorSerializedMessageHolder.getCause());
+        MessageHandlerExceptionInformation.Temporality temporality = MessageHandlerExceptionInformation.Temporality.PERMANENT;
+        if(errorSerializedMessageHolder.getCause() instanceof MessageHandlerExceptionInformation exception) {
+            temporality = exception.getTemporality();
+        }
+        return MessageHandlerException.builder()
+                .errorCode(MessageHandlerExceptionInformation.StandardErrorCodes.DESERIALIZATION_FAILED.name())
+                .temporality(temporality)
                 .cause(cause)
                 .build();
     }

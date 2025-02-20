@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.messaging.kafka.signature.SignatureConfiguration;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeDeclarationCreatedEventBuilder;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeDeclarationCreatedEventConsumer;
+import ch.admin.bit.jeap.messaging.kafka.test.integration.common.MessagingMessageConsumer;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.MessagingMessageListener;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestConfig;
 import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.annotation.DirtiesContext;
@@ -39,7 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
                 "management.endpoint.prometheus.access=unrestricted",
                 "management.endpoints.web.exposure.include=*"
         })
-@ActiveProfiles("test-signing")
+@ActiveProfiles("test-signing-publisher")
+@Import(MessagingMessageConsumer.class)
 @DirtiesContext
 public class MessagingSigningIT extends KafkaIntegrationTestBase {
 
@@ -114,6 +117,6 @@ public class MessagingSigningIT extends KafkaIntegrationTestBase {
         assertThat(metrics).contains(
                 "jeap_messaging_total{application=\"jme-messaging-receiverpublisher-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeDeclarationCreatedEvent\",signed=\"1\",topic=\"jme-messaging-declaration-created\",type=\"producer\",version=\"1.4.0\"}");
         assertThat(metrics).contains(
-                "jeap_messaging_total{application=\"jme-messaging-receiverpublisher-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeDeclarationCreatedEvent\",signed=\"0\",topic=\"jme-messaging-declaration-created\",type=\"consumer\",version=\"1.4.0\"}");
+                "jeap_messaging_total{application=\"jme-messaging-receiverpublisher-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeDeclarationCreatedEvent\",signed=\"1\",topic=\"jme-messaging-declaration-created\",type=\"consumer\",version=\"1.4.0\"}");
     }
 }

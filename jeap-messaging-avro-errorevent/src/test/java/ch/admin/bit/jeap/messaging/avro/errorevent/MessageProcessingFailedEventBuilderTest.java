@@ -58,7 +58,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .build();
 
         assertEquals("100", messageProcessingFailedEvent.getReferences().getErrorType().getCode());
@@ -74,7 +74,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .build();
 
         assertEquals("100", messageProcessingFailedEvent.getReferences().getErrorType().getCode());
@@ -89,7 +89,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .build();
 
         assertTrue(messageProcessingFailedEvent.getOptionalPayload().isPresent());
@@ -102,7 +102,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .build();
 
         assertEquals("2", messageProcessingFailedEvent.getReferences().getMessage().getOffset());
@@ -117,7 +117,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .build();
 
         assertEquals("system", messageProcessingFailedEvent.getPublisher().getSystem());
@@ -130,7 +130,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .stackTraceMaxLength(500)
                 .build();
 
@@ -149,7 +149,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .stackTraceMaxLength(3)
                 .build();
 
@@ -163,7 +163,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(new TestException("Test", null, "100", MessageHandlerExceptionInformation.Temporality.UNKNOWN))
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .stackTraceMaxLength(3)
                 .stackTraceHash(null)
                 .build();
@@ -179,7 +179,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .stackTraceHash("test-hash")
                 .build();
         assertTrue(messageProcessingFailedEvent.getOptionalPayload().isPresent());
@@ -192,7 +192,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalMessage)
+                .originalMessage(originalMessage, null)
                 .stackTraceHash(null)
                 .build();
 
@@ -207,7 +207,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalJeapMessageWithPreservedHeader, "the-header")
+                .originalMessage(originalJeapMessageWithPreservedHeader, originalJeapMessageWithPreservedHeader.value(), "the-header")
                 .build();
 
         assertTrue(messageProcessingFailedEvent.getPayload().getOptionalFailedMessageMetadata().isPresent());
@@ -228,7 +228,7 @@ class MessageProcessingFailedEventBuilderTest {
                 .eventHandleException(eventHandleException)
                 .serviceName("service")
                 .systemName("system")
-                .originalMessage(originalJeapMessage, "the-header")
+                .originalMessage(originalJeapMessage, originalJeapMessage.value(), "the-header")
                 .build();
 
         assertTrue(messageProcessingFailedEvent.getPayload().getOptionalFailedMessageMetadata().isPresent());

@@ -164,7 +164,7 @@ class ErrorHandlerCommandIT extends KafkaIntegrationTestBase {
                 KafkaTestConstants.TEST_PRODUCER_DISABLE_CONTRACT_CHECK_HEADER,
                 new RecordHeader("dummy1", new byte[]{1}),
                 new RecordHeader(SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY, new byte[]{1, 2, 3}),
-                new RecordHeader(SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY, new byte[]{1, 2, 3, 4}),
+                new RecordHeader(SignatureHeaders.SIGNATURE_VALUE_HEADER_KEY, new byte[]{1, 2, 3, 4}),
                 new RecordHeader(SignatureHeaders.SIGNATURE_KEY_HEADER_KEY, new byte[]{1, 2, 3, 4, 5}),
                 new RecordHeader("dummy2", new byte[]{1, 2, 3, 4, 5, 6, 7})
         );
@@ -178,7 +178,7 @@ class ErrorHandlerCommandIT extends KafkaIntegrationTestBase {
         Assertions.assertNotNull(headers);
         Assertions.assertEquals(3, headers.size());
         Assertions.assertNotNull(headers.get(SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY));
-        Assertions.assertNotNull(headers.get(SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY));
+        Assertions.assertNotNull(headers.get(SignatureHeaders.SIGNATURE_VALUE_HEADER_KEY));
         Assertions.assertNotNull(headers.get(SignatureHeaders.SIGNATURE_KEY_HEADER_KEY));
     }
 

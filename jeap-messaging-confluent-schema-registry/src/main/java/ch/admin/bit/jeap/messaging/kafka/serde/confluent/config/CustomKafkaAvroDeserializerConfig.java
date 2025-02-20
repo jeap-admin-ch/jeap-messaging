@@ -29,6 +29,8 @@ public class CustomKafkaAvroDeserializerConfig extends AbstractKafkaSchemaSerDeC
     public static final String SPECIFIC_AVRO_KEY_TYPE = "specific.avro.key.type";
     public static final String SPECIFIC_AVRO_VALUE_TYPE = "specific.avro.value.type";
 
+    public static final String JEAP_SIGNATURE_AUTHENTICITY_SERVICE = "jeap.serde.authentication.subscriber.service";
+
     public CustomKafkaAvroDeserializerConfig(Map<?, ?> props) {
         super(baseConfigDef(), props);
     }

@@ -5,7 +5,12 @@ import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.avro.SerializedMessageHolder;
-import ch.admin.bit.jeap.messaging.avro.errorevent.*;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerException;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedMessageKey;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedPayload;
+import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedReferences;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +20,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -31,7 +41,10 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ErrorServiceSenderTest {
@@ -112,6 +125,21 @@ class ErrorServiceSenderTest {
         MessageProcessingFailedMessageKey key = keyCaptor.getValue();
 
         assertEquals(event.getIdentity().getIdempotenceId(), key.getKey());
+    }
+
+    @Test
+    void sendToErrorTopic_preserveTemporality() {
+        MessageHandlerExceptionInformationException messageHandlerExceptionInformationException = new MessageHandlerExceptionInformationException(MessageHandlerExceptionInformation.Temporality.TEMPORARY);
+        ErrorSerializedMessageHolder errorSerializedMessageHolder = new ErrorSerializedMessageHolder(new byte[]{1, 2, 3}, messageHandlerExceptionInformationException);
+        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, errorSerializedMessageHolder);
+
+        Exception exception = new ListenerExecutionFailedException("gugu", messageHandlerExceptionInformationException);
+        target.accept(record, exception);
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+
+        assertEquals("TEMPORARY", event.getReferences().getErrorType().getTemporality());
     }
 
     @Test
@@ -277,6 +305,32 @@ class ErrorServiceSenderTest {
         @Override
         public String toString() {
             return message;
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class MessageHandlerExceptionInformationException extends Exception implements MessageHandlerExceptionInformation {
+
+        private final Temporality temporality;
+
+        @Override
+        public String getErrorCode() {
+            return "dummy";
+        }
+
+        @Override
+        public String getDescription() {
+            return "dummy";
+        }
+
+        @Override
+        public Temporality getTemporality() {
+            return temporality;
+        }
+
+        @Override
+        public String getStackTraceAsString() {
+            return this.getCause().getStackTrace().toString();
         }
     }
 }

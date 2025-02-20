@@ -1,5 +1,8 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureMetricsService;
+import ch.admin.bit.jeap.messaging.kafka.signature.SigningTestHelper;
+import ch.admin.bit.jeap.messaging.kafka.signature.common.SignatureCertificate;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.CertificateException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +32,8 @@ class SignatureSignatureCertificateHandlingTest {
 
     @Test
     void createCertificateHandling() {
-        byte[] certificateBytes = SigningTestHelper.readBytesFromFile("classpath:signing/unittest/test.crt");
-        SignatureCertificateHandling certificateHandling = SignatureCertificateHandling.create(certificateBytes, taskScheduler, signatureMetricsService, "test-jeap-service");
+        byte[] certificateBytes = SigningTestHelper.readBytesFromFile("classpath:signing/unittest/jme-messaging-receiverpublisher-service.crt");
+        SignatureCertificateHandling certificateHandling = SignatureCertificateHandling.create(certificateBytes, taskScheduler, signatureMetricsService, "jme-messaging-receiverpublisher-service");
         assertNotNull(certificateHandling);
         assertNotNull(certificateHandling.getCertificateSerialNumber());
         verify(taskScheduler).scheduleAtFixedRate(any(Runnable.class), eq(Duration.of(1, HOURS)));
@@ -38,7 +41,7 @@ class SignatureSignatureCertificateHandlingTest {
 
     @Test
     void createCertificateHandling_fail_whenApplicationNameNotCorrespondingCN() {
-        byte[] certificateBytes = SigningTestHelper.readBytesFromFile("classpath:signing/unittest/test.crt");
+        byte[] certificateBytes = SigningTestHelper.readBytesFromFile("classpath:signing/unittest/jme-messaging-receiverpublisher-service.crt");
         assertThrows(CertificateException.class, () -> SignatureCertificateHandling.create(certificateBytes, taskScheduler, signatureMetricsService, "dummy"));
     }
 

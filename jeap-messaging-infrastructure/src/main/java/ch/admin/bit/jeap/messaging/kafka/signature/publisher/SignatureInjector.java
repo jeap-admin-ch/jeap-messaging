@@ -1,8 +1,9 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import org.apache.kafka.common.header.Headers;
 
-public class SignatureInjector {
+class SignatureInjector {
 
     private final ByteSigner byteSigner;
     private final byte[] certificateSerialNumber;
@@ -12,7 +13,7 @@ public class SignatureInjector {
         this.certificateSerialNumber = certificateSerialNumber;
     }
 
-    public void injectSignature(Headers headers, byte[] bytesToSign, boolean isKey) {
+    void injectSignature(Headers headers, byte[] bytesToSign, boolean isKey) {
         byte[] signature = byteSigner.createSignature(bytesToSign);
         headers.add(determineHeaderKey(isKey), signature);
         if (!isKey) {
@@ -21,6 +22,6 @@ public class SignatureInjector {
     }
 
     private String determineHeaderKey(boolean isKey) {
-        return isKey ? SignatureHeaders.SIGNATURE_KEY_HEADER_KEY : SignatureHeaders.SIGNATURE_PAYLOAD_HEADER_KEY;
+        return isKey ? SignatureHeaders.SIGNATURE_KEY_HEADER_KEY : SignatureHeaders.SIGNATURE_VALUE_HEADER_KEY;
     }
 }

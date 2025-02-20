@@ -1,5 +1,12 @@
 package ch.admin.bit.jeap.messaging.kafka.signature;
 
+import ch.admin.bit.jeap.messaging.kafka.signature.publisher.DefaultSignatureService;
+import ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.CertificateAndSignatureVerifier;
+import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.DefaultSignatureAuthenticityService;
+import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureSubscriberProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureVerifier;
+import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SubscriberValidationPropertiesContainer;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -16,7 +23,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.Optional;
 
 @AutoConfiguration
-@EnableConfigurationProperties(SignatureProducerProperties.class)
+@EnableConfigurationProperties({SignaturePublisherProperties.class, SignatureSubscriberProperties.class})
 @EnableScheduling
 @ComponentScan
 @Import(SignatureConfiguration.SignatureMetricConfiguration.class)
@@ -24,9 +31,23 @@ public class SignatureConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "jeap.messaging.authentication.publisher", name = "signature-key")
-    public SignatureService signatureService(SignatureProducerProperties signatureProducerProperties, TaskScheduler taskScheduler,
+    public SignaturePublisherCheck signaturePublisherCheck(SignaturePublisherProperties signaturePublisherProperties, SignatureVerifier signatureVerifier) {
+        return new SignaturePublisherCheck(signaturePublisherProperties, signatureVerifier);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "jeap.messaging.authentication.publisher", name = "signature-key")
+    public DefaultSignatureService signatureService(SignaturePublisherProperties signaturePublisherProperties, TaskScheduler taskScheduler,
                                              Optional<SignatureMetricsService> signatureMetricsService, @Value("${spring.application.name}") String applicationName) {
-        return new SignatureService(signatureProducerProperties, taskScheduler, signatureMetricsService, applicationName);
+        return new DefaultSignatureService(signaturePublisherProperties, taskScheduler, signatureMetricsService, applicationName);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "jeap.messaging.authentication.subscriber", name = "require-signature")
+    public DefaultSignatureAuthenticityService signatureAuthenticityService(SubscriberValidationPropertiesContainer validationPropertiesContainer,
+                                                                     CertificateAndSignatureVerifier certificateAndSignatureVerifier,
+                                                                     Optional<SignatureMetricsService> signatureMetricsService) {
+        return new DefaultSignatureAuthenticityService(validationPropertiesContainer, certificateAndSignatureVerifier, signatureMetricsService);
     }
 
     // Note: This must be a static inner class, annotated with ConditionalOnClass, to avoid Spring attempting to load the

@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.messaging.kafka.serde.EmptyKeyDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroSerializer;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
@@ -23,11 +24,13 @@ public class KafkaConfluentAvroSerdeProperties implements KafkaAvroSerdeProperti
 
     private final KafkaProperties kafkaProperties;
     private final JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
+    private final SignatureAuthenticityService signatureAuthenticityService;
     private SchemaRegistryClient schemaRegistryClient;
 
-    public KafkaConfluentAvroSerdeProperties(KafkaProperties kafkaProperties, JeapKafkaAvroSerdeCryptoConfig cryptoConfig) {
+    public KafkaConfluentAvroSerdeProperties(KafkaProperties kafkaProperties, JeapKafkaAvroSerdeCryptoConfig cryptoConfig, SignatureAuthenticityService signatureAuthenticityService) {
         this.kafkaProperties = kafkaProperties;
         this.cryptoConfig = cryptoConfig;
+        this.signatureAuthenticityService = signatureAuthenticityService;
     }
 
     @Override
@@ -58,6 +61,9 @@ public class KafkaConfluentAvroSerdeProperties implements KafkaAvroSerdeProperti
         addSchemaRegistryClient(props);
         if (this.cryptoConfig != null) {
             props.put(CustomKafkaAvroDeserializerConfig.JEAP_SERDE_CRYPTO_CONFIG, this.cryptoConfig);
+        }
+        if (this.signatureAuthenticityService != null) {
+            props.put(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE, this.signatureAuthenticityService);
         }
         return props;
     }

@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.messaging.transactionaloutbox.metrics;
 
 import ch.admin.bit.jeap.messaging.kafka.metrics.KafkaMessagingMetrics;
-import ch.admin.bit.jeap.messaging.kafka.signature.SignatureProducerProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.DeferredMessageRepository;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.FailedMessageRepository;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.outbox.OutboxMetrics;
@@ -24,8 +24,8 @@ public class OutboxMetricsConfig {
 
     @Bean
     OutboxMetrics outboxMetrics(MeterRegistry meterRegistry, DeferredMessageRepository deferredMessageRepository, FailedMessageRepository failedMessageRepository,
-                                KafkaMessagingMetrics kafkaMessagingMetrics, SignatureProducerProperties signatureProducerProperties) {
-        return new MicrometerOutboxMetrics(meterRegistry, deferredMessageRepository, failedMessageRepository, kafkaMessagingMetrics, signatureProducerProperties, applicationName);
+                                KafkaMessagingMetrics kafkaMessagingMetrics, SignaturePublisherProperties signaturePublisherProperties) {
+        return new MicrometerOutboxMetrics(meterRegistry, deferredMessageRepository, failedMessageRepository, kafkaMessagingMetrics, signaturePublisherProperties, applicationName);
     }
 
     @Bean

@@ -9,6 +9,7 @@ import ch.admin.bit.jme.test.JmeSimpleTestEventReferences;
 
 public class JmeSimpleTestEventBuilder extends AvroDomainEventBuilder<JmeSimpleTestEventBuilder, JmeSimpleTestEvent> {
     private String message;
+    private String serviceName = "jeap-microservice-examples-kafka";
 
     private JmeSimpleTestEventBuilder() {
         super(JmeSimpleTestEvent::new);
@@ -23,9 +24,14 @@ public class JmeSimpleTestEventBuilder extends AvroDomainEventBuilder<JmeSimpleT
         return this;
     }
 
+    public JmeSimpleTestEventBuilder serviceName(String serviceName) {
+        this.serviceName = serviceName;
+        return this;
+    }
+
     @Override
     protected String getServiceName() {
-        return "jeap-microservice-examples-kafka";
+        return serviceName;
     }
 
     @Override
@@ -52,4 +58,6 @@ public class JmeSimpleTestEventBuilder extends AvroDomainEventBuilder<JmeSimpleT
         setPayload(payload);
         return super.build();
     }
+
+
 }

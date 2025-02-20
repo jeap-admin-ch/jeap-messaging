@@ -9,6 +9,7 @@ import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
 
 public class JmeDeclarationCreatedEventBuilder extends AvroDomainEventBuilder<JmeDeclarationCreatedEventBuilder, JmeDeclarationCreatedEvent> {
     private String message;
+    private String serviceName = "jeap-microservice-examples-kafka";
 
     private JmeDeclarationCreatedEventBuilder() {
         super(JmeDeclarationCreatedEvent::new);
@@ -23,9 +24,14 @@ public class JmeDeclarationCreatedEventBuilder extends AvroDomainEventBuilder<Jm
         return this;
     }
 
+    public JmeDeclarationCreatedEventBuilder serviceName(String serviceName) {
+        this.serviceName = serviceName;
+        return this;
+    }
+
     @Override
     protected String getServiceName() {
-        return "jeap-microservice-examples-kafka";
+        return serviceName;
     }
 
     @Override

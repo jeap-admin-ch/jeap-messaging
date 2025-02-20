@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.metrics;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.MessageVersionAccessor;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerInterceptor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -44,7 +45,8 @@ public class ConsumerMetricsInterceptor implements ConsumerInterceptor<Object, O
             type = message.value().getClass().getSimpleName();
             version = "na";
         }
-        kafkaMessagingMetrics.incrementConsume(boostrapServers, applicationName, message.topic(), type, version);
+        boolean signed = message.headers().lastHeader(SignatureHeaders.SIGNATURE_VALUE_HEADER_KEY) != null;
+        kafkaMessagingMetrics.incrementConsume(boostrapServers, applicationName, message.topic(), type, version, signed);
     }
 
     @Override

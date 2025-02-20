@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.MessageSignatureConfigurationException;
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +11,12 @@ import java.nio.charset.StandardCharsets;
         prefix = "jeap.messaging.authentication.publisher"
 )
 @Slf4j
-public class SignatureProducerProperties {
+public class SignaturePublisherProperties {
 
     private final byte[] signatureKey;
     private final byte[] signatureCertificate;
 
-    public SignatureProducerProperties(@Nullable String signatureKey, @Nullable String signatureCertificate) {
+    public SignaturePublisherProperties(@Nullable String signatureKey, @Nullable String signatureCertificate) {
         this.signatureKey = signatureKey == null ? null : signatureKey.getBytes(StandardCharsets.UTF_8);
         this.signatureCertificate = signatureCertificate == null ? null : signatureCertificate.getBytes(StandardCharsets.UTF_8);
         log.info("Signing enabled: {}", isSigningEnabled());

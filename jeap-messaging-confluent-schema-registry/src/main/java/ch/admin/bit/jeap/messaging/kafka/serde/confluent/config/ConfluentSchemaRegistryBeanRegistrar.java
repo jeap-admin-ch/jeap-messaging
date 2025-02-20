@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.messaging.kafka.properties.cluster.ClusterProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroSerializer;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureService;
 import ch.admin.bit.jeap.messaging.kafka.spring.AbstractSchemaRegistryBeanRegistrar;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
@@ -34,11 +35,15 @@ class ConfluentSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanReg
 
     @Override
     protected KafkaAvroSerdeProvider createKafkaAvroSerializerProvider(String clusterName, JeapKafkaAvroSerdeCryptoConfig cryptoConfig) {
-        KafkaConfluentAvroSerdeProperties serdeProperties = createKafkaConfluentAvroSerdeProperties(kafkaProperties, cryptoConfig);
+        ObjectProvider<SignatureAuthenticityService> signatureAuthenticityServiceObjectProvider = beanFactory.getBeanProvider(SignatureAuthenticityService.class);
+        SignatureAuthenticityService signatureAuthenticityService = signatureAuthenticityServiceObjectProvider.getIfAvailable();
+
+        KafkaConfluentAvroSerdeProperties serdeProperties = createKafkaConfluentAvroSerdeProperties(kafkaProperties, cryptoConfig, signatureAuthenticityService);
         CustomKafkaAvroSerializerConfig serializerConfig = new CustomKafkaAvroSerializerConfig(serdeProperties.avroSerializerProperties(clusterName));
         SchemaRegistryClient registryClient = SchemaRegistryClientUtil.createSchemaRegistryClient(serializerConfig);
-        ObjectProvider<SignatureService> beanProvider = beanFactory.getBeanProvider(SignatureService.class);
-        SignatureService signatureService = beanProvider.getIfAvailable();
+        ObjectProvider<SignatureService> signatureServiceObjectProvider = beanFactory.getBeanProvider(SignatureService.class);
+        SignatureService signatureService = signatureServiceObjectProvider.getIfAvailable();
+
 
         KafkaAvroSerializer valueSerializer = new CustomKafkaAvroSerializer(registryClient, cryptoConfig, signatureService);
         valueSerializer.configure(serdeProperties.avroSerializerProperties(clusterName), false);
@@ -46,20 +51,22 @@ class ConfluentSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanReg
         keySerializer.configure(serdeProperties.avroSerializerProperties(clusterName), true);
 
         Deserializer<GenericData.Record> genericDataRecordDeserializer =
-                createGenericRecordDataDeserializer(clusterName, registryClient, serdeProperties);
+                createGenericRecordDataDeserializer(clusterName, registryClient, serdeProperties, signatureAuthenticityService);
 
         return new KafkaAvroSerdeProvider(valueSerializer, keySerializer, genericDataRecordDeserializer, serdeProperties);
     }
 
-    private KafkaConfluentAvroSerdeProperties createKafkaConfluentAvroSerdeProperties(KafkaProperties kafkaProperties, JeapKafkaAvroSerdeCryptoConfig cryptoConfig) {
-        return new KafkaConfluentAvroSerdeProperties(kafkaProperties, cryptoConfig);
+    private KafkaConfluentAvroSerdeProperties createKafkaConfluentAvroSerdeProperties(KafkaProperties kafkaProperties, JeapKafkaAvroSerdeCryptoConfig cryptoConfig,
+                                                                                      SignatureAuthenticityService signatureAuthenticityService) {
+        return new KafkaConfluentAvroSerdeProperties(kafkaProperties, cryptoConfig, signatureAuthenticityService);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static Deserializer<GenericData.Record> createGenericRecordDataDeserializer(String clusterName,
                                                                                         SchemaRegistryClient registryClient,
-                                                                                        KafkaConfluentAvroSerdeProperties serdeProperties) {
-        Deserializer genericRecordValueDeserializer = new CustomKafkaAvroDeserializer(registryClient, null);
+                                                                                        KafkaConfluentAvroSerdeProperties serdeProperties,
+                                                                                        SignatureAuthenticityService signatureAuthenticityService) {
+        Deserializer genericRecordValueDeserializer = new CustomKafkaAvroDeserializer(registryClient, null, signatureAuthenticityService);
         Map<String, Object> props = new HashMap<>(serdeProperties.avroDeserializerProperties(clusterName));
         // Deserializing to GenericData.Record instead of SpecificRecordBase
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, false);

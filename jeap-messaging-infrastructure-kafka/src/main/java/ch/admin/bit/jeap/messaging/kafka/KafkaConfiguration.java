@@ -16,7 +16,7 @@ import ch.admin.bit.jeap.messaging.kafka.properties.KafkaConsumerPropertiesValid
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.EmptyKeyDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
-import ch.admin.bit.jeap.messaging.kafka.signature.SignatureProducerProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties;
 import ch.admin.bit.jeap.messaging.kafka.spring.JeapKafkaBeanNames;
 import ch.admin.bit.jeap.messaging.kafka.tracing.KafkaTracingConfiguration;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TracerBridge;
@@ -163,12 +163,12 @@ public class KafkaConfiguration {
         interceptors.add(ProducerLoggerInterceptor.class);
 
         if (kafkaMessagingMetrics != null) {
-            SignatureProducerProperties signatureProducerProperties = beanFactory.getBean(SignatureProducerProperties.class);
+            SignaturePublisherProperties signaturePublisherProperties = beanFactory.getBean(SignaturePublisherProperties.class);
 
             props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, producerBootstrapServers);
             props.put(ProducerMetricsInterceptor.METER_REGISTRY, kafkaMessagingMetrics);
             props.put(ProducerMetricsInterceptor.APPLICATION_NAME, applicationName);
-            props.put(ProducerMetricsInterceptor.SIGNATURE_ENABLED, signatureProducerProperties.isSigningEnabled());
+            props.put(ProducerMetricsInterceptor.SIGNATURE_ENABLED, signaturePublisherProperties.isSigningEnabled());
             interceptors.add(ProducerMetricsInterceptor.class);
         }
         props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, commaSeparatedClassList(interceptors));

@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.kafka.SerializedMessageReceiver;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
 import ch.admin.bit.jeap.messaging.kafka.serde.SerdeUtils;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroDeserializerConfig;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.extern.slf4j.Slf4j;
@@ -24,18 +25,21 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
     protected MessageEncryptor nifiCompatibleMessageEncryptor;
 
     protected JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
+    private SignatureAuthenticityService signatureAuthenticityService;
 
     public CustomKafkaAvroDeserializer() {
         super();
     }
 
-    public CustomKafkaAvroDeserializer(SchemaRegistryClient schemaRegistryClient, JeapKafkaAvroSerdeCryptoConfig cryptoConfig) {
+    public CustomKafkaAvroDeserializer(SchemaRegistryClient schemaRegistryClient, JeapKafkaAvroSerdeCryptoConfig cryptoConfig, SignatureAuthenticityService signatureAuthenticityService) {
         super(schemaRegistryClient);
         this.cryptoConfig = cryptoConfig;
+        this.signatureAuthenticityService = signatureAuthenticityService;
     }
 
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
+        this.isKey = isKey;
         configureFromPropertyMap(props);
 
         Class<?> valueType = null;
@@ -71,6 +75,9 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
             String encryptPassphrase = customConfig.getString(CustomKafkaAvroDeserializerConfig.DECRYPT_PASSPHRASE_CONFIG);
             nifiCompatibleMessageEncryptor = new MessageEncryptor(encryptPassphrase);
         }
+        if (props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE) != null) {
+            this.signatureAuthenticityService = (SignatureAuthenticityService) props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE);
+        }
     }
 
     @Override
@@ -99,6 +106,13 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
             // The original message bytes are sent to the error handler on errors and must stay encrypted in this case
             smr.setSerializedMessage(originalBytes);
         }
+        if (signatureAuthenticityService != null) {
+            if (isKey) {
+                signatureAuthenticityService.checkAuthenticityKey(headers, possiblyDecryptedBytes);
+            } else {
+                signatureAuthenticityService.checkAuthenticityValue(result, headers, possiblyDecryptedBytes);
+            }
+        }
 
         return result;
     }
@@ -106,8 +120,8 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
     private void validateOnlyOneDecryptionMechanismActive(boolean messageEncryptedWithJeapCrypto, boolean nifiCompatibleDecryptionEnabledForDeserializer, String topic) {
         if (messageEncryptedWithJeapCrypto && nifiCompatibleDecryptionEnabledForDeserializer) {
             throw new IllegalStateException("The headers of a message on topic '" + topic + "' indicate that the received " +
-                                            " message is encrypted, and Nifi-compatible decryption is enabled as well for" +
-                                            " this deserializer - only one of both can be enabled at the same time.");
+                    " message is encrypted, and Nifi-compatible decryption is enabled as well for" +
+                    " this deserializer - only one of both can be enabled at the same time.");
         }
     }
 

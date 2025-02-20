@@ -1,0 +1,15 @@
+
+jeap:
+  messaging:
+    authentication:
+      subscriber:
+        require-signature: true
+        accept-unsigned-messagetype-whitelist:
+          - DummyEvent
+        allowed-publishers:
+          JmeCreateDeclarationCommand:
+            - jme-messaging-receiverpublisher-service
+          JmeDeclarationCreatedEvent:
+            - jme-messaging-receiverpublisher-service
+          JmeSimpleTestEvent:
+            - jme-messaging-receiverpublisher-service

@@ -1,5 +1,6 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
+import ch.admin.bit.jeap.messaging.kafka.signature.common.CryptoProviderHelper;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.MessageSignatureException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,8 +13,6 @@ import java.security.SignatureException;
 
 @Slf4j
 public class ByteSigner {
-
-    private static final String SIGN_ALGORITHM = "SHA256withRSA";
 
     private final PrivateKey privateKey;
 
@@ -32,15 +31,12 @@ public class ByteSigner {
 
             return signature.sign();
         } catch (NoSuchAlgorithmException | SignatureException | NoSuchProviderException | InvalidKeyException e) {
-            log.error("Error while signing", e);
             throw MessageSignatureException.signatureCreationFailed(e);
         }
     }
 
     private Signature createSignature() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
-        Signature signature = CryptoProviderHelper.correttoEnabled ?
-                Signature.getInstance(SIGN_ALGORITHM, CryptoProviderHelper.CORRETTO_PROVIDER_NAME) :
-                Signature.getInstance(SIGN_ALGORITHM);
+        Signature signature = CryptoProviderHelper.getSignatureInstance();
         signature.initSign(privateKey);
         return signature;
     }

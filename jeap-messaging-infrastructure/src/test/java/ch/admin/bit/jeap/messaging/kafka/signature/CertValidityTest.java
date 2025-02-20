@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.messaging.kafka.signature;
 
+import ch.admin.bit.jeap.messaging.kafka.signature.common.SignatureCertificate;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,13 +13,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CertValidityTest {
 
     @Test
-    public void testCertificateValidity() {
-        checkValidity("test.crt");
+    public void testRootCACertificateValidity() {
+        checkValidity("rootCA.crt");
     }
 
     @Test
-    public void testCACertificateValidity() {
-        checkValidity("jeap-ca.crt");
+    public void testIntermediateCACertificateValidity() {
+        checkValidity("intermediateCA.crt");
+    }
+
+    @Test
+    public void testLeafCertificateValidity() {
+        checkValidity("jme-messaging-receiverpublisher-service.crt");
+    }
+
+    @Test
+    public void testLeaf2CertificateValidity() {
+        checkValidity("jme-messaging-receiverpublisher-service2.crt");
     }
 
     private static void checkValidity(String certName) {

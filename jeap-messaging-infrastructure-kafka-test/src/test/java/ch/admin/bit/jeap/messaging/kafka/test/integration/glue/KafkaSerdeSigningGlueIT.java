@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.Message;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@SpringBootTest(classes = {TestGlueConfig.class, SignatureConfiguration.class, MessagingMessageConsumer.class},
+@SpringBootTest(classes = {TestGlueConfig.class, SignatureConfiguration.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "spring.application.name=jme-messaging-receiverpublisher-service",
@@ -57,8 +58,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
                 "jeap.messaging.kafka.exposeMessageKeyToConsumer=true"
         })
 @AutoConfigureObservability
-@Import({KafkaSerdeGlueIT.TestConsumerConfig.class, KafkaSerdeSigningGlueIT.MessagingMessageListenerConfig.class})
-@ActiveProfiles("test-signing")
+@Import({KafkaSerdeGlueIT.TestConsumerConfig.class, KafkaSerdeSigningGlueIT.MessagingMessageListenerConfig.class, MessagingMessageConsumer.class})
+@ActiveProfiles("test-signing-publisher")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class KafkaSerdeSigningGlueIT extends KafkaGlueIntegrationTestBase {
 
     @LocalServerPort
@@ -179,7 +181,7 @@ class KafkaSerdeSigningGlueIT extends KafkaGlueIntegrationTestBase {
         assertThat(metrics).contains(
                 "jeap_messaging_total{application=\"jme-messaging-receiverpublisher-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeSimpleTestEvent\",signed=\"1\",topic=\"some-other-topic\",type=\"producer\",version=\"3.0.0\"}");
         assertThat(metrics).contains(
-                "jeap_messaging_total{application=\"jme-messaging-receiverpublisher-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeSimpleTestEvent\",signed=\"0\",topic=\"some-other-topic\",type=\"consumer\",version=\"3.0.0\"}");
+                "jeap_messaging_total{application=\"jme-messaging-receiverpublisher-service\",bootstrapservers=\"" + bootstrapServers + "\",message=\"JmeSimpleTestEvent\",signed=\"1\",topic=\"some-other-topic\",type=\"consumer\",version=\"3.0.0\"}");
     }
 
     @TestConfiguration

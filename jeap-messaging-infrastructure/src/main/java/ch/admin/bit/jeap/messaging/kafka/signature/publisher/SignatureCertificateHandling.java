@@ -1,5 +1,8 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureMetricsService;
+import ch.admin.bit.jeap.messaging.kafka.signature.common.CertificateHelper;
+import ch.admin.bit.jeap.messaging.kafka.signature.common.SignatureCertificate;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.CertificateException;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @RequiredArgsConstructor
 @Slf4j
-public class SignatureCertificateHandling {
+class SignatureCertificateHandling {
 
     private static final Duration TASK_INTERVAL = Duration.ofHours(1);
 
@@ -54,7 +57,7 @@ public class SignatureCertificateHandling {
 
     private void initMetrics() {
         validityDaysRemaining = new AtomicLong(certificate.getValidityRemainingDays());
-        signatureMetricsService.initCertificateValidityRemainigDays(() -> validityDaysRemaining.get());
+        signatureMetricsService.initCertificateValidityRemainingDays(() -> validityDaysRemaining.get());
     }
 
     private void initTaskScheduler() {
@@ -68,7 +71,7 @@ public class SignatureCertificateHandling {
         validityDaysRemaining.set(certificate.getValidityRemainingDays());
     }
 
-    public static SignatureCertificateHandling create(byte[] certificateBytes, TaskScheduler taskScheduler, @Nullable SignatureMetricsService signatureMetricsService, String applicationName) {
+    static SignatureCertificateHandling create(byte[] certificateBytes, TaskScheduler taskScheduler, @Nullable SignatureMetricsService signatureMetricsService, String applicationName) {
         SignatureCertificate signatureCertificate = SignatureCertificate.fromBytes(certificateBytes);
         SignatureCertificateHandling certificateHandling = new SignatureCertificateHandling(signatureCertificate, taskScheduler, signatureMetricsService, applicationName);
         certificateHandling.initialCheck();

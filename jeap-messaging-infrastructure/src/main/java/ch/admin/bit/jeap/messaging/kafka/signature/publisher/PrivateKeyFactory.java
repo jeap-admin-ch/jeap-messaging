@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.messaging.kafka.signature;
+package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.KeyException;
 import lombok.experimental.UtilityClass;
@@ -18,7 +18,7 @@ public class PrivateKeyFactory {
 
     private static final String ALGORITHM = "RSA";
 
-    public static PrivateKey createPrivateKey(byte[] privateKeyBytes) {
+    static PrivateKey createPrivateKey(byte[] privateKeyBytes) {
         try {
             return doCreatePrivateKey(privateKeyBytes);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {

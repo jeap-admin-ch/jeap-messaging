@@ -8,6 +8,7 @@ import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.JeapGlueAvroDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.JeapGlueAvroSerializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.naming.GlueTopicRecordSchemaNamingStrategy;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants;
 import com.amazonaws.services.schemaregistry.utils.AvroRecordType;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -27,17 +28,21 @@ public class GlueKafkaAvroSerdeProperties implements KafkaAvroSerdeProperties {
     public static final String GLUE_AWS_CREDENTIALS_PROVIDER = "glueAwsCredentialsProvider";
 
     public static final String JEAP_CRYPTO_CONFIG = "jeapKafkaAvroSerdeCryptoConfig";
+    public static final String JEAP_SIGNATURE_AUTHENTICITY_SERVICE = "jeapSignatureAuthenticityService";
 
     private final KafkaProperties kafkaProperties;
     private final GlueProperties configProperties;
     private final AwsCredentialsProvider glueAwsCredentialsProvider;
     private final JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
+    private final SignatureAuthenticityService signatureAuthenticityService;
 
-    public GlueKafkaAvroSerdeProperties(KafkaProperties kafkaProperties, GlueProperties configProperties, AwsCredentialsProvider glueAwsCredentialsProvider, JeapKafkaAvroSerdeCryptoConfig cryptoConfig) {
+    public GlueKafkaAvroSerdeProperties(KafkaProperties kafkaProperties, GlueProperties configProperties, AwsCredentialsProvider glueAwsCredentialsProvider,
+                                        JeapKafkaAvroSerdeCryptoConfig cryptoConfig, SignatureAuthenticityService signatureAuthenticityService) {
         this.kafkaProperties = kafkaProperties;
         this.configProperties = configProperties;
         this.glueAwsCredentialsProvider = glueAwsCredentialsProvider;
         this.cryptoConfig = cryptoConfig;
+        this.signatureAuthenticityService = signatureAuthenticityService;
     }
 
     @Override
@@ -75,6 +80,9 @@ public class GlueKafkaAvroSerdeProperties implements KafkaAvroSerdeProperties {
 
         if (this.cryptoConfig != null) {
             props.put(JEAP_CRYPTO_CONFIG, this.cryptoConfig);
+        }
+        if (this.signatureAuthenticityService != null) {
+            props.put(JEAP_SIGNATURE_AUTHENTICITY_SERVICE, this.signatureAuthenticityService);
         }
 
         if (kafkaProperties.isExposeMessageKeyToConsumer()) {

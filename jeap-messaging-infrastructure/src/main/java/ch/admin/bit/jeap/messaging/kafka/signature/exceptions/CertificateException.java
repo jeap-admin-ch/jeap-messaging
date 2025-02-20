@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.messaging.kafka.signature.exceptions;
 
+import java.security.GeneralSecurityException;
+
 public class CertificateException extends RuntimeException {
 
     private CertificateException(String message) {
@@ -23,5 +25,10 @@ public class CertificateException extends RuntimeException {
     public static CertificateException certificateCnNotValid(String applicationName, String subjectDistinguishedName) {
         String message = "CN of certificate " + subjectDistinguishedName + "does not match application name " + applicationName;
         return new CertificateException(message);
+    }
+
+    public static CertificateException validatingCertificateChainFailed(GeneralSecurityException exception) {
+        String message = "Validating certificate chain failed";
+        return new CertificateException(message, exception);
     }
 }

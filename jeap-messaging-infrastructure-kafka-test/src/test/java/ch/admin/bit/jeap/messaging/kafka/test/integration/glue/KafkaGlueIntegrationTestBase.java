@@ -32,7 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 @EmbeddedKafka(controlledShutdown = true, partitions = 1)
@@ -50,6 +53,7 @@ abstract public class KafkaGlueIntegrationTestBase {
     void waitForKafkaListener() {
         registry.getListenerContainers()
                 .forEach(c -> ContainerTestUtils.waitForAssignment(c, 1));
+        testConsumer.reset();
     }
 
     protected void sendSync(KafkaTemplate<AvroMessageKey, AvroMessage> kafkaTemplate, String topic, AvroMessage message) {
@@ -85,7 +89,15 @@ abstract public class KafkaGlueIntegrationTestBase {
         private final List<BeanReferenceMessageKeyV2> beanReferenceMessageKeyV2Keys = new ArrayList<>();
         private final List<JmeSimpleTestV2Event> simpleTestV2EventsFromRecord = new ArrayList<>();
 
-        @TestKafkaListener(topics =JmeCreateDeclarationCommand.TypeRef.DEFAULT_TOPIC, groupId = "test-aws", properties = {
+        void reset() {
+            createDeclarationCommands.clear();
+            declarationCreatedEvents.clear();
+            simpleTestV2Events.clear();
+            beanReferenceMessageKeyV2Keys.clear();
+            simpleTestV2EventsFromRecord.clear();
+        }
+
+        @TestKafkaListener(topics = JmeCreateDeclarationCommand.TypeRef.DEFAULT_TOPIC, groupId = "test-aws", properties = {
                 "specific.avro.value.type=ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand"
         })
         public void consume(JmeCreateDeclarationCommand command) {
@@ -112,10 +124,12 @@ abstract public class KafkaGlueIntegrationTestBase {
                         "specific.avro.value.type=ch.admin.bit.jme.test.JmeSimpleTestV2Event",
                         KafkaTestConstants.TEST_CONSUMER_DISABLE_CONTRACT_CHECK_PROPERTY
                 }
-                )
+        )
         public void consume(ConsumerRecord consumerRecord) {
-            BeanReferenceMessageKeyV2 key = (BeanReferenceMessageKeyV2) consumerRecord.key();
-            beanReferenceMessageKeyV2Keys.add(key);
+            if (consumerRecord.key() instanceof BeanReferenceMessageKeyV2) {
+                BeanReferenceMessageKeyV2 key = (BeanReferenceMessageKeyV2) consumerRecord.key();
+                beanReferenceMessageKeyV2Keys.add(key);
+            }
             JmeSimpleTestV2Event value = (JmeSimpleTestV2Event) consumerRecord.value();
             simpleTestV2EventsFromRecord.add(value);
         }

@@ -1,6 +1,6 @@
 package ch.admin.bit.jeap.messaging.kafka.test.integration;
 
-import ch.admin.bit.jeap.messaging.kafka.signature.SignatureCertificate;
+import ch.admin.bit.jeap.messaging.kafka.signature.common.SignatureCertificate;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 
@@ -20,7 +20,7 @@ public class CertValidityTest {
 
     @Test
     public void testCertificateValidity() throws IOException {
-        Object myConfig = loadConfig("application-test-signing.yml", "jeap.messaging.authentication.publisher.signature-certificate");
+        Object myConfig = loadConfig("application-test-signing-publisher.yml", "jeap.messaging.authentication.publisher.signature-certificate");
 
         byte[] bytes = myConfig.toString().getBytes();
         SignatureCertificate certificate = SignatureCertificate.fromBytes(bytes);
