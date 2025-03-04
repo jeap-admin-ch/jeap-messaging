@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
 
-public class ContextIdExtractorDeserializer extends StdDeserializer<ContextIdExtractor<?>> {
+class ContextIdExtractorDeserializer extends StdDeserializer<ContextIdExtractor<?>> {
 
     public ContextIdExtractorDeserializer() {
         super(ContextIdExtractor.class);

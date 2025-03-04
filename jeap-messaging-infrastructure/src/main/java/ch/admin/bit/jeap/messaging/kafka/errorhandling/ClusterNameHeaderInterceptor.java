@@ -7,6 +7,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeader;
 
 import java.util.Map;
 
@@ -31,6 +33,12 @@ public class ClusterNameHeaderInterceptor implements ConsumerInterceptor<Object,
             return new String(header.value(), UTF_8);
         }
         return null;
+    }
+
+    public static void addClusterName(Headers headers, String clusterName) {
+        if (clusterName != null) {
+            headers.add(new RecordHeader(CLUSTER_NAME_HEADER, clusterName.getBytes(UTF_8)));
+        }
     }
 
     @Override

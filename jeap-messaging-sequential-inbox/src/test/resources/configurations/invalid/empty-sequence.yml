@@ -1,0 +1,5 @@
+sequences:
+
+  - name: eventType2AfterEventType1
+    retentionPeriod: P7D
+    messages: []

@@ -4,46 +4,51 @@ CREATE SEQUENCE sequenced_message_sequence START WITH 1 INCREMENT 50 CYCLE;
 
 CREATE TABLE sequence_instance
 (
-    id         bigint not null
+    id         bigint                   not null
         constraint sequence_instance_pkey primary key,
-    type       text not null,
-    context_id text not null,
-    state      text not null
+    name       text                     not null,
+    context_id text                     not null,
+    state      text                     not null,
+    created_at timestamp with time zone NOT NULL,
+    closed_at    timestamp with time zone,
+    retain_until timestamp with time zone NOT NULL
 );
 
-ALTER TABLE sequence_instance ADD CONSTRAINT SEQUENCE_INSTANCE_TYPE_CONTEXT_ID_UK UNIQUE (type, context_id);
-
-CREATE TABLE buffered_message
-(
-    id            bigint not null
-        constraint buffered_message_pkey primary key,
-    message_key   bytea,
-    message_value bytea not null,
-    headers       text
-);
+ALTER TABLE sequence_instance
+    ADD CONSTRAINT SEQUENCE_INSTANCE_NAME_CONTEXT_ID_UK UNIQUE (name, context_id);
 
 CREATE TABLE sequenced_message
 (
     id                   bigint                   not null
         constraint sequenced_message_pkey primary key,
-    type                 text not null,
-    sequenced_message_id UUID not null,
-    idempotence_id       text not null,
-    state                text not null,
-    max_delay_period     text not null,
+    message_type         text                     not null,
+    cluster_name         text                     not null,
+    topic                text                     not null,
+    sequenced_message_id UUID                     not null,
+    idempotence_id       text                     not null,
+    state                text                     not null,
     trace_id_high        bigint,
     trace_id             bigint,
     span_id              bigint,
     parent_span_id       bigint,
     trace_id_string      text,
-    created              timestamp with time zone NOT NULL,
-    sequence_instance_id bigint references sequence_instance,
-    message_id           bigint references buffered_message
+    created_at           timestamp with time zone NOT NULL,
+    state_changed_at     timestamp with time zone,
+    sequence_instance_id bigint references sequence_instance
 );
 
-create index sequenced_message_sequence_instance_id ON sequenced_message (sequence_instance_id);
-create index sequenced_message_idempotence_id ON sequenced_message (idempotence_id);
-create index sequenced_message_message_id ON sequenced_message (message_id);
+CREATE INDEX sequenced_message_sequence_instance_id ON sequenced_message (sequence_instance_id);
+CREATE INDEX sequenced_message_idempotence_id ON sequenced_message (idempotence_id);
 
+CREATE TABLE buffered_message
+(
+    id                   bigint not null
+        constraint buffered_message_pkey primary key,
+    sequence_instance_id bigint references sequence_instance,
+    sequenced_message_id bigint references sequenced_message,
+    message_key          bytea,
+    message_value        bytea  not null
+);
 
-
+CREATE INDEX buffered_message_sequence_instance_id ON buffered_message (sequence_instance_id);
+CREATE INDEX buffered_message_sequenced_message_id ON buffered_message (sequenced_message_id);

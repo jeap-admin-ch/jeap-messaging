@@ -1,0 +1,7 @@
+sequences:
+  - name: invalidDurationFormat
+    retentionPeriod: invalid  # Invalid format
+    messages:
+      - type: MessageWithInvalidDuration
+        topic: test-topic-invalid
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor

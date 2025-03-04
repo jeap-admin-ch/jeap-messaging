@@ -18,7 +18,7 @@ public class TraceContextUpdater {
                 .traceId(traceContext.getTraceId())
                 .parentId(traceContext.getParentSpanId());
 
-        if (traceContext.getTraceIdHigh()!= null) {
+        if (traceContext.getTraceIdHigh() != null) {
             builder.traceIdHigh(traceContext.getTraceIdHigh());
         }
 
@@ -26,7 +26,9 @@ public class TraceContextUpdater {
 
         final brave.propagation.TraceContext currentTraceContext = messagingTracing.tracing().currentTraceContext().get();
 
-        log.debug("TraceContext updated with trace id = {}, trace id string = {}, span id = {}, span id string = {}, parent id = {}, parent id string = {}.",
-                currentTraceContext.traceId(), currentTraceContext.traceIdString(), currentTraceContext.spanId(), currentTraceContext.spanIdString(), currentTraceContext.parentId(), currentTraceContext.parentIdString());
+        if (log.isDebugEnabled()) {
+            log.debug("TraceContext updated with trace id = {}, trace id string = {}, span id = {}, span id string = {}, parent id = {}, parent id string = {}.",
+                    currentTraceContext.traceId(), currentTraceContext.traceIdString(), currentTraceContext.spanId(), currentTraceContext.spanIdString(), currentTraceContext.parentId(), currentTraceContext.parentIdString());
+        }
     }
 }

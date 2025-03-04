@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model;
 
-public interface ContextIdExtractor<T> {
+import ch.admin.bit.jeap.messaging.avro.AvroMessage;
+
+public interface ContextIdExtractor<T extends AvroMessage> {
     String extractContextId(T message);
 }

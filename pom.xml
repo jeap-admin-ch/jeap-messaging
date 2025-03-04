@@ -60,6 +60,8 @@
         <module>jeap-messaging-contract-annotations</module>
         <module>jeap-messaging-contract-annotation-processor</module>
         <module>jeap-messaging-contract-maven-plugin</module>
+        <module>jeap-messaging-sequential-inbox</module>
+        <module>jeap-messaging-sequential-inbox-test</module>
     </modules>
 
     <properties>
@@ -160,6 +162,11 @@
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-messaging-idempotence</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.admin.bit.jeap</groupId>
+                <artifactId>jeap-messaging-sequential-inbox</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -1,8 +1,0 @@
-sequences:
-
-  - type: junit
-    messages:
-      - type: MyEventType1
-        topic: test-topic-1
-        maxDelayPeriod: PT1S
-        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.FooBar

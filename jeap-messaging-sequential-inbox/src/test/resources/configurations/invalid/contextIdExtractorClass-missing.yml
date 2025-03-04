@@ -1,0 +1,8 @@
+sequences:
+
+  - name: junit
+    retentionPeriod: P7D
+    messages:
+      - type: MyEventType1
+        topic: test-topic-1
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.FooBar

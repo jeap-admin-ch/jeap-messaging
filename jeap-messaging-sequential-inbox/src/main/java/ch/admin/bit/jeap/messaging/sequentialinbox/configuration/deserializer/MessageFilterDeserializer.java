@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
 
-public class MessageFilterDeserializer extends StdDeserializer<MessageFilter<?>> {
+class MessageFilterDeserializer extends StdDeserializer<MessageFilter<?>> {
 
     public MessageFilterDeserializer() {
         super(MessageFilter.class);

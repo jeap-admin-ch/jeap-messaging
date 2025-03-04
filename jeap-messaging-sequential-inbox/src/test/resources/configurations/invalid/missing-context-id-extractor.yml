@@ -1,0 +1,6 @@
+sequences:
+  - name: test
+    retentionPeriod: P7D
+    messages:
+      - type: MyEventType1
+        topic: test-topic-1

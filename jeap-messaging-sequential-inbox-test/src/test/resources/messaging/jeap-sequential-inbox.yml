@@ -1,0 +1,19 @@
+sequences:
+  - name: TwoSequentialMessages
+    retentionPeriod: 24h
+    messages:
+      - type: JmeDeclarationCreatedEvent
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+        messageFilter: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestMessageFilter
+
+      - type: JmeSimpleTestEvent
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+        releaseCondition:
+          predecessor: JmeDeclarationCreatedEvent
+
+  - name: UnrelatedEvent
+    retentionPeriod: 24h
+    messages:
+      - type: JmeEnumTestEvent
+        topic: jme-enum-test-event
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor

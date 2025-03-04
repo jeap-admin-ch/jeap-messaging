@@ -1,0 +1,63 @@
+sequences:
+
+  - name: eventType2AfterEventType1
+    retentionPeriod: P7D
+    messages:
+      - type: MyEventType1
+        topic: test-topic-1
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        messageFilter: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestMessageFilter
+
+      - type: MyEventType2
+        topic: test-topic-2
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          predecessor: MyEventType3
+
+      - type: MyEventType3
+        topic: test-topic-3
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          and:
+            - predecessor: MyEventType1
+            - or:
+                - predecessor: MyEventType4
+                - predecessor: MyEventType1
+                - and:
+                    - predecessor: MyEventType1
+                    - predecessor: MyEventType5
+                    - and:
+                        - predecessor: MyEventType1
+                        - predecessor: MyEventType6
+
+      - type: MyEventType4
+        topic: test-topic-4
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          or:
+            - predecessor: MyEventType1
+            - predecessor: MyEventType9
+
+
+      - type: MyEventType5
+        topic: test-topic-5
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          or:
+            - predecessor: MyEventType9
+            - predecessor: MyEventType1
+
+      - type: MyEventType6
+        topic: test-topic-6
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          or:
+            - predecessor: MyEventType9
+            - predecessor: MyEventType1
+            - or:
+                - predecessor: MyEventType3
+                - predecessor: MyEventType1
+
+      - type: MyEventType9
+        topic: test-topic-9
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor

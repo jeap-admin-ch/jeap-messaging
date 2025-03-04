@@ -1,3 +1,2 @@
-ch.admin.bit.jeap.messaging.sequentialinbox.spring.SequentialInboxConfig
-ch.admin.bit.jeap.messaging.sequentialinbox.jpa.SequentialInboxJpaConfig
-ch.admin.bit.jeap.messaging.sequentialinbox.kafka.SequentialInboxKafkaConfig
+ch.admin.bit.jeap.messaging.sequentialinbox.spring.SequentialInboxAutoConfiguration
+ch.admin.bit.jeap.messaging.sequentialinbox.housekeeping.SequentialInboxHousekeepingAutoconfiguration

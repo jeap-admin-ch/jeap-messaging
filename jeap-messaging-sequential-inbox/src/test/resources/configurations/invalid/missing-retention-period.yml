@@ -1,0 +1,14 @@
+sequences:
+
+  - name: eventType2AfterEventType1
+    # retentionPeriod intentionally missing
+    messages:
+      - type: MyEventType1
+        topic: test-topic-1
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+
+      - type: MyEventType2
+        topic: test-topic-2
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          predecessor: MyEventType1

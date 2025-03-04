@@ -1,0 +1,10 @@
+sequences:
+
+  - name: junit
+    retentionPeriod: P1D
+    messages:
+      - type: MyEventType1
+        topic: test-topic-1
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          predecessor: MyEventType2

@@ -10,14 +10,14 @@ import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ReleaseConditionsValidator {
+class ReleaseConditionsValidator {
 
     private final List<SequencedMessageType> messages;
 
     private Set<String> currentCheckedMessageTypes = new HashSet<>();
     private String currentMessageType;
 
-    public void validate() {
+    void validate() {
 
         messages.stream().filter(m -> m.getReleaseCondition() != null).forEach(message -> {
                     log.info("Checking release conditions for message type: {}", message.getType());
@@ -88,7 +88,7 @@ public class ReleaseConditionsValidator {
                 .findFirst().orElseThrow(() -> SequentialInboxConfigurationException.predecessorNotFound(messageType));
     }
 
-    private void checkDuplicatesInOperation(String parent, List<ReleaseCondition> releaseConditions){
+    private void checkDuplicatesInOperation(String parent, List<ReleaseCondition> releaseConditions) {
         List<ReleaseCondition> list = releaseConditions.stream().filter(current -> current.getPredecessor() != null).toList();
         if (list.size() != list.stream().map(ReleaseCondition::getPredecessor).distinct().count()) {
             throw SequentialInboxConfigurationException.duplicatedPredecessor(parent);

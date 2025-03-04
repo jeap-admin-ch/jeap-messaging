@@ -48,4 +48,34 @@ public class SequentialInboxConfigurationException extends RuntimeException {
     public static SequentialInboxConfigurationException duplicatedPredecessor(String messageType) {
         return new SequentialInboxConfigurationException("Duplicated predecessor in operation: " + messageType);
     }
+
+    public static SequentialInboxConfigurationException messageTypeNotConfiguredInAnySequence(String messageTypeName) {
+        return new SequentialInboxConfigurationException(
+                "Message type %s is not configured in any message sequence configuration, but has been received in the sequenced message listener"
+                        .formatted(messageTypeName));
+    }
+
+    public static SequentialInboxConfigurationException missingSequenceName() {
+        return new SequentialInboxConfigurationException(
+                "The sequential inbox configuration contains a sequence without a type attribute");
+    }
+
+    public static SequentialInboxConfigurationException emptySequence(String name) {
+        return new SequentialInboxConfigurationException(
+                "The sequential inbox configuration contains an empty sequence (sequence name: %s)".formatted(name));
+    }
+
+    public static SequentialInboxConfigurationException missingMessageType(String sequenceName) {
+        return new SequentialInboxConfigurationException(
+                "The sequential inbox configuration contains a message without a type attribute in sequence %s".formatted(sequenceName));
+    }
+
+    public static SequentialInboxConfigurationException missingContextIdExtractor(String sequenceName) {
+        return new SequentialInboxConfigurationException(
+                "The sequential inbox configuration contains a message without a contextIdExtractor in sequence %s".formatted(sequenceName));
+    }
+
+    public static SequentialInboxConfigurationException retentionPeriodMissing(String sequenceName) {
+        return new SequentialInboxConfigurationException("Missing required retention period for sequence name: " + sequenceName);
+    }
 }

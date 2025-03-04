@@ -1,6 +1,0 @@
-@namespace("ch.admin.bit.jeap.messaging.sequentialinbox.test")
-protocol Test2MessageKeyProtocol {
-  record Test2MessageKey {
-    string someProperty;
-  }
-}

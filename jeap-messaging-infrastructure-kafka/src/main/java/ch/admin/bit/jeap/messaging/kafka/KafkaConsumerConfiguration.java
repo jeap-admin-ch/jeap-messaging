@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.listener.CommonErrorHandler;
-import org.springframework.kafka.listener.ConsumerRecordRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.FixedBackOff;
@@ -26,14 +25,17 @@ public class KafkaConsumerConfiguration {
     private final Optional<TracerBridge> tracerBridge; // Only available if jeap-monitoring has been activated
 
     @Bean
-    @ConditionalOnMissingBean(CommonErrorHandler.class)
-    CommonErrorHandler errorHandler(BeanFactory beanFactory) {
+    ErrorServiceSender errorServiceSender(BeanFactory beanFactory) {
         BackOff retrySendingError = new FixedBackOff(properties.getErrorServiceRetryIntervalMs(), properties.getErrorServiceRetryAttempts());
         TracerBridge tracerBridgeOrNull = tracerBridge.orElse(null);
         StackTraceHasher stackTraceHasher = new StackTraceHasher(properties);
-        ConsumerRecordRecoverer errorSender =
-                new ErrorServiceSender(beanFactory, properties, errorServiceFailedHandler, retrySendingError, tracerBridgeOrNull, stackTraceHasher);
+        return new ErrorServiceSender(beanFactory, properties, errorServiceFailedHandler, retrySendingError, tracerBridgeOrNull, stackTraceHasher);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CommonErrorHandler.class)
+    CommonErrorHandler errorHandler(ErrorServiceSender errorServiceSender) {
         BackOff noRetry = new FixedBackOff(0, 0);
-        return new DefaultErrorHandler(errorSender, noRetry);
+        return new DefaultErrorHandler(errorServiceSender, noRetry);
     }
 }

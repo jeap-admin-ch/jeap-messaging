@@ -4,9 +4,10 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Getter
-public class ReleaseCondition {
+class ReleaseCondition {
 
     private String predecessor;
 
@@ -16,11 +17,18 @@ public class ReleaseCondition {
 
     @Override
     public String toString() {
-        return """
-                ReleaseCondition{
-                    predecessor='%s',
-                    and=%s,
-                    or=%s}
-                """.formatted(predecessor, and, or);
+        return "ReleaseCondition{predecessor='%s',and=%s,or=%s}".formatted(predecessor, and, or);
+    }
+
+    boolean isSatisfied(Set<String> releasedMessageTypes) {
+        if (predecessor != null) {
+            return releasedMessageTypes.contains(predecessor);
+        }
+
+        if (!and.isEmpty()) {
+            return and.stream().allMatch(rc -> rc.isSatisfied(releasedMessageTypes));
+        }
+
+        return or.stream().anyMatch(rc -> rc.isSatisfied(releasedMessageTypes));
     }
 }

@@ -6,41 +6,35 @@ import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.Sequentia
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 
 @SuppressWarnings("java:S1075")
 @Slf4j
 public class SequentialInboxConfigurationLoader {
 
-    private static final String DEFAULT_CLASSPATH_LOCATION = "classpath:/messaging/jeap-sequential-inbox.yaml";
-
     private final String classpathLocation;
-
-    public SequentialInboxConfigurationLoader() {
-        this.classpathLocation = DEFAULT_CLASSPATH_LOCATION;
-    }
 
     public SequentialInboxConfigurationLoader(String classpathLocation) {
         this.classpathLocation = classpathLocation;
     }
 
     public SequentialInboxConfiguration loadSequenceDeclaration() {
-        log.info("Load SequentialInboxConfiguration from file {}", classpathLocation);
+        log.info("Load Sequential Inbox config from location {}", classpathLocation);
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         SimpleModule module = new SimpleModule();
         module.addDeserializer(ContextIdExtractor.class, new ContextIdExtractorDeserializer());
         module.addDeserializer(MessageFilter.class, new MessageFilterDeserializer());
+        module.addDeserializer(Duration.class, new RetentionPeriodDeserializer());
         mapper.registerModule(module);
-        mapper.registerModule(new JavaTimeModule());
         SequentialInboxConfiguration sequentialInboxConfiguration = readSequentialInboxConfiguration(mapper);
-        sequentialInboxConfiguration.validate();
-        log.info("SequentialInboxConfiguration load with {} sequences", sequentialInboxConfiguration.getSequences().size());
-        log.debug("SequentialInboxConfiguration loaded: {}", sequentialInboxConfiguration);
+        sequentialInboxConfiguration.validateAndInitialize();
+        log.info("Sequential Inbox config loaded with {} sequences", sequentialInboxConfiguration.getSequenceCount());
+        log.debug("Sequential Inbox config: {}", sequentialInboxConfiguration);
         return sequentialInboxConfiguration;
     }
 
@@ -53,7 +47,7 @@ public class SequentialInboxConfigurationLoader {
         }
     }
 
-    private File loadConfigurationFile(){
+    private File loadConfigurationFile() {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
             return resolver.getResource(classpathLocation).getFile();

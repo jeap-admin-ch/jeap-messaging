@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.messaging.sequentialinbox.configuration.deserializer;
 
+import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.Sequence;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequentialInboxConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,14 +25,20 @@ class SequentialInboxConfigurationValidationTest {
 
     @ParameterizedTest
     @CsvSource({
-            "deadlock-events.yaml,Circular predecessor definition: MyEventType3 -> MyEventType6 -> MyEventType3",
-            "deadlock-events-2.yaml,Circular predecessor definition: MyEventType3 -> MyEventType6 -> MyEventType3",
-            "deadlock-events-3.yaml,Circular predecessor definition: MyEventType4 -> MyEventType5 -> MyEventType4",
-            "duplicated-event.yaml,Duplicated message types: [MyEventType1]",
-            "duplicated-topic.yaml,Duplicated topics: [test-topic-1]",
-            "predecessor-event-missing.yaml,Predecessor not found: MyEventType2",
-            "contextIdExtractorClass-missing.yaml,Error while parsing configuration file: classpath:/configurations/invalid/contextIdExtractorClass-missing.yaml",
-            "messageFilterClass-missing.yaml,Error while parsing configuration file: classpath:/configurations/invalid/messageFilterClass-missing.yaml",
+            "deadlock-events.yml,Circular predecessor definition: MyEventType3 -> MyEventType6 -> MyEventType3",
+            "deadlock-events-2.yml,Circular predecessor definition: MyEventType3 -> MyEventType6 -> MyEventType3",
+            "deadlock-events-3.yml,Circular predecessor definition: MyEventType4 -> MyEventType5 -> MyEventType4",
+            "duplicated-event.yml,Duplicated message types: [MyEventType1]",
+            "duplicated-topic.yml,Duplicated topics: [test-topic-1]",
+            "predecessor-event-missing.yml,Predecessor not found: MyEventType2",
+            "contextIdExtractorClass-missing.yml,Error while parsing configuration file: classpath:/configurations/invalid/contextIdExtractorClass-missing.yml",
+            "messageFilterClass-missing.yml,Error while parsing configuration file: classpath:/configurations/invalid/messageFilterClass-missing.yml",
+            "empty-sequence.yml,The sequential inbox configuration contains an empty sequence (sequence name: eventType2AfterEventType1)",
+            "missing-sequence-name.yml,The sequential inbox configuration contains a sequence without a type attribute",
+            "missing-message-type.yml,The sequential inbox configuration contains a message without a type attribute in sequence test",
+            "missing-context-id-extractor.yml,The sequential inbox configuration contains a message without a contextIdExtractor in sequence test",
+            "missing-retention-period.yml,Missing required retention period for sequence name: eventType2AfterEventType1",
+            "invalid-duration-format.yml,Error while parsing configuration file: classpath:/configurations/invalid/invalid-duration-format.yml"
     })
     void testInvalidConfigurations(String filename, String exceptionMessage) {
         doTestWithInvalidConfiguration("classpath:/configurations/invalid/" + filename, exceptionMessage);
@@ -40,13 +47,15 @@ class SequentialInboxConfigurationValidationTest {
     void doTest(String path) {
         SequentialInboxConfigurationLoader loader = new SequentialInboxConfigurationLoader(path);
         SequentialInboxConfiguration sequentialInboxConfiguration = loader.loadSequenceDeclaration();
-        assertThat(sequentialInboxConfiguration).isNotNull();
-        assertThat(sequentialInboxConfiguration.getSequences()).isNotEmpty();
-        sequentialInboxConfiguration.getSequences().forEach(sequence -> {
+        assertThat(sequentialInboxConfiguration)
+                .isNotNull();
+        assertThat(sequentialInboxConfiguration.getSequenceCount())
+                .isPositive();
+        sequentialInboxConfiguration.getSequencedMessageTypes().forEach(smt -> {
+            Sequence sequence = sequentialInboxConfiguration.getSequenceByMessageTypeName(smt.getType());
             assertThat(sequence.getMessages()).isNotEmpty();
             sequence.getMessages().forEach(message -> {
                 assertThat(message.getType()).isNotNull();
-                assertThat(message.getMaxDelayPeriod()).isNotNull();
                 assertThat(message.getContextIdExtractor()).isNotNull();
             });
         });
