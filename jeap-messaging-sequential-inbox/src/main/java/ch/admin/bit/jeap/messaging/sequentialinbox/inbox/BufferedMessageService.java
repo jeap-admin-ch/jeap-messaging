@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.Sequenced
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequentialInboxConfiguration;
 import ch.admin.bit.jeap.messaging.sequentialinbox.inbox.BufferedMessageTracing.TraceContextRestorer;
 import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.MessageRepository;
+import ch.admin.bit.jeap.messaging.sequentialinbox.metrics.SequentialInboxMetricsCollector;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.BufferedMessage;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequenceInstance;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessage;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +35,7 @@ class BufferedMessageService {
     private final MessageRepository messageRepository;
     private final SequentialInboxConfiguration sequentialInboxConfiguration;
     private final BufferedMessageTracing bufferedMessageTracing;
+    private final SequentialInboxMetricsCollector metricsCollector;
 
     /**
      * @return true if sequence is complete, false otherwise
@@ -83,6 +87,7 @@ class BufferedMessageService {
 
             try {
                 log.debug("Processing buffered message {}", sequencedMessage);
+                recordWaitingMessageCompletedTimer(sequencedMessage);
                 messageHandlerService.handle(deserializedMessage.get());
                 messageRepository.setMessageStateInNewTransaction(sequencedMessage, SequencedMessageState.PROCESSED);
                 log.debug("Processed buffered message {}", sequencedMessage);
@@ -94,6 +99,14 @@ class BufferedMessageService {
         }
 
         return true;
+    }
+
+    private void recordWaitingMessageCompletedTimer(SequencedMessage sequencedMessage) {
+        // Record only the state change from WAITING to PROCESSED, ignore the case when the message is retried from the FAILED state
+        if (sequencedMessage.getState() == SequencedMessageState.WAITING) {
+            Duration waitDuration = Duration.between(sequencedMessage.getCreatedAt(), ZonedDateTime.now());
+            metricsCollector.onWaitingMessageCompleted(sequencedMessage.getMessageType(), waitDuration);
+        }
     }
 
     private Optional<DeserializedMessage> getDeserializedMessage(SequencedMessage sequencedMessage) {

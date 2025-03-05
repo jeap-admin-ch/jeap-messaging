@@ -12,6 +12,7 @@ import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.MessageRepository;
 import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.SequenceInstanceRepository;
 import ch.admin.bit.jeap.messaging.sequentialinbox.kafka.KafkaSequentialInboxMessageConsumerFactory;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.*;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
@@ -79,6 +80,9 @@ public class SequentialInboxITBase extends KafkaIntegrationTestBase {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    MeterRegistry meterRegistry;
 
     @MockitoSpyBean
     private SequentialInboxService sequentialInboxService;

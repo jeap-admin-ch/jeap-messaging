@@ -9,11 +9,15 @@ import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
 import ch.admin.bit.jme.test.BeanReferenceMessageKey;
 import ch.admin.bit.jme.test.JmeEnumTestEvent;
 import ch.admin.bit.jme.test.JmeSimpleTestEvent;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -125,6 +129,62 @@ class SequentialInboxIT extends SequentialInboxITBase {
         assertSequencedMessageProcessedSuccessfully(successorEvent);
         assertSequenceOfMessages(contextId, predecessorEvent, successorEvent);
         assertSequenceClosed(contextId);
+    }
+
+
+    @Test
+    void testInbox_messageWithPredecessor_bufferedAndThenProcessedAfterPredecessorHandled_metricsProvided() {
+        // given: an event with a predecessor
+        UUID contextId = randomContextId();
+        JmeSimpleTestEvent successorEvent = createJmeSimpleTestEvent(contextId);
+
+        // when: sending the successor event
+        sendSync(JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC, successorEvent);
+
+        // then: assert that the event was buffered and not yet consumed by the message listener
+        assertMessageStateWaitingAndBuffered(successorEvent);
+
+        // when: sending the predecessor event for the same context ID
+        JmeDeclarationCreatedEvent predecessorEvent = createDeclarationCreatedEvent(contextId);
+        sendSync(JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC, predecessorEvent);
+
+        // then: assert that the predecessor event was consumed by the message listener
+        assertSequencedMessageProcessedSuccessfully(predecessorEvent);
+
+        // then: assert that the successor event was consumed by the message listener
+        assertSequencedMessageProcessedSuccessfully(successorEvent);
+        assertSequenceClosed(contextId);
+
+        // then: assert metric values
+        Optional<Counter> counterOptional = findMeter(Counter.class,
+                "jeap.messaging.sequential-inbox.metrics.consumed-messages", "JmeSimpleTestEvent");
+        assertThat(counterOptional)
+                .isPresent()
+                .hasValueSatisfying(counter ->
+                        assertThat(counter.count())
+                                .isPositive());
+        Optional<Timer> timerOptional = findMeter(Timer.class,
+                "jeap.messaging.sequential-inbox.metrics.waiting-message-delay", "JmeSimpleTestEvent");
+        assertThat(timerOptional)
+                .isPresent()
+                .hasValueSatisfying(timer ->
+                        assertThat(timer.count())
+                                .isPositive());
+        Optional<Gauge> gaugeOptional = findMeter(Gauge.class,
+                "jeap.messaging.sequential-inbox.metrics.waiting-messages", "JmeSimpleTestEvent");
+        assertThat(gaugeOptional)
+                .isPresent()
+                .hasValueSatisfying(gauge ->
+                        assertThat(gauge.value())
+                                .isGreaterThanOrEqualTo(0));
+    }
+
+    private <T> Optional<T> findMeter(Class<T> meterClass, String meterName, String messageType) {
+        return meterRegistry.getMeters().stream()
+                .filter(meter -> meterName.equals(meter.getId().getName()))
+                .filter(meter -> messageType.equals(meter.getId().getTag("type")))
+                .map(meterClass::cast)
+                .findFirst();
     }
 
     @Test

@@ -39,6 +39,7 @@ CREATE TABLE sequenced_message
 
 CREATE INDEX sequenced_message_sequence_instance_id ON sequenced_message (sequence_instance_id);
 CREATE INDEX sequenced_message_idempotence_id ON sequenced_message (idempotence_id);
+CREATE INDEX idx_sequenced_message_state_message_type ON sequenced_message (state, message_type); -- for metrics
 
 CREATE TABLE buffered_message
 (

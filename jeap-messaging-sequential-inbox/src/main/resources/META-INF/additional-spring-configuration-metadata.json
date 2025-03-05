@@ -35,6 +35,12 @@
       "description": "Terminate any sequential inbox lock transaction that held a sequence instance lock for more than this number of seconds. Defaults to 600 seconds (10 minutes). This value only comes into play if a lock is either held for too long because of an error in the message processing logic, or if a DB connection is not detected to be terminated by the DB server and the lock thus not released. Used to set the postgres parameter idle_in_transaction_session_timeout using 'SET LOCAL idle_in_transaction_session_timeout' for the current transaction. Set to -1 to disable this feature, the system default of the database server will be used in this case.",
       "defaultValue": 600,
       "type": "java.lang.Integer"
+    },
+    {
+      "name": "jeap.messaging.sequential-inbox.metrics.update-rate-minutes",
+      "description": "The rate in minutes at which the metrics requiring database queries (e.g. waiting message counts) are updated.",
+      "defaultValue": 5,
+      "type": "java.lang.Integer"
     }
   ]
 }

@@ -1,2 +1,3 @@
 ch.admin.bit.jeap.messaging.sequentialinbox.spring.SequentialInboxAutoConfiguration
+ch.admin.bit.jeap.messaging.sequentialinbox.metrics.SequentialInboxMetricsAutoConfiguration
 ch.admin.bit.jeap.messaging.sequentialinbox.housekeeping.SequentialInboxHousekeepingAutoconfiguration

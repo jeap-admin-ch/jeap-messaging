@@ -16,10 +16,7 @@ import org.springframework.test.context.transaction.TestTransaction;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,16 +58,7 @@ class MessageRepositoryTest {
                 .value(new byte[]{4, 5, 6})
                 .sequenceInstanceId(sequenceInstance.getId())
                 .build();
-        SequencedMessage sequencedMessage = SequencedMessage.builder()
-                .sequenceInstanceId(1L)
-                .messageType("type")
-                .sequencedMessageId(UUID.randomUUID())
-                .idempotenceId("idempotenceId")
-                .clusterName("cluster")
-                .topic("topic")
-                .state(SequencedMessageState.WAITING)
-                .sequenceInstanceId(sequenceInstance.getId())
-                .build();
+        SequencedMessage sequencedMessage = createSequencedMessage(sequenceInstance);
 
         messageRepository.saveMessage(bufferedMessage, sequencedMessage);
 
@@ -85,16 +73,7 @@ class MessageRepositoryTest {
     @Test
     void saveMessage_withoutBufferedMessage() {
         SequenceInstance sequenceInstance = createAndPersistSequenceInstance();
-        SequencedMessage sequencedMessage = SequencedMessage.builder()
-                .sequenceInstanceId(1L)
-                .messageType("type")
-                .sequencedMessageId(UUID.randomUUID())
-                .idempotenceId("idempotenceId")
-                .clusterName("cluster")
-                .topic("topic")
-                .state(SequencedMessageState.WAITING)
-                .sequenceInstanceId(sequenceInstance.getId())
-                .build();
+        SequencedMessage sequencedMessage = createSequencedMessage(sequenceInstance);
 
         messageRepository.saveMessage(null, sequencedMessage);
 
@@ -196,16 +175,7 @@ class MessageRepositoryTest {
     @Test
     void setMessageStateInNewTransaction_updatesStateCorrectly() {
         SequenceInstance sequenceInstance = createAndPersistSequenceInstance();
-        SequencedMessage sequencedMessage = SequencedMessage.builder()
-                .sequenceInstanceId(1L)
-                .messageType("type")
-                .sequencedMessageId(UUID.randomUUID())
-                .idempotenceId("idempotenceId")
-                .clusterName("cluster")
-                .topic("topic")
-                .state(SequencedMessageState.WAITING)
-                .sequenceInstanceId(sequenceInstance.getId())
-                .build();
+        SequencedMessage sequencedMessage = createSequencedMessage(sequenceInstance);
         testEntityManager.persist(sequencedMessage);
         TestTransaction.flagForCommit();
         TestTransaction.end();
@@ -220,16 +190,7 @@ class MessageRepositoryTest {
     @Test
     void setMessageStateInCurrentTransaction_updatesStateCorrectly() {
         SequenceInstance sequenceInstance = createAndPersistSequenceInstance();
-        SequencedMessage sequencedMessage = SequencedMessage.builder()
-                .sequenceInstanceId(1L)
-                .messageType("type")
-                .sequencedMessageId(UUID.randomUUID())
-                .idempotenceId("idempotenceId")
-                .clusterName("cluster")
-                .topic("topic")
-                .state(SequencedMessageState.WAITING)
-                .sequenceInstanceId(sequenceInstance.getId())
-                .build();
+        SequencedMessage sequencedMessage = createSequencedMessage(sequenceInstance);
         messageRepository.saveMessage(null, sequencedMessage);
 
         messageRepository.setMessageStateInCurrentTransaction(sequencedMessage, SequencedMessageState.PROCESSED);
@@ -242,16 +203,7 @@ class MessageRepositoryTest {
     @Test
     void findByMessageTypeAndIdempotenceId_returnsCorrectMessageInNewTransaction() {
         SequenceInstance sequenceInstance = createAndPersistSequenceInstance();
-        SequencedMessage sequencedMessage = SequencedMessage.builder()
-                .sequenceInstanceId(1L)
-                .messageType("type")
-                .sequencedMessageId(UUID.randomUUID())
-                .idempotenceId("idempotenceId")
-                .clusterName("cluster")
-                .topic("topic")
-                .state(SequencedMessageState.WAITING)
-                .sequenceInstanceId(sequenceInstance.getId())
-                .build();
+        SequencedMessage sequencedMessage = createSequencedMessage(sequenceInstance);
         messageRepository.saveMessage(null, sequencedMessage);
         TestTransaction.flagForCommit();
         TestTransaction.end();
@@ -261,15 +213,6 @@ class MessageRepositoryTest {
         assertThat(result)
                 .isPresent()
                 .contains(sequencedMessage);
-    }
-
-    private SequenceInstance createAndPersistSequenceInstance() {
-        return sequenceInstanceRepository.save(SequenceInstance.builder()
-                .name("test")
-                .contextId(UUID.randomUUID().toString())
-                .state(SequenceInstanceState.OPEN)
-                .retentionPeriod(Duration.ofDays(7))
-                .build());
     }
 
     @Test
@@ -349,5 +292,52 @@ class MessageRepositoryTest {
         // Verify only the expired buffered message was deleted
         assertThat(testEntityManager.find(BufferedMessage.class, validBufferedMessage.getId())).isNotNull();
         assertThat(testEntityManager.find(BufferedMessage.class, expiredBufferedMessage.getId())).isNull();
+    }
+
+
+    @Test
+    void getWaitingMessageCountByType() {
+        SequenceInstance sequenceInstance = createAndPersistSequenceInstance();
+        SequencedMessage waitingMessage = createSequencedMessage(sequenceInstance);
+        SequencedMessage processedMessage = createSequencedMessage(sequenceInstance);
+        SequencedMessage otherTypeWaitingMessage = createSequencedMessage(sequenceInstance, "otherType");
+        processedMessage.setState(SequencedMessageState.PROCESSED);
+        messageRepository.saveMessage(null, waitingMessage);
+        messageRepository.saveMessage(null, otherTypeWaitingMessage);
+        messageRepository.saveMessage(null, processedMessage);
+
+        Map<String, Double> countByType = messageRepository.getWaitingMessageCountByType();
+
+        assertThat(countByType)
+                .containsEntry("type", 1.0)
+                .containsEntry("otherType", 1.0)
+                .hasSize(2);
+
+    }
+
+    private static SequencedMessage createSequencedMessage(SequenceInstance sequenceInstance) {
+        return createSequencedMessage(sequenceInstance, "type");
+    }
+
+    private static SequencedMessage createSequencedMessage(SequenceInstance sequenceInstance, String type) {
+        return SequencedMessage.builder()
+                .sequenceInstanceId(sequenceInstance.getId())
+                .messageType(type)
+                .sequencedMessageId(UUID.randomUUID())
+                .idempotenceId("idempotenceId")
+                .clusterName("cluster")
+                .topic("topic")
+                .state(SequencedMessageState.WAITING)
+                .sequenceInstanceId(sequenceInstance.getId())
+                .build();
+    }
+
+    private SequenceInstance createAndPersistSequenceInstance() {
+        return sequenceInstanceRepository.save(SequenceInstance.builder()
+                .name("test")
+                .contextId(UUID.randomUUID().toString())
+                .state(SequenceInstanceState.OPEN)
+                .retentionPeriod(Duration.ofDays(7))
+                .build());
     }
 }

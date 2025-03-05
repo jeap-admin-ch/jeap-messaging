@@ -6,8 +6,8 @@ import ch.admin.bit.jeap.messaging.kafka.errorhandling.ClusterNameHeaderIntercep
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequencedMessageType;
 import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.MessageRepository;
-import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.SequenceInstanceRepository;
 import ch.admin.bit.jeap.messaging.sequentialinbox.kafka.TraceContextFactory;
+import ch.admin.bit.jeap.messaging.sequentialinbox.metrics.SequentialInboxMetricsCollector;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.BufferedMessage;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequenceInstance;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessage;
@@ -30,7 +30,7 @@ class SequencedMessageService {
     private final TraceContextFactory traceContextFactory;
     private final MessageRepository messageRepository;
     private final KafkaProperties kafkaProperties;
-    private final SequenceInstanceRepository sequenceInstanceRepository;
+    private final SequentialInboxMetricsCollector metricsCollector;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
     public void storeSequencedMessage(Optional<SequencedMessage> existingSequencedMessage,
@@ -38,10 +38,13 @@ class SequencedMessageService {
                                       SequencedMessageState state,
                                       ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord) {
 
+        String messageType = consumerRecord.value().getType().getName();
         if (existingSequencedMessage.isPresent()) {
             messageRepository.setMessageStateInCurrentTransaction(existingSequencedMessage.get(), state);
             return;
         }
+
+        metricsCollector.onConsumedSequencedMessage(messageType);
 
         BufferedMessage bufferedMessage = null;
         if (state == SequencedMessageState.WAITING) {
@@ -55,7 +58,7 @@ class SequencedMessageService {
         String clusterName = getClusterName(consumerRecord);
 
         SequencedMessage sequencedMessage = SequencedMessage.builder()
-                .messageType(consumerRecord.value().getType().getName())
+                .messageType(messageType)
                 .sequenceInstanceId(sequenceInstance.getId())
                 .clusterName(clusterName)
                 .topic(consumerRecord.topic())

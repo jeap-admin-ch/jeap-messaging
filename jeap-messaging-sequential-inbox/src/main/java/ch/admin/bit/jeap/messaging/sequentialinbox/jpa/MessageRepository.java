@@ -12,8 +12,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -87,5 +89,11 @@ public class MessageRepository {
     public int deleteMessagesForClosedSequences() {
         bufferedMessageRepository.deleteForClosedSequences();
         return sequencedMessageRepository.deleteForClosedSequences();
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Map<String, Double> getWaitingMessageCountByType() {
+        return sequencedMessageRepository.getWaitingMessageCountGroupedByMessageType().stream()
+                .collect(Collectors.toMap(CountByType::messageType, CountByType::waitingCount));
     }
 }

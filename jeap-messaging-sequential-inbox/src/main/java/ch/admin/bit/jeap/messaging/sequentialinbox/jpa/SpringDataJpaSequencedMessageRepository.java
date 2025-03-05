@@ -33,4 +33,7 @@ interface SpringDataJpaSequencedMessageRepository extends JpaRepository<Sequence
     @Modifying
     @Query(nativeQuery = true, value = "DELETE FROM sequenced_message WHERE sequence_instance_id IN (SELECT id FROM sequence_instance WHERE state = 'CLOSED')")
     int deleteForClosedSequences();
+
+    @Query(nativeQuery = true, value = "SELECT message_type as messageType, COUNT(*) as stateCount FROM sequenced_message WHERE state = 'WAITING' GROUP BY message_type")
+    List<CountByType> getWaitingMessageCountGroupedByMessageType();
 }

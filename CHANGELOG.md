@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.24.0] - 2025-03-05
+
+### Changed
+
+- Add metrics for the sequential inbox
+  - jeap.messaging.sequential-inbox.metrics.waiting-messages counts the number of messages waiting to be processed (per messagetype)
+  - jeap.messaging.sequential-inbox.metrics.consumed-messages counts the number of messages consumed in total (per messagetype)
+  - jeap.messaging.sequential-inbox.metrics.waiting-message-delay measures the delay between the message being buffered and the message being processed (per messagetype)
+
 ## [8.23.0] - 2025-03-05
 
 ### Changed
