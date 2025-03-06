@@ -179,6 +179,7 @@ Apache License Version 2.0
  * Apache Commons Collections - [org.apache.commons:commons-collections4](https://commons.apache.org/proper/commons-collections/)
  * Apache Commons Compress - [org.apache.commons:commons-compress](https://commons.apache.org/proper/commons-compress/)
  * Apache Commons Lang - [org.apache.commons:commons-lang3](https://commons.apache.org/proper/commons-lang/)
+ * Apache Commons Math - [org.apache.commons:commons-math3](http://commons.apache.org/proper/commons-math/)
  * Apache Commons Text - [org.apache.commons:commons-text](https://commons.apache.org/proper/commons-text)
  * Apache Groovy - [org.apache.groovy:groovy](https://groovy-lang.org)
  * Apache Groovy - [org.apache.groovy:groovy-json](https://groovy-lang.org)
@@ -434,6 +435,8 @@ GNU General Public License, version 2 (GPL2), with the classpath exception
 
  * Jakarta Annotations API - [jakarta.annotation:jakarta.annotation-api](https://projects.eclipse.org/projects/ee4j.ca)
  * jakarta.transaction API - [jakarta.transaction:jakarta.transaction-api](https://projects.eclipse.org/projects/ee4j.jta)
+ * JMH Core - [org.openjdk.jmh:jmh-core](http://openjdk.java.net/projects/code-tools/jmh/jmh-core/)
+ * JMH Generators: Annotation Processors - [org.openjdk.jmh:jmh-generator-annprocess](http://openjdk.java.net/projects/code-tools/jmh/jmh-generator-annprocess/)
 
 GNU Lesser General Public License
 -------------------------------

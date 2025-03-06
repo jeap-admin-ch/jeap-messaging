@@ -56,8 +56,10 @@ class SignatureCertificateHandling {
     }
 
     private void initMetrics() {
-        validityDaysRemaining = new AtomicLong(certificate.getValidityRemainingDays());
-        signatureMetricsService.initCertificateValidityRemainingDays(() -> validityDaysRemaining.get());
+        if (signatureMetricsService != null) {
+            validityDaysRemaining = new AtomicLong(certificate.getValidityRemainingDays());
+            signatureMetricsService.initCertificateValidityRemainingDays(() -> validityDaysRemaining.get());
+        }
     }
 
     private void initTaskScheduler() {

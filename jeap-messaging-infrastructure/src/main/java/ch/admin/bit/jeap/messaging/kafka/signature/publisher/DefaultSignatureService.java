@@ -30,7 +30,7 @@ public class DefaultSignatureService implements SignatureService {
     }
 
     @PostConstruct
-    void init() {
+    public void init() {
         properties.checkAndLogSigningDisabled();
         if (properties.isSigningEnabled()) {
             CryptoProviderHelper.installCryptoProvider();

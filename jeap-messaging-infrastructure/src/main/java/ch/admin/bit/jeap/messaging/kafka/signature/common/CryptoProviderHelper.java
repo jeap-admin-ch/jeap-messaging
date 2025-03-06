@@ -22,7 +22,7 @@ public class CryptoProviderHelper {
             AmazonCorrettoCryptoProvider.INSTANCE.assertHealthy();
             correttoEnabled = true;
         } catch (Throwable throwable) {
-            log.warn("Corretto crypto provider is not enabled");
+            log.warn("Corretto crypto provider is not enabled: " + throwable.getMessage());
             correttoEnabled = false;
         }
     }

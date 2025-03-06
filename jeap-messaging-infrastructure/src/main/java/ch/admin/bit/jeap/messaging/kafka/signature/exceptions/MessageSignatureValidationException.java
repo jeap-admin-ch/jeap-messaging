@@ -43,12 +43,12 @@ public class MessageSignatureValidationException extends RuntimeException implem
     }
 
     public static MessageSignatureValidationException certificateHeaderMissing(String messageTypeName, String service) {
-        String message = String.format("Received message %s from %s with signature certificate header but without signature header. Rejecting message.", messageTypeName, service);
+        String message = String.format("Received message %s from %s with signature but without signature certificate. Rejecting message.", messageTypeName, service);
         return new MessageSignatureValidationException(message);
     }
 
     public static MessageSignatureValidationException signatureHeaderMissing(String messageTypeName, String service) {
-        String message = String.format("Received message %s from %s with signature but without signature certificate. Rejecting message.", messageTypeName, service);
+        String message = String.format("Received message %s from %s with signature certificate header but without signature header. Rejecting message.", messageTypeName, service);
         return new MessageSignatureValidationException(message);
     }
 
