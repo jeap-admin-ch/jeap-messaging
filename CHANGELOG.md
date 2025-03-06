@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 5.5.5 to 5.6.0
+- Update jeap-crypto from 3.11.0 to 3.12.0
 - Update aws-msk-iam-auth from 2.2.0 to 2.3.0
 - Update schema-registry-serde from 1.1.22 to 1.1.23
 
