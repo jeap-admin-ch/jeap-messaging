@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.27.0] - 2025-03-12
+
+### Changed
+
+- The sequencing start timestamp can be set to define when the sequencing should begin. This can be configured using the optional property `jeap.messaging.sequential-inbox.sequencing-start-timestamp`.
+- This change is necessary to handle messages that need to be newly sequenced, especially when their predecessors were received before the introduction of the sequence.
+- If this property is not configured, the sequencing will start immediately. Messages with an already received predecessors can then not be processed. 
+
 ## [8.26.0] - 2025-03-06
 
 ### Changed

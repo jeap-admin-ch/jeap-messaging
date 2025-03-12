@@ -41,6 +41,11 @@
       "description": "The rate in minutes at which the metrics requiring database queries (e.g. waiting message counts) are updated.",
       "defaultValue": 5,
       "type": "java.lang.Integer"
+    },
+    {
+      "name": "jeap.messaging.sequential-inbox.sequencing-start-timestamp",
+      "description": "Timestamp from which the sequencing should effectively start. Once this parameter is configured, the recording mode will be activated.",
+      "type": "java.time.LocalDateTime"
     }
   ]
 }

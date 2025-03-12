@@ -85,7 +85,7 @@ public class SequentialInboxITBase extends KafkaIntegrationTestBase {
     MeterRegistry meterRegistry;
 
     @MockitoSpyBean
-    private SequentialInboxService sequentialInboxService;
+    protected SequentialInboxService sequentialInboxService;
 
     @BeforeAll
     static void beforeAll() {

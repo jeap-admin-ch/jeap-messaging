@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.ClusterNameHeaderInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
+import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.Sequence;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequencedMessageType;
 import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.MessageRepository;
 import ch.admin.bit.jeap.messaging.sequentialinbox.kafka.TraceContextFactory;
@@ -90,5 +91,11 @@ class SequencedMessageService {
 
         Set<String> processedMessageTypes = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstance);
         return sequencedMessageType.isReleaseConditionSatisfied(processedMessageTypes);
+    }
+
+    boolean areAllMessagesProcessed(Sequence sequence, SequenceInstance sequenceInstance) {
+        Set<String> allMessageTypeNames = sequence.getMessageTypeNames();
+        Set<String> processedMessageTypes = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstance);
+        return allMessageTypeNames.equals(processedMessageTypes);
     }
 }
