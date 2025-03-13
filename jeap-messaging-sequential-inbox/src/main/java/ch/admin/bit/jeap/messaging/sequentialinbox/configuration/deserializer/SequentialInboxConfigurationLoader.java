@@ -9,8 +9,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 
 @SuppressWarnings("java:S1075")
@@ -40,17 +40,17 @@ public class SequentialInboxConfigurationLoader {
 
     private SequentialInboxConfiguration readSequentialInboxConfiguration(ObjectMapper mapper) {
         try {
-            return mapper.readValue(loadConfigurationFile(), SequentialInboxConfiguration.class);
+            return mapper.readValue(loadConfigurationFileInputStream(), SequentialInboxConfiguration.class);
         } catch (IOException e) {
             log.error("Error while reading configuration file {}", classpathLocation, e);
             throw SequentialInboxConfigurationException.configurationFileParsingError(classpathLocation, e);
         }
     }
 
-    private File loadConfigurationFile() {
+    private InputStream loadConfigurationFileInputStream() {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
-            return resolver.getResource(classpathLocation).getFile();
+            return resolver.getResource(classpathLocation).getInputStream();
         } catch (IOException e) {
             log.error("Error while loading configuration file {}", classpathLocation, e);
             throw SequentialInboxConfigurationException.configurationFileLoadingError(classpathLocation, e);
