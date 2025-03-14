@@ -14,8 +14,8 @@ import java.util.Optional;
 @Repository
 interface SpringDataJpaSequenceInstanceRepository extends JpaRepository<SequenceInstance, Long> {
 
-    @Query(nativeQuery = true, value = "SELECT id FROM sequence_instance WHERE name = ?1 AND context_id = ?2")
-    Optional<Long> findIdByNameAndContextId(String name, String contextId);
+    @Query(nativeQuery = true, value = "SELECT * FROM sequence_instance WHERE name = ?1 AND context_id = ?2")
+    Optional<SequenceInstance> findByNameAndContextId(String name, String contextId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT si FROM SequenceInstance si WHERE si.id = ?1")

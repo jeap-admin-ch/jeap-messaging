@@ -71,7 +71,7 @@ class SequenceInstanceRepositoryTest {
         testEntityManager.persist(createSequenceInstance(name, contextId));
         testEntityManager.persist(createSequenceInstance(UUID.randomUUID().toString(), UUID.randomUUID().toString()));
 
-        Optional<Long> result = sequenceInstanceRepository.findIdByNameAndContextId(name, contextId);
+        Optional<SequenceInstance> result = sequenceInstanceRepository.findByNameAndContextId(name, contextId);
 
         assertThat(result).isPresent();
     }
