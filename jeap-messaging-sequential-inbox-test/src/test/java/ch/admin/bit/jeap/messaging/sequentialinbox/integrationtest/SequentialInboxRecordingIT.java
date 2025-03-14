@@ -5,7 +5,6 @@ import ch.admin.bit.jme.test.JmeEnumTestEvent;
 import ch.admin.bit.jme.test.JmeSimpleTestEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.UUID;
@@ -14,7 +13,6 @@ import static ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.messag
 
 @Slf4j
 @TestPropertySource(properties = "jeap.messaging.sequential-inbox.config-location=classpath:/messaging/jeap-sequential-inbox-three-messages.yml")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class SequentialInboxRecordingIT extends SequentialInboxWithPreRecordingITBase {
 
     @Test
@@ -61,7 +59,7 @@ class SequentialInboxRecordingIT extends SequentialInboxWithPreRecordingITBase {
     }
 
     @Test
-    void testPredecessorEventsAlreadyProcessedDuringRecording() throws InterruptedException {
+    void testPredecessorEventsAlreadyProcessedDuringRecording() {
         // given: an event with a predecessor and the record mode is enabled
         UUID contextId = randomContextId();
         JmeDeclarationCreatedEvent firstEvent = createDeclarationCreatedEvent(contextId);

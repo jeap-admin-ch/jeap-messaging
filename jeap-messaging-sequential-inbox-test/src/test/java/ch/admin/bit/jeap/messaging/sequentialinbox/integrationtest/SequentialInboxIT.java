@@ -21,7 +21,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import static ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestMessages.*;
+import static ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestMessages.createDeclarationCreatedEvent;
+import static ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestMessages.createEnumTestEvent;
+import static ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestMessages.createJmeSimpleTestEvent;
+import static ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestMessages.randomContextId;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
