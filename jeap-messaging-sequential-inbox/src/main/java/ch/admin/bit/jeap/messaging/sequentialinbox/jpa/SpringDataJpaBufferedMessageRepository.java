@@ -19,5 +19,6 @@ interface SpringDataJpaBufferedMessageRepository extends JpaRepository<BufferedM
     @Query(nativeQuery = true, value = "DELETE FROM buffered_message WHERE sequence_instance_id IN (SELECT id FROM sequence_instance WHERE state = 'CLOSED')")
     void deleteForClosedSequences();
 
+    @Query("from BufferedMessage bm left join fetch bm.headers where bm.sequencedMessageId = :sequencedMessageId")
     BufferedMessage getBySequencedMessageId(long sequencedMessageId);
 }

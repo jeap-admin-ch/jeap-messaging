@@ -209,8 +209,8 @@ class SequentialInboxITBase extends KafkaIntegrationTestBase {
         assertSequenceState(contextId, SequenceInstanceState.CLOSED);
     }
 
-    private void assertSequenceState(String contextId, SequenceInstanceState state) {
-        await("Sequence closed").untilAsserted(() ->
+    void assertSequenceState(String contextId, SequenceInstanceState state) {
+        await("Sequence in state " + state.name()).untilAsserted(() ->
                 assertThat(findSequenceInstanceByContextId(contextId))
                         .hasValueSatisfying(sequenceInstance ->
                                 assertThat(sequenceInstance.getState()).isSameAs(state)));

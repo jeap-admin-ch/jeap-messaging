@@ -9,7 +9,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Sequential Inbox: add crypto and signature test cases
+- Sequential Inbox: add support for encrypted and signed messages: store the specific headers of the consumed records in
+  the database in order to reset these headers when serializing the stored sequenced messages.
+
+## [8.27.2] - 2025-03-14
+
+### Fixed
+
+- Fixed sequential inbox record mode integration tests.
 
 ## [8.27.1] - 2025-03-13
 

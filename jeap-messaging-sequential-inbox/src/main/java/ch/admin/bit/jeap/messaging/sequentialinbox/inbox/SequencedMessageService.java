@@ -2,27 +2,27 @@ package ch.admin.bit.jeap.messaging.sequentialinbox.inbox;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
+import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.ClusterNameHeaderInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
+import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.Sequence;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequencedMessageType;
 import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.MessageRepository;
 import ch.admin.bit.jeap.messaging.sequentialinbox.kafka.TraceContextFactory;
 import ch.admin.bit.jeap.messaging.sequentialinbox.metrics.SequentialInboxMetricsCollector;
-import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.BufferedMessage;
-import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequenceInstance;
-import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessage;
-import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessageState;
+import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -32,6 +32,12 @@ class SequencedMessageService {
     private final MessageRepository messageRepository;
     private final KafkaProperties kafkaProperties;
     private final SequentialInboxMetricsCollector metricsCollector;
+
+    private static final List<String> PRESERVED_HEADER_NAMES = List.of(
+            JeapKafkaAvroSerdeCryptoConfig.ENCRYPTED_VALUE_HEADER_NAME,
+            SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY,
+            SignatureHeaders.SIGNATURE_VALUE_HEADER_KEY,
+            SignatureHeaders.SIGNATURE_KEY_HEADER_KEY);
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
     public void storeSequencedMessage(Optional<SequencedMessage> existingSequencedMessage,
@@ -53,7 +59,8 @@ class SequencedMessageService {
                     .sequenceInstanceId(sequenceInstance.getId())
                     .key(consumerRecord.key() == null ? null : consumerRecord.key().getSerializedMessage())
                     .value(consumerRecord.value().getSerializedMessage())
-                    .build();
+                     .build();
+            bufferedMessage.setHeaders(getMessageHeaders(consumerRecord.headers(), bufferedMessage));
         }
 
         String clusterName = getClusterName(consumerRecord);
@@ -70,6 +77,21 @@ class SequencedMessageService {
                 .build();
 
         messageRepository.saveMessage(bufferedMessage, sequencedMessage);
+    }
+
+    private List<MessageHeader> getMessageHeaders(Headers headers, BufferedMessage bufferedMessage) {
+        List<MessageHeader> messageHeaders = new ArrayList<>();
+        for (String headerName : PRESERVED_HEADER_NAMES) {
+            Header header = headers.lastHeader(headerName);
+            if (header != null) {
+                messageHeaders.add(MessageHeader.builder()
+                        .headerName(headerName)
+                        .headerValue(header.value())
+                        .bufferedMessage(bufferedMessage)
+                        .build());
+            }
+        }
+        return messageHeaders;
     }
 
     private String getClusterName(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord) {

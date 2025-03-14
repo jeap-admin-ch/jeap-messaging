@@ -9,10 +9,15 @@ import java.util.UUID;
 public class TestMessages {
 
     public static JmeSimpleTestEvent createJmeSimpleTestEvent(UUID contextId) {
+        return createJmeSimpleTestEvent(contextId, "test");
+    }
+
+    public static JmeSimpleTestEvent createJmeSimpleTestEvent(UUID contextId, String serviceName) {
         return JmeSimpleTestEventBuilder.create()
                 .idempotenceId(randomIdempotenceIdString())
                 .message("test")
                 .processId(contextId.toString())
+                .serviceName(serviceName)
                 .build();
     }
 
