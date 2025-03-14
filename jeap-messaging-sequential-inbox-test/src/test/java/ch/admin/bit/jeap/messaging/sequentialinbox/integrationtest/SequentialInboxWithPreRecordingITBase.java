@@ -10,7 +10,7 @@ public class SequentialInboxWithPreRecordingITBase extends SequentialInboxITBase
     private static final LocalDateTime FUTURE_TIMESTAMP_WHERE_RECORDING_IS_ENABLED = LocalDateTime.now().plusDays(1);
 
     @BeforeEach
-    void setUp() {
+    void setUpRecording() {
         givenRecordingIsConfigured();
     }
 
