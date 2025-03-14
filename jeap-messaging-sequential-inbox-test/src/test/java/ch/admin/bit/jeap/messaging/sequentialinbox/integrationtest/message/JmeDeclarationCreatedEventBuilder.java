@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class JmeDeclarationCreatedEventBuilder extends AvroDomainEventBuilder<JmeDeclarationCreatedEventBuilder, JmeDeclarationCreatedEvent> {
     private final String specifiedMessageTypeVersion = "1.0.0";
-    private final String serviceName = "test";
+    private String serviceName = "test";
     private final String systemName = "test";
     private String message;
     private String processId;
@@ -29,6 +29,11 @@ public class JmeDeclarationCreatedEventBuilder extends AvroDomainEventBuilder<Jm
 
     public JmeDeclarationCreatedEventBuilder processId(String processId) {
         this.processId = processId;
+        return self();
+    }
+
+    public JmeDeclarationCreatedEventBuilder serviceName(String serviceName) {
+        this.serviceName = serviceName;
         return self();
     }
 

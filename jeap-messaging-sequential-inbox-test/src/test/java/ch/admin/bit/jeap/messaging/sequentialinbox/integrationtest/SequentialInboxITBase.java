@@ -49,7 +49,7 @@ import static org.mockito.Mockito.verify;
 @Testcontainers
 @Slf4j
 @DirtiesContext
-public class SequentialInboxITBase extends KafkaIntegrationTestBase {
+class SequentialInboxITBase extends KafkaIntegrationTestBase {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(500);
 
