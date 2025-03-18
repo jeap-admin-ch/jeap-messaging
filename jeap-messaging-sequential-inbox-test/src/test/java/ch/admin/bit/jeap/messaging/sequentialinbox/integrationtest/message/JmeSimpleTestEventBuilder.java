@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class JmeSimpleTestEventBuilder extends AvroDomainEventBuilder<JmeSimpleTestEventBuilder, JmeSimpleTestEvent> {
     private final String specifiedMessageTypeVersion = "1.0.0";
-    private final String serviceName = "test";
+    private String serviceName = "test";
     private final String systemName = "test";
     private String message;
     private String processId;
@@ -24,6 +24,11 @@ public class JmeSimpleTestEventBuilder extends AvroDomainEventBuilder<JmeSimpleT
 
     public JmeSimpleTestEventBuilder message(String message) {
         this.message = message;
+        return self();
+    }
+
+    public JmeSimpleTestEventBuilder serviceName(String serviceName) {
+        this.serviceName = serviceName;
         return self();
     }
 

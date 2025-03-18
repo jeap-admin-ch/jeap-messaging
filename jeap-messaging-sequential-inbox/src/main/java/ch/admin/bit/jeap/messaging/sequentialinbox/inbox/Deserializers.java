@@ -1,6 +1,8 @@
 package ch.admin.bit.jeap.messaging.sequentialinbox.inbox;
 
+import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.MessageHeader;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.logging.LogFactory;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Headers;
@@ -11,17 +13,25 @@ import org.springframework.core.log.LogAccessor;
 import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.SerializationUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.apache.kafka.clients.consumer.ConsumerRecord.NO_TIMESTAMP;
 import static org.apache.kafka.clients.consumer.ConsumerRecord.NULL_SIZE;
 
 @UtilityClass
+@Slf4j
 class Deserializers {
     private static final LogAccessor LOGGER = new LogAccessor(LogFactory.getLog(Deserializers.class));
 
-    static <T> T deserialize(Deserializer<T> deserializer, String topic, byte[] bytes, boolean isKey) {
+    static <T> T deserialize(Deserializer<T> deserializer, String topic, byte[] bytes, List<MessageHeader> messageHeaders, boolean isKey) {
         Headers headers = new RecordHeaders();
+
+        messageHeaders.forEach(messageHeader -> {
+                log.debug("Add saved header '{}' to buffered message", messageHeader.getHeaderName());
+                headers.add(messageHeader.getHeaderName(), messageHeader.getHeaderValue());
+        });
+
         T object = deserializer.deserialize(topic, headers, bytes);
         checkDeserException(isKey, headers);
         return object;

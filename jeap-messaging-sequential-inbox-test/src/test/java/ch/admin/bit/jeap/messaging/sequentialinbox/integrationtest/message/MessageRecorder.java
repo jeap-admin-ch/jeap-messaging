@@ -6,8 +6,10 @@ import ch.admin.bit.jeap.messaging.avro.errorevent.FailedMessageMetadata;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
 import ch.admin.bit.jeap.messaging.kafka.test.TestKafkaListener;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TraceContextProvider;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -22,6 +24,8 @@ public class MessageRecorder {
     private final TraceContextProvider traceContextProvider;
 
     private final List<AvroMessage> recordedMessages = new ArrayList<>();
+    @Getter
+    private final List<Object> recordedErrorEvents = new ArrayList<>();
     private final Map<String, Long> traceContextIds = new HashMap<>();
     private final Map<String, AvroMessageKey> keyByMessageId = new HashMap<>();
 
@@ -29,6 +33,7 @@ public class MessageRecorder {
         recordedMessages.clear();
         traceContextIds.clear();
         keyByMessageId.clear();
+        recordedErrorEvents.clear();
     }
 
     synchronized void recordMessage(AvroMessage message) {
@@ -66,16 +71,27 @@ public class MessageRecorder {
     }
 
     @TestKafkaListener(topics = "${jeap.messaging.kafka.error-topic-name}")
-    public void onMessageProcessingFailedEvent(MessageProcessingFailedEvent message) {
-        FailedMessageMetadata metadata = message.getPayload().getFailedMessageMetadata();
-        log.info("MessageProcessingFailedEvent {} handled in listener", metadata == null ? "na" : metadata.getEventId());
-        recordedMessages.add(message);
+    public void onMessageProcessingFailedEvent(ConsumerRecord<?,?> consumerRecord) {
+        if (consumerRecord.value() instanceof MessageProcessingFailedEvent message) {
+            FailedMessageMetadata metadata = message.getPayload().getFailedMessageMetadata();
+            log.info("MessageProcessingFailedEvent {} handled in listener", metadata == null ? "na" : metadata.getEventId());
+            recordedMessages.add(message);
+        } else {
+            log.info("Event {} handled in listener", consumerRecord.value().getClass().getName());
+            recordedErrorEvents.add(consumerRecord.value());
+        }
     }
 
     public void assertMessageConsumed(String messageId) {
         await("Message with ID " + messageId + " was consumed")
                 .until(() ->
                         recordedMessages.stream().anyMatch(e -> e.getIdentity().getId().equals(messageId)));
+    }
+
+    public void assertCountErrorEvents(int count) {
+        await("Error Events Count is " + count)
+                .until(() ->
+                        recordedErrorEvents.size() == count);
     }
 
     public void assertMessageNotConsumed(String messageId) {

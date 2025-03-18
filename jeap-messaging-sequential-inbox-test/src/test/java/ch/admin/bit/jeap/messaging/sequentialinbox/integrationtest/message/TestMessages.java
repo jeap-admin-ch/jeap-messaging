@@ -9,10 +9,15 @@ import java.util.UUID;
 public class TestMessages {
 
     public static JmeSimpleTestEvent createJmeSimpleTestEvent(UUID contextId) {
+        return createJmeSimpleTestEvent(contextId, "test");
+    }
+
+    public static JmeSimpleTestEvent createJmeSimpleTestEvent(UUID contextId, String serviceName) {
         return JmeSimpleTestEventBuilder.create()
                 .idempotenceId(randomIdempotenceIdString())
                 .message("test")
                 .processId(contextId.toString())
+                .serviceName(serviceName)
                 .build();
     }
 
@@ -28,11 +33,24 @@ public class TestMessages {
         return createDeclarationCreatedEvent(idempotenceId, contextId, "test");
     }
 
+    public static JmeDeclarationCreatedEvent createDeclarationCreatedEvent(UUID contextId, String serviceName) {
+        return createDeclarationCreatedEvent(randomIdempotenceId(), contextId, "test", serviceName);
+    }
+
     private static JmeDeclarationCreatedEvent createDeclarationCreatedEvent(UUID idempotenceId, UUID contextId, String message) {
         return JmeDeclarationCreatedEventBuilder.create()
                 .idempotenceId(idempotenceId.toString())
                 .message(message)
                 .processId(contextId.toString())
+                .build();
+    }
+
+    private static JmeDeclarationCreatedEvent createDeclarationCreatedEvent(UUID idempotenceId, UUID contextId, String message, String serviceName) {
+        return JmeDeclarationCreatedEventBuilder.create()
+                .idempotenceId(idempotenceId.toString())
+                .message(message)
+                .processId(contextId.toString())
+                .serviceName(serviceName)
                 .build();
     }
 

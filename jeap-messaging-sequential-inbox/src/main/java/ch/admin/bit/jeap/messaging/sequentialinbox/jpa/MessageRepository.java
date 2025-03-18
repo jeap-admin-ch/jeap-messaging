@@ -25,6 +25,8 @@ public class MessageRepository {
 
     private final SpringDataJpaBufferedMessageRepository bufferedMessageRepository;
     private final SpringDataJpaSequencedMessageRepository sequencedMessageRepository;
+    private final SpringDataJpaMessageHeaderRepository messageHeaderRepository;
+
     private final EntityManager entityManager;
 
     @Transactional(propagation = Propagation.MANDATORY)
@@ -69,7 +71,7 @@ public class MessageRepository {
 
 
     /**
-     * Deletes all buffered messages and sequenced messages associated with
+     * Deletes all buffered messages, message headers and sequenced messages associated with
      * sequence instances whose retention period has elapsed (retain_until < cutoffTime).
      *
      * @param cutoffTime The timestamp to compare against for determining expiration
@@ -77,16 +79,18 @@ public class MessageRepository {
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public int deleteExpiredMessages(java.time.ZonedDateTime cutoffTime) {
+        messageHeaderRepository.deleteExpired(cutoffTime);
         bufferedMessageRepository.deleteExpired(cutoffTime);
         return sequencedMessageRepository.deleteExpired(cutoffTime);
     }
 
     /**
-     * Deletes all messages (buffered and sequenced) associated with sequence instances in CLOSED state.
+     * Deletes all messages (buffered and sequenced, message headers) associated with sequence instances in CLOSED state.
      * @return The number of sequenced messages deleted
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public int deleteMessagesForClosedSequences() {
+        messageHeaderRepository.deleteForClosedSequences();
         bufferedMessageRepository.deleteForClosedSequences();
         return sequencedMessageRepository.deleteForClosedSequences();
     }

@@ -3,6 +3,8 @@ package ch.admin.bit.jeap.messaging.sequentialinbox.persistence;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -35,11 +37,19 @@ public class BufferedMessage {
     @Column(name = "sequence_instance_id")
     private long sequenceInstanceId;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "buffered_message_id", referencedColumnName = "id")
+    private List<MessageHeader> headers = new ArrayList<>();
+
     @Builder
     private BufferedMessage(long sequenceInstanceId, byte[] key, byte[] value) {
         this.sequenceInstanceId = sequenceInstanceId;
         this.key = key;
         this.value = value;
+    }
+
+    public void setHeaders(List<MessageHeader> headers) {
+        this.headers.addAll(headers);
     }
 
     @Override
