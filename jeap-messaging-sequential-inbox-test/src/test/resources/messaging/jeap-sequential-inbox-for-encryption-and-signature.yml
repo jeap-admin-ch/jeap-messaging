@@ -1,0 +1,19 @@
+sequences:
+  - name: ConfigForEncryption
+    retentionPeriod: 24h
+    messages:
+
+      - type: JmeSimpleTestEvent
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+
+      - type: JmeDeclarationCreatedEvent
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+        releaseCondition:
+          predecessor: JmeSimpleTestEvent
+
+  - name: UnrelatedEvent
+    retentionPeriod: 24h
+    messages:
+      - type: JmeEnumTestEvent
+        topic: jme-enum-test-event
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor

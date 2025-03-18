@@ -12,6 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,8 +32,8 @@ class SequentialInboxDeserializer {
         Deserializer<AvroMessage> valueDeserializer = valueDeserializerByClusterName.get(clusterNameOrDefault);
         Deserializer<AvroMessageKey> keyDeserializer = keyDeserializerByClusterName.get(clusterNameOrDefault);
 
-        AvroMessageKey key = Deserializers.deserialize(keyDeserializer, topic, bufferedMessage.getKey(), true);
-        AvroMessage value = Deserializers.deserialize(valueDeserializer, topic, bufferedMessage.getValue(), false);
+        AvroMessageKey key = Deserializers.deserialize(keyDeserializer, topic, bufferedMessage.getKey(), Collections.emptyList(), true);
+        AvroMessage value = Deserializers.deserialize(valueDeserializer, topic, bufferedMessage.getValue(), bufferedMessage.getHeaders(), false);
         return new DeserializedMessage(sequencedMessage.getMessageType(), key, value);
     }
 

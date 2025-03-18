@@ -49,7 +49,7 @@ import static org.mockito.Mockito.verify;
 @Testcontainers
 @Slf4j
 @DirtiesContext
-public class SequentialInboxITBase extends KafkaIntegrationTestBase {
+class SequentialInboxITBase extends KafkaIntegrationTestBase {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(500);
 
@@ -209,8 +209,8 @@ public class SequentialInboxITBase extends KafkaIntegrationTestBase {
         assertSequenceState(contextId, SequenceInstanceState.CLOSED);
     }
 
-    private void assertSequenceState(String contextId, SequenceInstanceState state) {
-        await("Sequence closed").untilAsserted(() ->
+    void assertSequenceState(String contextId, SequenceInstanceState state) {
+        await("Sequence in state " + state.name()).untilAsserted(() ->
                 assertThat(findSequenceInstanceByContextId(contextId))
                         .hasValueSatisfying(sequenceInstance ->
                                 assertThat(sequenceInstance.getState()).isSameAs(state)));

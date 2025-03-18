@@ -59,7 +59,7 @@ class SequentialInboxRecordingIT extends SequentialInboxWithPreRecordingITBase {
     }
 
     @Test
-    void testPredecessorEventsAlreadyProcessedDuringRecording() throws InterruptedException {
+    void testPredecessorEventsAlreadyProcessedDuringRecording() {
         // given: an event with a predecessor and the record mode is enabled
         UUID contextId = randomContextId();
         JmeDeclarationCreatedEvent firstEvent = createDeclarationCreatedEvent(contextId);
