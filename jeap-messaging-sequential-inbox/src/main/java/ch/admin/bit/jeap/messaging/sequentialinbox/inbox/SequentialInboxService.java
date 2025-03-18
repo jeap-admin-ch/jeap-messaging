@@ -58,17 +58,26 @@ public class SequentialInboxService {
                 avroMessage.getType().getName(), avroMessage.getIdentity().getId(), sequence.getName(), contextId);
         SequenceInstance sequenceInstance = sequenceInstanceFactory.createOrGetSequenceInstance(sequence, contextId);
 
+        // If the sequencing start timestamp is set and the current time is before the start timestamp, start the record mode and handle the message immediately.
+        // The record activates sequencing with a delay. Until activation, the predecessor messages are recorded (Recording Mode).
+        // This is needed to handle messages that need to be newly sequenced, but their predecessor was received before the introduction of the sequence.
+        boolean recordingModeIsEnabled = sequencingStartTimestamp != null && LocalDateTime.now().isBefore(sequencingStartTimestamp);
+
         // Process the message before acquiring the lock
-        boolean messageHandled = tx.callInSuspendedTransaction(() ->
-                handleMessage(consumerRecord, messageHandler, sequencedMessageType, sequenceInstance, sequence, contextId)
-        );
+        handleMessage(consumerRecord, messageHandler, sequencedMessageType, sequenceInstance, sequence, contextId, recordingModeIsEnabled);
 
         // Lock the sequence instance for update to avoid concurrent access to the inbox for the current context
         tx.runInNewTransaction(() -> {
             SequenceInstance lockedSequenceInstance = sequenceInstanceFactory.getExistingSequenceInstanceAndLockForUpdate(sequenceInstance.getId());
 
-            // Check for waiting messages after handling the current message
-            boolean sequenceComplete = messageHandled && bufferedMessageService.processBufferedMessages(lockedSequenceInstance, sequence);
+            boolean sequenceComplete;
+            if (recordingModeIsEnabled) {
+                // After all messages are processed, the sequence is completed
+                sequenceComplete = sequencedMessageService.areAllMessagesProcessed(sequence, sequenceInstance);
+            } else {
+                // Check for waiting messages after handling the current message
+                sequenceComplete = bufferedMessageService.processBufferedMessages(lockedSequenceInstance, sequence);
+            }
 
             // Set the sequence to complete if all messages have been processed
             if (sequenceComplete) {
@@ -87,8 +96,8 @@ public class SequentialInboxService {
         return sequencedMessageType.extractContextId(avroMessage);
     }
 
-    private boolean handleMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, SequentialInboxMessageHandler messageHandler,
-                                  SequencedMessageType sequencedMessageType, SequenceInstance sequenceInstance, Sequence sequence, String contextId) {
+    private void handleMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, SequentialInboxMessageHandler messageHandler,
+                                  SequencedMessageType sequencedMessageType, SequenceInstance sequenceInstance, Sequence sequence, String contextId, boolean recordModeIsEnabled) {
         AvroMessage avroMessage = consumerRecord.value();
         String messageTypeName = avroMessage.getType().getName();
 
@@ -97,20 +106,16 @@ public class SequentialInboxService {
         // Idempotence handling: Has the message already been successfully persisted or is it a new message?
         if (!isAlreadyProcessedOrWaiting(existingSequencedMessage)) {
 
-            // If the sequencing start timestamp is set and the current time is before the start timestamp, start the record mode and handle the message immediately.
-            // The record activates sequencing with a delay. Until activation, the predecessor messages are recorded (Recording Mode).
-            // This is needed to handle messages that need to be newly sequenced, but their predecessor was received before the introduction of the sequence.
-            if (sequencingStartTimestamp != null && LocalDateTime.now().isBefore(sequencingStartTimestamp)) {
+            if (recordModeIsEnabled) {
                 log.info("Recording mode active, handling message {} immediately", avroMessage);
                 invokeMessageHandler(consumerRecord, messageHandler, existingSequencedMessage, sequenceInstance);
-                // After all messages are processed, the sequence is completed
-                return sequencedMessageService.areAllMessagesProcessed(sequence, sequenceInstance);
+                return;
             }
 
             // If the release condition is not satisfied, buffer the message and return
             if (!sequencedMessageService.isReleaseConditionSatisfied(sequencedMessageType, sequenceInstance)) {
                 bufferMessage(consumerRecord, avroMessage, sequence, contextId, existingSequencedMessage, sequenceInstance);
-                return false;
+                return;
             }
 
             // Release condition is satisfied, invoke the message handler
@@ -119,9 +124,6 @@ public class SequentialInboxService {
             log.info("Message {} (id={}) has already been processed with idempotence ID {}, skipping listener invocation", messageTypeName,
                     avroMessage.getIdentity().getId(), avroMessage.getIdentity().getIdempotenceId());
         }
-
-        // Handle buffered messages with satisfied release conditions
-        return true;
     }
 
     private void invokeMessageHandler(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, SequentialInboxMessageHandler messageHandler,
