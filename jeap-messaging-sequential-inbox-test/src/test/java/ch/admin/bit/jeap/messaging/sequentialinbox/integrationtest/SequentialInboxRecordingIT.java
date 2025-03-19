@@ -27,8 +27,8 @@ class SequentialInboxRecordingIT extends SequentialInboxWithPreRecordingITBase {
         sendSync(JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC, thirdEvent);
 
         //then: assert that the third event was consumed by the message listener
-        assertMessageConsumedByListener(thirdEvent);
         assertSequencedMessageProcessedSuccessfully(thirdEvent);
+        assertMessageConsumedByListener(thirdEvent);
 
         // given: time passing until sequencing starts (record mode gets disabled)
         whenRecordingEndsAndSequencingStarts();
@@ -45,9 +45,9 @@ class SequentialInboxRecordingIT extends SequentialInboxWithPreRecordingITBase {
         sendSync(JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC, firstEvent);
 
         // then: assert that the predecessor event was consumed by the message listener
-        assertMessageCountHandledByInbox(3);
         assertMessageConsumedByListener(firstEvent);
         assertSequencedMessageProcessedSuccessfully(firstEvent);
+        assertMessageCountHandledByInbox(3);
 
         // then: assert that the successor events were consumed by the message listeners
         assertMessageConsumedByListener(secondEvent);

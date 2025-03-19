@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
-class Transactions {
+public class Transactions {
     private static final TransactionDefinition REQUIRES_NEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     private static final TransactionDefinition NOT_SUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
 
@@ -22,7 +22,7 @@ class Transactions {
         return transactionTemplate.execute(ignored -> callable.get());
     }
 
-    void runInNewTransaction(Runnable runnable) {
+    public void runInNewTransaction(Runnable runnable) {
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager, REQUIRES_NEW);
         transactionTemplate.executeWithoutResult(ignored -> runnable.run());
     }

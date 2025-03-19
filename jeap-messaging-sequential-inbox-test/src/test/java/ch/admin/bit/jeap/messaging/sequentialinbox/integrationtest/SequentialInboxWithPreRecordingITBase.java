@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.time.LocalDateTime;
@@ -20,5 +21,10 @@ class SequentialInboxWithPreRecordingITBase extends SequentialInboxITBase {
 
     protected void whenRecordingEndsAndSequencingStarts() {
         sequentialInboxService.sequencingStartTimestamp = PAST_TIMESTAMP_WHERE_SEQUENCING_STARTED;
+    }
+
+    @AfterEach
+    void disableRecordingMode () {
+        sequentialInboxService.sequencingStartTimestamp = null;
     }
 }

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.29.0] - 2025-03-18
+
+### Changed
+
+- Improved: The `Pessimistic Lock` around the inbox for a context no longer blocks Kafka partitions containing records that could already be processed.
+- Processing or buffering these records can now occur before the `Pessimistic Lock`.
+
 ## [8.28.0] - 2025-03-14
 
 ### Changed

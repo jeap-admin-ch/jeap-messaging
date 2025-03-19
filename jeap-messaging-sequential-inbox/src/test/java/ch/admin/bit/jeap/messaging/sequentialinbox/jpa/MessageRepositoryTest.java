@@ -108,7 +108,7 @@ class MessageRepositoryTest {
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
-        Set<String> result = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstance);
+        Set<String> result = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstance.getId());
 
         assertThat(result).contains("type1", "type2");
     }

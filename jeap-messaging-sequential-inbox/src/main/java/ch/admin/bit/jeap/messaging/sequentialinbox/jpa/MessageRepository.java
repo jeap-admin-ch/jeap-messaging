@@ -40,8 +40,8 @@ public class MessageRepository {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
-    public Set<String> getProcessedMessageTypesInSequenceInNewTransaction(SequenceInstance sequenceInstance) {
-        return sequencedMessageRepository.getProcessedMessageTypesInSequence(sequenceInstance.getId());
+    public Set<String> getProcessedMessageTypesInSequenceInNewTransaction(long sequenceInstanceId) {
+        return sequencedMessageRepository.getProcessedMessageTypesInSequence(sequenceInstanceId);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
