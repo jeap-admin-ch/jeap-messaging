@@ -1,0 +1,22 @@
+subTypeResolvers:
+  MyEventType1: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestSubTypeResolver
+
+sequences:
+
+  - name: eventType2AfterEventType1
+    retentionPeriod: P2D
+    messages:
+      - type: MyEventType1
+        subType: BANANAS
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+
+      - type: MyEventType1
+        subType: APPLES
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+
+      - type: MyEventType2
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        releaseCondition:
+          or:
+            - predecessor: MyEventType1.APPLES
+            - predecessor: MyEventType1.BANANAS

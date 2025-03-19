@@ -23,7 +23,8 @@ class MessageHandlerService {
     private final PlatformTransactionManager platformTransactionManager;
 
     void handle(DeserializedMessage deserializedMessage) {
-        SequentialInboxMessageHandler messageHandler = messageHandlerProvider.getHandlerForMessageType(deserializedMessage.messageType());
+        String jeapMessageTypeName = deserializedMessage.message().getType().getName();
+        SequentialInboxMessageHandler messageHandler = messageHandlerProvider.getHandlerForJeapMessageType(jeapMessageTypeName);
         invokeMessageHandler(deserializedMessage, messageHandler);
     }
 

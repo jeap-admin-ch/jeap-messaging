@@ -78,4 +78,34 @@ public class SequentialInboxConfigurationException extends RuntimeException {
     public static SequentialInboxConfigurationException retentionPeriodMissing(String sequenceName) {
         return new SequentialInboxConfigurationException("Missing required retention period for sequence name: " + sequenceName);
     }
+
+    public static SequentialInboxConfigurationException mixedTypeAndSubtype(Set<String> types) {
+        return new SequentialInboxConfigurationException("Mix of configuration of messages type with and without subtype: " + types);
+    }
+
+    public static SequentialInboxConfigurationException missingSubTypeResolver(String type) {
+        return new SequentialInboxConfigurationException("Missing subtype resolver for message type which has a subtype defined: " + type);
+    }
+
+    public static SequentialInboxConfigurationException subtypeResolverForBadType(String type) {
+        return new SequentialInboxConfigurationException("Subtype resolver for message type that is either not sequenced or has not subtypes defined: " + type);
+    }
+
+    public static SequentialInboxConfigurationException unknownSubtype(String type, Set<String> configuredSubTypes, Set<String> enumSubTypes) {
+        return new SequentialInboxConfigurationException("Unknown subtype for type %s. Configured subtypes: %s. Valid subtypes: %s"
+                .formatted(type, configuredSubTypes, enumSubTypes));
+    }
+
+    public static SequentialInboxConfigurationException missingSubType(String type, Set<String> configuredSubTypes, Set<String> enumSubTypes) {
+        return new SequentialInboxConfigurationException("Missing subtype for type %s. Configured subtypes: %s. Valid subtypes: %s"
+                .formatted(type, configuredSubTypes, enumSubTypes));
+    }
+
+    public static SequentialInboxConfigurationException badInstanceType(Class<?> clazz, Class<?> expectedSupertype) {
+        return new SequentialInboxConfigurationException("Class %s is not a subtype of %s".formatted(clazz, expectedSupertype));
+    }
+
+    public static SequentialInboxConfigurationException inconsistentTopicNames(String messageType, Set<String> topics) {
+        return new SequentialInboxConfigurationException("Different topics configured for subtypes of message type %s: %s".formatted(messageType, topics));
+    }
 }

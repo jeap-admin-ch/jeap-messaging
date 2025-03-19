@@ -43,7 +43,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings({"SqlResolve", "DataFlowIssue", "SqlNoDataSourceInspection", "SameParameterValue" })
+@SuppressWarnings({"SqlResolve", "DataFlowIssue", "SqlNoDataSourceInspection", "SameParameterValue"})
 @AutoConfigureObservability
 @SpringBootTest
 @Testcontainers
@@ -51,7 +51,7 @@ import static org.mockito.Mockito.verify;
 @DirtiesContext
 class SequentialInboxITBase extends KafkaIntegrationTestBase {
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(500);
+    private static final Duration TIMEOUT = Duration.ofSeconds(60);
 
     @Container
     @ServiceConnection
@@ -115,6 +115,13 @@ class SequentialInboxITBase extends KafkaIntegrationTestBase {
                         .isPresent()));
     }
 
+    void assertSequencedMessageProcessedSuccessfully(AvroMessage message, String messageTypeQn) {
+        await().until(() -> messageRepository.findByMessageTypeAndIdempotenceIdInNewTransaction(messageTypeQn, message.getIdentity().getIdempotenceId())
+                .map(SequencedMessage::getState)
+                .filter(state -> state == SequencedMessageState.PROCESSED)
+                .isPresent());
+    }
+
     void assertNoSequencePersistedForContextOfEvent(AvroMessage message) {
         assertThat(findSequenceInstanceByContextId(message.getOptionalProcessId().orElseThrow()))
                 .describedAs("No sequence should be created for the event")
@@ -153,13 +160,18 @@ class SequentialInboxITBase extends KafkaIntegrationTestBase {
     }
 
     void assertMessageStateWaitingAndBuffered(AvroMessage message) {
+        String messageTypeName = message.getType().getName();
+        assertMessageStateWaitingAndBuffered(message, messageTypeName);
+    }
+
+    void assertMessageStateWaitingAndBuffered(AvroMessage message, String messageTypeName) {
         await("SequencedMessage is present and waiting")
-                .until(() -> messageRepository.findByMessageTypeAndIdempotenceIdInNewTransaction(message.getType().getName(), message.getIdentity().getIdempotenceId())
+                .until(() -> messageRepository.findByMessageTypeAndIdempotenceIdInNewTransaction(messageTypeName, message.getIdentity().getIdempotenceId())
                         .map(SequencedMessage::getState)
                         .filter(state -> state == SequencedMessageState.WAITING)
                         .isPresent());
 
-        SequencedMessage sequencedMessage = messageRepository.findByMessageTypeAndIdempotenceIdInNewTransaction(message.getType().getName(), message.getIdentity().getIdempotenceId()).orElseThrow();
+        SequencedMessage sequencedMessage = messageRepository.findByMessageTypeAndIdempotenceIdInNewTransaction(messageTypeName, message.getIdentity().getIdempotenceId()).orElseThrow();
         BufferedMessage bufferedMessage = messageRepository.getBufferedMessageInNewTransaction(sequencedMessage);
         assertThat(bufferedMessage.getSequencedMessageId())
                 .isEqualTo(sequencedMessage.getId());
@@ -220,7 +232,7 @@ class SequentialInboxITBase extends KafkaIntegrationTestBase {
         int bufferedMessageCount = jdbcTemplate.queryForObject(
                 "select count(*) from buffered_message where sequence_instance_id = (select id from sequence_instance where context_id = ?)", Integer.class, contextId.toString());
         assertThat(bufferedMessageCount)
-                .describedAs("Only one BufferdMessage should be created for the event")
+                .describedAs(expectedCount + " messages buffered for context " + contextId)
                 .isEqualTo(expectedCount);
     }
 
@@ -240,10 +252,10 @@ class SequentialInboxITBase extends KafkaIntegrationTestBase {
         traceContextUpdater.setTraceContext(new TraceContext(0L, traceId, 123L, 456L, null));
     }
 
-     Optional<SequenceInstance> findSequenceInstanceByContextId(String contextId) {
-         List<SequenceInstance> results = entityManager.createQuery("select si from SequenceInstance si where si.contextId = :contextId", SequenceInstance.class)
-                 .setParameter("contextId", contextId)
-                 .getResultList();
-         return results.stream().findFirst();
+    Optional<SequenceInstance> findSequenceInstanceByContextId(String contextId) {
+        List<SequenceInstance> results = entityManager.createQuery("select si from SequenceInstance si where si.contextId = :contextId", SequenceInstance.class)
+                .setParameter("contextId", contextId)
+                .getResultList();
+        return results.stream().findFirst();
     }
 }

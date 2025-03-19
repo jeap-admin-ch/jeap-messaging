@@ -17,7 +17,7 @@ public class Sequence {
 
     private List<SequencedMessageType> messages;
 
-    private Set<String> messageTypeNames;
+    private Set<String> messageTypeQualifiedNames;
 
     @Override
     public String toString() {
@@ -25,12 +25,12 @@ public class Sequence {
     }
 
     public boolean isComplete(Set<String> processedMessageTypes) {
-        return messageTypeNames.equals(processedMessageTypes);
+        return messageTypeQualifiedNames.equals(processedMessageTypes);
     }
 
     void init() {
-        messageTypeNames = messages.stream()
-                .map(SequencedMessageType::getType)
+        messageTypeQualifiedNames = messages.stream()
+                .map(SequencedMessageType::getQualifiedName)
                 .collect(toSet());
     }
 }

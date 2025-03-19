@@ -1,0 +1,34 @@
+subTypeResolvers:
+  JmeSimpleTestEvent: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.JmeSimpleTestEventSubTypeResolver
+
+sequences:
+  - name: sequenceWithSubTypes
+    retentionPeriod: 24h
+    messages:
+      - type: JmeDeclarationCreatedEvent
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+
+      - type: JmeSimpleTestEvent
+        subType: STRAWBERRY
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+        releaseCondition:
+          predecessor: JmeDeclarationCreatedEvent
+
+      - type: JmeSimpleTestEvent
+        subType: VANILLA
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+        releaseCondition:
+          predecessor: JmeDeclarationCreatedEvent
+
+      - type: JmeEnumTestEvent
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+        releaseCondition:
+          or:
+            - predecessor: JmeSimpleTestEvent.VANILLA
+            - predecessor: JmeSimpleTestEvent.STRAWBERRY
+
+      - type: JmeSimpleTestEvent
+        subType: CHOCOLATE
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestContextIdExtractor
+        releaseCondition:
+          predecessor: JmeEnumTestEvent

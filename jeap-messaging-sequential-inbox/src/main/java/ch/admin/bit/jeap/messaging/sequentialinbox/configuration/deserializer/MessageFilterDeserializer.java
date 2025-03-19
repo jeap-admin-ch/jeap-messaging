@@ -15,6 +15,6 @@ class MessageFilterDeserializer extends StdDeserializer<MessageFilter<?>> {
 
     @Override
     public MessageFilter<?> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        return SequentialInboxConfigurationUtils.newInstance(jsonParser.getValueAsString());
+        return SequentialInboxConfigurationUtils.newInstance(jsonParser.getValueAsString(), MessageFilter.class);
     }
 }

@@ -62,6 +62,6 @@ class SequentialInboxMetrics implements SequentialInboxMetricsCollector {
 
     private Stream<String> sequencedMessageTypes() {
         return config.getSequencedMessageTypes().stream()
-                .map(SequencedMessageType::getType);
+                .map(SequencedMessageType::getQualifiedName);
     }
 }

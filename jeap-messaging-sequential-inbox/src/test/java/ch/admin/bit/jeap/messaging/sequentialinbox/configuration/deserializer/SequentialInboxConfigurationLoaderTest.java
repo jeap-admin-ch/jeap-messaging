@@ -17,11 +17,11 @@ class SequentialInboxConfigurationLoaderTest {
         assertThat(sequentialInboxConfiguration).isNotNull();
         assertThat(sequentialInboxConfiguration.getSequenceCount()).isEqualTo(2);
 
-        SequencedMessageType smt = sequentialInboxConfiguration.requireSequencedMessageTypeByName("MyEventType98");
+        SequencedMessageType smt = sequentialInboxConfiguration.requireSequencedMessageTypeByQualifiedName("MyEventType98");
         assertThat(smt.getClusterName()).isEqualTo("test-cluster");
         assertThat(smt.getContextIdExtractor()).isInstanceOf(TestContextIdExtractor.class);
         assertThat(smt.getMessageFilter()).isNull();
-        Sequence seq = sequentialInboxConfiguration.getSequenceByMessageTypeName("MyEventType98");
+        Sequence seq = sequentialInboxConfiguration.getSequenceByQualifiedSequencedMessageTypeName("MyEventType98");
         assertThat(seq.getMessages().get(1).getMessageFilter())
                 .isInstanceOf(TestMessageFilter.class);
         assertThat(seq.getMessages().get(1).getClusterName())
@@ -29,6 +29,4 @@ class SequentialInboxConfigurationLoaderTest {
         assertThat(seq.getRetentionPeriod())
                 .isEqualTo(Duration.ofHours(6));
     }
-
-
 }

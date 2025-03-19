@@ -10,11 +10,11 @@ public class MessageHandlerProvider {
 
     private final Map<String, SequentialInboxMessageHandler> messageHandlers = new ConcurrentHashMap<>();
 
-    public SequentialInboxMessageHandler getHandlerForMessageType(String messageType) {
-        return messageHandlers.get(messageType);
+    public SequentialInboxMessageHandler getHandlerForJeapMessageType(String jeapMessageType) {
+        return messageHandlers.get(jeapMessageType);
     }
 
-    protected void addHandler(String messageType, SequentialInboxMessageHandler messageHandler) {
-        messageHandlers.put(messageType, messageHandler);
+    protected void addHandler(String jeapMessageType, SequentialInboxMessageHandler messageHandler) {
+        messageHandlers.put(jeapMessageType, messageHandler);
     }
 }

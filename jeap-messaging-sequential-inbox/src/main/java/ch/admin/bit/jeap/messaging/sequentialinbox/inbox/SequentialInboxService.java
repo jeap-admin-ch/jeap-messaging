@@ -40,8 +40,8 @@ public class SequentialInboxService {
                               Acknowledgment acknowledgment) {
 
         AvroMessage avroMessage = consumerRecord.value();
-        String messageTypeName = avroMessage.getType().getName();
-        SequencedMessageType sequencedMessageType = inboxConfiguration.requireSequencedMessageTypeByName(messageTypeName);
+        String qualifiedSequencedMessageTypeName = inboxConfiguration.qualifiedSequencedMessageTypeName(avroMessage);
+        SequencedMessageType sequencedMessageType = inboxConfiguration.requireSequencedMessageTypeByQualifiedName(qualifiedSequencedMessageTypeName);
 
         // Should the message be sequenced at all?
         String contextId = getContextId(avroMessage, sequencedMessageType);
@@ -53,9 +53,9 @@ public class SequentialInboxService {
         }
 
         // Create / get sequence instance for this context ID
-        Sequence sequence = inboxConfiguration.getSequenceByMessageTypeName(messageTypeName);
+        Sequence sequence = inboxConfiguration.getSequenceByQualifiedSequencedMessageTypeName(qualifiedSequencedMessageTypeName);
         log.info("Handling message {} ({}) in sequence {} with context ID {}",
-                avroMessage.getType().getName(), avroMessage.getIdentity().getId(), sequence.getName(), contextId);
+                qualifiedSequencedMessageTypeName, avroMessage.getIdentity().getId(), sequence.getName(), contextId);
         long sequenceInstanceId = sequenceInstanceFactory.createOrGetSequenceInstance(sequence, contextId);
 
         // If the sequencing start timestamp is set and the current time is before the start timestamp, start the record mode and handle the message immediately.
@@ -64,7 +64,7 @@ public class SequentialInboxService {
         boolean recordingModeIsEnabled = sequencingStartTimestamp != null && LocalDateTime.now().isBefore(sequencingStartTimestamp);
 
         // Process the message before acquiring the lock
-        handleMessage(consumerRecord, messageHandler, sequencedMessageType, sequenceInstanceId, sequence, contextId, recordingModeIsEnabled);
+        handleMessage(consumerRecord, messageHandler, sequencedMessageType, sequenceInstanceId, sequence, contextId, recordingModeIsEnabled, qualifiedSequencedMessageTypeName);
 
         // Lock the sequence instance for update to avoid concurrent access to the inbox for the current context
         tx.runInNewTransaction(() -> {
@@ -97,54 +97,52 @@ public class SequentialInboxService {
     }
 
     private void handleMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, SequentialInboxMessageHandler messageHandler,
-                                  SequencedMessageType sequencedMessageType, long sequenceInstanceId, Sequence sequence, String contextId, boolean recordModeIsEnabled) {
+                               SequencedMessageType sequencedMessageType, long sequenceInstanceId, Sequence sequence, String contextId, boolean recordModeIsEnabled, String qualifiedSequencedMessageTypeName) {
         AvroMessage avroMessage = consumerRecord.value();
-        String messageTypeName = avroMessage.getType().getName();
 
         Optional<SequencedMessage> existingSequencedMessage = sequencedMessageService
-                .findByMessageTypeAndIdempotenceId(messageTypeName, avroMessage.getIdentity().getIdempotenceId());
+                .findByMessageTypeAndIdempotenceId(qualifiedSequencedMessageTypeName, avroMessage.getIdentity().getIdempotenceId());
         // Idempotence handling: Has the message already been successfully persisted or is it a new message?
         if (!isAlreadyProcessedOrWaiting(existingSequencedMessage)) {
 
             if (recordModeIsEnabled) {
                 log.info("Recording mode active, handling message {} immediately", avroMessage);
-                invokeMessageHandler(consumerRecord, messageHandler, existingSequencedMessage, sequenceInstanceId);
+                invokeMessageHandler(consumerRecord, messageHandler, existingSequencedMessage, sequenceInstanceId, qualifiedSequencedMessageTypeName);
                 return;
             }
 
             // If the release condition is not satisfied, buffer the message and return
             if (!sequencedMessageService.isReleaseConditionSatisfied(sequencedMessageType, sequenceInstanceId)) {
-                bufferMessage(consumerRecord, avroMessage, sequence, contextId, existingSequencedMessage, sequenceInstanceId);
+                bufferMessage(consumerRecord, avroMessage, sequence, contextId, existingSequencedMessage, sequenceInstanceId, qualifiedSequencedMessageTypeName);
                 return;
             }
 
             // Release condition is satisfied, invoke the message handler
-            invokeMessageHandler(consumerRecord, messageHandler, existingSequencedMessage, sequenceInstanceId);
+            invokeMessageHandler(consumerRecord, messageHandler, existingSequencedMessage, sequenceInstanceId, qualifiedSequencedMessageTypeName);
         } else {
-            log.info("Message {} (id={}) has already been processed with idempotence ID {}, skipping listener invocation", messageTypeName,
+            log.info("Message {} (id={}) has already been processed with idempotence ID {}, skipping listener invocation", qualifiedSequencedMessageTypeName,
                     avroMessage.getIdentity().getId(), avroMessage.getIdentity().getIdempotenceId());
         }
     }
 
     private void invokeMessageHandler(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, SequentialInboxMessageHandler messageHandler,
-                                      Optional<SequencedMessage> existingSequencedMessage, long sequenceInstanceId) {
+                                      Optional<SequencedMessage> existingSequencedMessage, long sequenceInstanceId, String qualifiedSequencedMessageTypeName) {
         AvroMessage avroMessage = consumerRecord.value();
-        String messageTypeName = avroMessage.getType().getName();
         try {
-            log.debug("Invoking message handler for message {} (id={})", messageTypeName, avroMessage.getIdentity().getId());
+            log.debug("Invoking message handler for message {} (id={})", qualifiedSequencedMessageTypeName, avroMessage.getIdentity().getId());
             messageHandlerService.invokeMessageHandler(consumerRecord.key(), avroMessage, messageHandler);
-            sequencedMessageService.storeSequencedMessage(existingSequencedMessage, sequenceInstanceId, SequencedMessageState.PROCESSED, consumerRecord);
+            sequencedMessageService.storeSequencedMessage(qualifiedSequencedMessageTypeName, existingSequencedMessage, sequenceInstanceId, SequencedMessageState.PROCESSED, consumerRecord);
         } catch (Exception ex) {
             // Exception is logged by the error service sender
-            log.error("Error processing message {} (id={}), marking as failed", messageTypeName, avroMessage.getIdentity().getId());
-            sequencedMessageService.storeSequencedMessage(existingSequencedMessage, sequenceInstanceId, SequencedMessageState.FAILED, consumerRecord);
+            log.error("Error processing message {} (id={}), marking as failed", qualifiedSequencedMessageTypeName, avroMessage.getIdentity().getId());
+            sequencedMessageService.storeSequencedMessage(qualifiedSequencedMessageTypeName, existingSequencedMessage, sequenceInstanceId, SequencedMessageState.FAILED, consumerRecord);
             throw ex; // Process record in error handler and send to the error handling service
         }
     }
 
-    private void bufferMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, AvroMessage avroMessage, Sequence sequence, String contextId, Optional<SequencedMessage> existingSequencedMessage, long sequenceInstanceId) {
-        log.info("Buffering message {} in sequence {} with context ID {}", avroMessage.getType().getName(), sequence.getName(), contextId);
-        sequencedMessageService.storeSequencedMessage(existingSequencedMessage, sequenceInstanceId, SequencedMessageState.WAITING, consumerRecord);
+    private void bufferMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, AvroMessage avroMessage, Sequence sequence, String contextId, Optional<SequencedMessage> existingSequencedMessage, long sequenceInstanceId, String qualifiedSequencedMessageTypeName) {
+        log.info("Buffering message {} in sequence {} with context ID {}", qualifiedSequencedMessageTypeName, sequence.getName(), contextId);
+        sequencedMessageService.storeSequencedMessage(qualifiedSequencedMessageTypeName, existingSequencedMessage, sequenceInstanceId, SequencedMessageState.WAITING, consumerRecord);
     }
 
     private static boolean isAlreadyProcessedOrWaiting(Optional<SequencedMessage> existingSequencedMessage) {

@@ -1,0 +1,8 @@
+sequences:
+
+  - name: eventType2AfterEventType1
+    retentionPeriod: P2D
+    messages:
+      - type: MyEventType1
+        subType: BANANAS
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor

@@ -20,25 +20,25 @@ class ReleaseConditionsValidator {
     void validate() {
 
         messages.stream().filter(m -> m.getReleaseCondition() != null).forEach(message -> {
-                    log.info("Checking release conditions for message type: {}", message.getType());
+            log.info("Checking release conditions for message type: {}", message.getQualifiedName());
                     if (!message.getReleaseCondition().getAnd().isEmpty() && !message.getReleaseCondition().getOr().isEmpty()) {
-                        throw SequentialInboxConfigurationException.invalidPredecessorConfiguration(message.getType());
+                        throw SequentialInboxConfigurationException.invalidPredecessorConfiguration(message.getQualifiedName());
                     }
 
                     if (message.getReleaseCondition().getPredecessor() == null) {
                         if (message.getReleaseCondition().getAnd().isEmpty() && message.getReleaseCondition().getOr().isEmpty()) {
-                            throw SequentialInboxConfigurationException.invalidPredecessorConfiguration(message.getType());
+                            throw SequentialInboxConfigurationException.invalidPredecessorConfiguration(message.getQualifiedName());
                         }
 
                     } else {
                         if (!message.getReleaseCondition().getAnd().isEmpty() || !message.getReleaseCondition().getOr().isEmpty()) {
-                            throw SequentialInboxConfigurationException.invalidPredecessorConfiguration(message.getType());
+                            throw SequentialInboxConfigurationException.invalidPredecessorConfiguration(message.getQualifiedName());
                         }
                     }
 
                     currentCheckedMessageTypes = new HashSet<>();
-                    currentMessageType = message.getType();
-                    validate(message.getType(), message.getReleaseCondition());
+            currentMessageType = message.getQualifiedName();
+            validate(message.getQualifiedName(), message.getReleaseCondition());
                     log.info("Release conditions for {} are valid : {}", currentMessageType, currentCheckedMessageTypes.stream().sorted().toList());
                 }
 
@@ -59,15 +59,15 @@ class ReleaseConditionsValidator {
 
             SequencedMessageType predecessor = getPredecessorMessageType(releaseCondition.getPredecessor());
 
-            if (predecessor.getType().equals(currentMessageType)) {
+            if (predecessor.getQualifiedName().equals(currentMessageType)) {
                 throw SequentialInboxConfigurationException.circularPredecessorDefinition(currentMessageType, parent);
             }
 
-            if (!currentCheckedMessageTypes.add(predecessor.getType())) {
+            if (!currentCheckedMessageTypes.add(predecessor.getQualifiedName())) {
                 return;
             }
 
-            validate(predecessor.getType(), predecessor.getReleaseCondition());
+            validate(predecessor.getQualifiedName(), predecessor.getReleaseCondition());
 
         }
 
@@ -83,9 +83,9 @@ class ReleaseConditionsValidator {
 
     }
 
-    private SequencedMessageType getPredecessorMessageType(String messageType) {
-        return messages.stream().filter(m -> m.getType().equals(messageType))
-                .findFirst().orElseThrow(() -> SequentialInboxConfigurationException.predecessorNotFound(messageType));
+    private SequencedMessageType getPredecessorMessageType(String messageTypeQualifiedName) {
+        return messages.stream().filter(m -> m.getQualifiedName().equals(messageTypeQualifiedName))
+                .findFirst().orElseThrow(() -> SequentialInboxConfigurationException.predecessorNotFound(messageTypeQualifiedName));
     }
 
     private void checkDuplicatesInOperation(String parent, List<ReleaseCondition> releaseConditions) {

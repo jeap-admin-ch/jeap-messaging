@@ -1,3 +1,6 @@
+subTypeResolvers:
+  MyEventType1: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestSubTypeResolver
+
 sequences:
 
   - name: eventType2AfterEventType1
@@ -5,6 +8,13 @@ sequences:
     messages:
       - type: MyEventType1
         topic: test-topic-1
+        subType: APPLES
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+        messageFilter: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestMessageFilter
+
+      - type: MyEventType1
+        topic: test-topic-1
+        subType: BANANAS
         contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
         messageFilter: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestMessageFilter
 
@@ -19,23 +29,23 @@ sequences:
         contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
         releaseCondition:
           and:
-            - predecessor: MyEventType1
+            - predecessor: MyEventType1.BANANAS
             - or:
                 - predecessor: MyEventType4
-                - predecessor: MyEventType1
+                - predecessor: MyEventType1.BANANAS
                 - and:
-                  - predecessor: MyEventType1
-                  - predecessor: MyEventType5
-                  - and:
-                      - predecessor: MyEventType1
-                      - predecessor: MyEventType6
+                    - predecessor: MyEventType1.APPLES
+                    - predecessor: MyEventType5
+                    - and:
+                        - predecessor: MyEventType1.APPLES
+                        - predecessor: MyEventType6
 
       - type: MyEventType4
         topic: test-topic-4
         contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
         releaseCondition:
           or:
-            - predecessor: MyEventType1
+            - predecessor: MyEventType1.APPLES
             - predecessor: MyEventType9
 
 
@@ -44,7 +54,7 @@ sequences:
         contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
         releaseCondition:
           or:
-            - predecessor: MyEventType1
+            - predecessor: MyEventType1.APPLES
             - predecessor: MyEventType9
 
       - type: MyEventType6
@@ -52,10 +62,10 @@ sequences:
         contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
         releaseCondition:
           or:
-            - predecessor: MyEventType1
+            - predecessor: MyEventType1.APPLES
             - predecessor: MyEventType9
             - or:
-                - predecessor: MyEventType1
+                - predecessor: MyEventType1.BANANAS
                 - predecessor: MyEventType9
 
       - type: MyEventType9

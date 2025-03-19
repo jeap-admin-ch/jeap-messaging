@@ -15,6 +15,6 @@ class ContextIdExtractorDeserializer extends StdDeserializer<ContextIdExtractor<
 
     @Override
     public ContextIdExtractor<?> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        return SequentialInboxConfigurationUtils.newInstance(jsonParser.getValueAsString());
+        return SequentialInboxConfigurationUtils.newInstance(jsonParser.getValueAsString(), ContextIdExtractor.class);
     }
 }

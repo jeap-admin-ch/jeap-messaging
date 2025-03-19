@@ -71,7 +71,7 @@ class BufferedMessageService {
     }
 
     private SequencedMessageType sequencedMessageType(SequencedMessage sequencedMessage) {
-        return sequentialInboxConfiguration.requireSequencedMessageTypeByName(sequencedMessage.getMessageType());
+        return sequentialInboxConfiguration.requireSequencedMessageTypeByQualifiedName(sequencedMessage.getMessageType());
     }
 
     /**

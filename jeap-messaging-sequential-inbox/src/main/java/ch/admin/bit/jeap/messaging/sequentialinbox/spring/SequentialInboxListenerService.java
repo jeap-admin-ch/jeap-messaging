@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 
 @Component
@@ -39,12 +40,18 @@ class SequentialInboxListenerService {
     }
 
     void startMessageListeners() {
-        Set<SequencedMessageType> messageTypes = sequentialInboxConfiguration.getSequencedMessageTypes();
+        Map<String, List<SequencedMessageType>> sequencedTypesByJeapMessageTypeName = sequentialInboxConfiguration.getSequencedMessageTypes()
+                .stream()
+                .collect(groupingBy(SequencedMessageType::getJeapMessageTypeName));
+        List<SequencedMessageType> sequencedMessageTypeConfigsOncePerJeapMessageType =
+                sequencedTypesByJeapMessageTypeName.values().stream()
+                        .map(List::getFirst)
+                        .toList();
 
         List<ListenerBeanMethod> allAnnotatedMethods = getAllSequentialInboxMessageListenerMethods();
 
-        Set<ListenerBeanMethod> startedListeners = messageTypes.stream()
-                .map(messageType -> startListener(messageType, allAnnotatedMethods))
+        Set<ListenerBeanMethod> startedListeners = sequencedMessageTypeConfigsOncePerJeapMessageType.stream()
+                .map(messageType -> startListener(messageType.getJeapMessageTypeName(), messageType.getTopic(), messageType.getClusterName(), allAnnotatedMethods))
                 .collect(toSet());
 
         assertAllAnnotatedListenersStarted(allAnnotatedMethods, startedListeners);
@@ -58,10 +65,10 @@ class SequentialInboxListenerService {
         }
     }
 
-    private ListenerBeanMethod startListener(SequencedMessageType messageType, List<ListenerBeanMethod> allAnnotatedMethods) {
-        SequentialInboxMessageHandler messageHandler = getBeanForMessageType(allAnnotatedMethods, messageType.getType());
-        messageHandlerProvider.addHandler(messageType.getType(), messageHandler);
-        messageConsumerFactory.startConsumer(messageType.getTopic(), messageType.getType(), messageType.getClusterName(), messageHandler);
+    private ListenerBeanMethod startListener(String jeapMessageTypeName, String topic, String clusterName, List<ListenerBeanMethod> allAnnotatedMethods) {
+        SequentialInboxMessageHandler messageHandler = getBeanForMessageType(allAnnotatedMethods, jeapMessageTypeName);
+        messageHandlerProvider.addHandler(jeapMessageTypeName, messageHandler);
+        messageConsumerFactory.startConsumer(topic, jeapMessageTypeName, clusterName, messageHandler);
         return messageHandler.getListenerBeanMethod();
     }
 

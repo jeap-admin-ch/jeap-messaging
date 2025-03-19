@@ -3,6 +3,9 @@ package ch.admin.bit.jeap.messaging.sequentialinbox.configuration.deserializer;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.ContextIdExtractor;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.MessageFilter;
 import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SequentialInboxConfiguration;
+import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.SubTypeResolver;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -26,8 +29,11 @@ public class SequentialInboxConfigurationLoader {
     public SequentialInboxConfiguration loadSequenceDeclaration() {
         log.info("Load Sequential Inbox config from location {}", classpathLocation);
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY); // prefer fields over getter/setter for json deserialization
         SimpleModule module = new SimpleModule();
         module.addDeserializer(ContextIdExtractor.class, new ContextIdExtractorDeserializer());
+        module.addDeserializer(SubTypeResolver.class, new SubTypeResolverDeserializer());
         module.addDeserializer(MessageFilter.class, new MessageFilterDeserializer());
         module.addDeserializer(Duration.class, new RetentionPeriodDeserializer());
         mapper.registerModule(module);

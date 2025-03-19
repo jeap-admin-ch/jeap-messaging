@@ -1,0 +1,30 @@
+subTypeResolvers:
+  MyEventType1: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestSubTypeResolver
+
+sequences:
+
+  - name: eventType2AfterEventType1
+    retentionPeriod: P2D
+    messages:
+      - type: MyEventType1
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+
+      - type: MyEventType1
+        subType: BANANAS
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+
+      - type: MyEventType1
+        subType: APPLES
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+
+      - type: MyEventType2
+        subType: SOMETHING
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+
+  - name: seq2
+    retentionPeriod: P2D
+    messages:
+      - type: MyEventType2
+        # a subtype is set in seq1, but no subtype here
+        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
+

@@ -11,7 +11,10 @@ import ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.Sequenced
 import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.MessageRepository;
 import ch.admin.bit.jeap.messaging.sequentialinbox.kafka.TraceContextFactory;
 import ch.admin.bit.jeap.messaging.sequentialinbox.metrics.SequentialInboxMetricsCollector;
-import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.*;
+import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.BufferedMessage;
+import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.MessageHeader;
+import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessage;
+import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessageState;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
@@ -21,7 +24,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 @Component
@@ -40,18 +42,18 @@ class SequencedMessageService {
             SignatureHeaders.SIGNATURE_KEY_HEADER_KEY);
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
-    public void storeSequencedMessage(Optional<SequencedMessage> existingSequencedMessage,
+    public void storeSequencedMessage(String messageTypeQualifiedName,
+                                      Optional<SequencedMessage> existingSequencedMessage,
                                       long sequenceInstanceId,
                                       SequencedMessageState state,
                                       ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord) {
 
-        String messageType = consumerRecord.value().getType().getName();
         if (existingSequencedMessage.isPresent()) {
             messageRepository.setMessageStateInCurrentTransaction(existingSequencedMessage.get(), state);
             return;
         }
 
-        metricsCollector.onConsumedSequencedMessage(messageType);
+        metricsCollector.onConsumedSequencedMessage(messageTypeQualifiedName);
 
         BufferedMessage bufferedMessage = null;
         if (state == SequencedMessageState.WAITING) {
@@ -66,7 +68,7 @@ class SequencedMessageService {
         String clusterName = getClusterName(consumerRecord);
 
         SequencedMessage sequencedMessage = SequencedMessage.builder()
-                .messageType(messageType)
+                .messageType(messageTypeQualifiedName)
                 .sequenceInstanceId(sequenceInstanceId)
                 .clusterName(clusterName)
                 .topic(consumerRecord.topic())
@@ -116,8 +118,8 @@ class SequencedMessageService {
     }
 
     boolean areAllMessagesProcessed(Sequence sequence, long sequenceInstanceId) {
-        Set<String> allMessageTypeNames = sequence.getMessageTypeNames();
-        Set<String> processedMessageTypes = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstanceId);
-        return allMessageTypeNames.equals(processedMessageTypes);
+        Set<String> allMessageTypeQns = sequence.getMessageTypeQualifiedNames();
+        Set<String> processedMessageTypeQns = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstanceId);
+        return allMessageTypeQns.equals(processedMessageTypeQns);
     }
 }

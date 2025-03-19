@@ -21,6 +21,15 @@ public class TestMessages {
                 .build();
     }
 
+    public static JmeSimpleTestEvent createJmeSimpleTestEvent(UUID contextId, IceCreamFlavour flavour) {
+        return JmeSimpleTestEventBuilder.create()
+                .idempotenceId(randomIdempotenceIdString())
+                .message(flavour.name())
+                .processId(contextId.toString())
+                .serviceName("test")
+                .build();
+    }
+
     public static JmeDeclarationCreatedEvent createDeclarationCreatedEvent(UUID contextId) {
         return createDeclarationCreatedEvent(randomIdempotenceId(), contextId, "test");
     }

@@ -7,6 +7,6 @@ sequences:
         topic: test-topic-1
         contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
       - type: MyEventType1
-        topic: test-topic-2
+        topic: test-topic-1
         contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor
 
