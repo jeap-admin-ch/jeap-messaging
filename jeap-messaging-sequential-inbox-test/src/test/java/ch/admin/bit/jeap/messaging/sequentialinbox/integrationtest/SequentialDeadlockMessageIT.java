@@ -52,11 +52,13 @@ class SequentialDeadlockMessageIT extends SequentialInboxITBase {
 
         // when: one message dead locks the sequence instance
         // Simulated, by starting a new thread to lock the sequence instance for update
+        CountDownLatch latchThread = new CountDownLatch(1);
         Thread lockThread = new Thread(() -> {
             transactions.runInNewTransaction(() -> {
-                SequenceInstance sequenceInstance = sequenceInstanceRepository.findByNameAndContextId("ThreeSequentialEvents", contextId.toString()).orElseThrow(() -> new IllegalStateException("Sequence instance not found"));
-                SequenceInstance sequenceInstanceLocked = sequenceInstanceRepository.getByIdAndLockForUpdate(sequenceInstance.getId(), 1000);
+                long sequenceInstanceId = sequenceInstanceRepository.findIdByNameAndContextId("ThreeSequentialEvents", contextId.toString()).orElseThrow(() -> new IllegalStateException("Sequence instance not found"));
+                SequenceInstance sequenceInstanceLocked = sequenceInstanceRepository.getByIdAndLockForUpdate(sequenceInstanceId, 1000);
                 try {
+                    latchThread.countDown();
                     latch.await(); // Hold the lock
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -66,7 +68,7 @@ class SequentialDeadlockMessageIT extends SequentialInboxITBase {
         lockThread.start();
 
         // Ensure the latch is awaited before continuing, give some time for the lock to be acquired
-        Thread.sleep(100);
+        latchThread.await();
 
         // when: sending the third event
         sendSync(JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC, thirdEvent);

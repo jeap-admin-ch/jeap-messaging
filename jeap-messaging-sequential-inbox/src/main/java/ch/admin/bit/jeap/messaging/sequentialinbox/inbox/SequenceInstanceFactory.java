@@ -32,19 +32,19 @@ class SequenceInstanceFactory {
         return repository.getByIdAndLockForUpdate(sequenceInstanceId, idleLockTimeoutSeconds);
     }
 
-    SequenceInstance createOrGetSequenceInstance(Sequence sequence, String contextId) {
+    long createOrGetSequenceInstance(Sequence sequence, String contextId) {
         try {
             return tx.callInNewTransaction(() -> {
                 // First, attempt to find an existing instance
-                Optional<SequenceInstance> existingInstance = repository.findByNameAndContextId(sequence.getName(), contextId);
+                Optional<Long> existingInstance = repository.findIdByNameAndContextId(sequence.getName(), contextId);
                 // Return the existing instance if found, otherwise create a new one
-                return existingInstance.orElseGet(() -> saveNewInstance(sequence, contextId));
+                return existingInstance.orElseGet(() -> saveNewInstance(sequence, contextId).getId());
             });
         } catch (DataIntegrityViolationException e) {
             // If another thread inserted the same contextId concurrently, find and return it
             // Note: The transaction will be rolled back upon a DataIntegrityViolationException, so this needs to happen
             // in a new transaction.
-            return tx.callInNewTransaction(() -> repository.findByNameAndContextId(sequence.getName(), contextId))
+            return tx.callInNewTransaction(() -> repository.findIdByNameAndContextId(sequence.getName(), contextId))
                     .orElseThrow(() -> SequentialInboxException.failedToReadExistingSequenceInstance(sequence, contextId, e));
         }
     }

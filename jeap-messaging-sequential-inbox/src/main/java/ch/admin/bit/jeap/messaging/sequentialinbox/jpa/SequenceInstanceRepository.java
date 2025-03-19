@@ -25,8 +25,8 @@ public class SequenceInstanceRepository {
         return persistedInstance;
     }
 
-    public Optional<SequenceInstance> findByNameAndContextId(String name, String contextId) {
-        return springDataJpaSequenceInstanceRepository.findByNameAndContextId(name, contextId);
+    public Optional<Long> findIdByNameAndContextId(String name, String contextId) {
+        return springDataJpaSequenceInstanceRepository.findIdByNameAndContextId(name, contextId);
     }
 
     public SequenceInstance getByIdAndLockForUpdate(long id, int idleLockTimeoutSeconds) {

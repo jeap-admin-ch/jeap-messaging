@@ -41,7 +41,7 @@ class SequencedMessageService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
     public void storeSequencedMessage(Optional<SequencedMessage> existingSequencedMessage,
-                                      SequenceInstance sequenceInstance,
+                                      long sequenceInstanceId,
                                       SequencedMessageState state,
                                       ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord) {
 
@@ -56,7 +56,7 @@ class SequencedMessageService {
         BufferedMessage bufferedMessage = null;
         if (state == SequencedMessageState.WAITING) {
             bufferedMessage = BufferedMessage.builder()
-                    .sequenceInstanceId(sequenceInstance.getId())
+                    .sequenceInstanceId(sequenceInstanceId)
                     .key(consumerRecord.key() == null ? null : consumerRecord.key().getSerializedMessage())
                     .value(consumerRecord.value().getSerializedMessage())
                      .build();
@@ -67,7 +67,7 @@ class SequencedMessageService {
 
         SequencedMessage sequencedMessage = SequencedMessage.builder()
                 .messageType(messageType)
-                .sequenceInstanceId(sequenceInstance.getId())
+                .sequenceInstanceId(sequenceInstanceId)
                 .clusterName(clusterName)
                 .topic(consumerRecord.topic())
                 .sequencedMessageId(UUID.fromString(consumerRecord.value().getIdentity().getId()))
@@ -103,7 +103,7 @@ class SequencedMessageService {
         return messageRepository.findByMessageTypeAndIdempotenceIdInNewTransaction(messageType, idempotenceId);
     }
 
-    boolean isReleaseConditionSatisfied(SequencedMessageType sequencedMessageType, SequenceInstance sequenceInstance) {
+    boolean isReleaseConditionSatisfied(SequencedMessageType sequencedMessageType, long sequenceInstanceId) {
         // Avoid querying the database if there is no release condition. In case the message does not have a release
         // condition (first message in a sequence), it should be processed immediately.
         Set<String> emptyProcessedMessageSet = Set.of();
@@ -111,13 +111,13 @@ class SequencedMessageService {
             return true;
         }
 
-        Set<String> processedMessageTypes = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstance);
+        Set<String> processedMessageTypes = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstanceId);
         return sequencedMessageType.isReleaseConditionSatisfied(processedMessageTypes);
     }
 
-    boolean areAllMessagesProcessed(Sequence sequence, SequenceInstance sequenceInstance) {
+    boolean areAllMessagesProcessed(Sequence sequence, long sequenceInstanceId) {
         Set<String> allMessageTypeNames = sequence.getMessageTypeNames();
-        Set<String> processedMessageTypes = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstance);
+        Set<String> processedMessageTypes = messageRepository.getProcessedMessageTypesInSequenceInNewTransaction(sequenceInstanceId);
         return allMessageTypeNames.equals(processedMessageTypes);
     }
 }
