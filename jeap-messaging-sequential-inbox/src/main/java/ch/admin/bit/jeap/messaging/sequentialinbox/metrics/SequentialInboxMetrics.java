@@ -24,9 +24,9 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 @RequiredArgsConstructor
 class SequentialInboxMetrics implements SequentialInboxMetricsCollector {
 
-    private static final String WAITING_MESSAGES = "jeap.messaging.sequential-inbox.metrics.waiting-messages";
-    private static final String CONSUMED_MESSAGES = "jeap.messaging.sequential-inbox.metrics.consumed-messages";
-    private static final String WAITING_MESSAGE_DELAY = "jeap.messaging.sequential-inbox.metrics.waiting-message-delay";
+    private static final String WAITING_MESSAGES = "jeap.messaging.sequential-inbox.waiting-messages";
+    private static final String CONSUMED_MESSAGES = "jeap.messaging.sequential-inbox.consumed-messages";
+    private static final String WAITING_MESSAGE_DELAY = "jeap.messaging.sequential-inbox.waiting-message-delay";
     private static final String TYPE_TAG = "type";
 
     private final MeterRegistry meterRegistry;

@@ -35,7 +35,7 @@ public class SequentialInboxHousekeepingService {
      */
     @Scheduled(cron = "${jeap.messaging.sequential-inbox.housekeeping.expiry-cron:0 */15 * * * *}")
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
-    @Timed(value = "jeap.sequentialinbox.housekeeping.expired")
+    @Timed(value = "jeap.messaging.sequential-inbox.housekeeping.expired")
     public void deleteExpiredMessages() {
         log.debug("Starting housekeeping task: deleting expired messages and sequence instances");
 
@@ -56,7 +56,7 @@ public class SequentialInboxHousekeepingService {
      */
     @Scheduled(cron = "${jeap.messaging.sequential-inbox.housekeeping.closed-instances-cron:0 5/15 * * * *}")
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
-    @Timed(value = "jeap.sequentialinbox.housekeeping.closed")
+    @Timed(value = "jeap.messaging.sequential-inbox.housekeeping.closed")
     public void deleteClosedSequenceInstances() {
         log.debug("Starting housekeeping task: deleting closed sequence instances and related data");
 

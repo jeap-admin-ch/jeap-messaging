@@ -160,21 +160,21 @@ class SequentialInboxIT extends SequentialInboxITBase {
 
         // then: assert metric values
         Optional<Counter> counterOptional = findMeter(Counter.class,
-                "jeap.messaging.sequential-inbox.metrics.consumed-messages", "JmeSimpleTestEvent");
+                "jeap.messaging.sequential-inbox.consumed-messages", "JmeSimpleTestEvent");
         assertThat(counterOptional)
                 .isPresent()
                 .hasValueSatisfying(counter ->
                         assertThat(counter.count())
                                 .isPositive());
         Optional<Timer> timerOptional = findMeter(Timer.class,
-                "jeap.messaging.sequential-inbox.metrics.waiting-message-delay", "JmeSimpleTestEvent");
+                "jeap.messaging.sequential-inbox.waiting-message-delay", "JmeSimpleTestEvent");
         assertThat(timerOptional)
                 .isPresent()
                 .hasValueSatisfying(timer ->
                         assertThat(timer.count())
                                 .isPositive());
         Optional<Gauge> gaugeOptional = findMeter(Gauge.class,
-                "jeap.messaging.sequential-inbox.metrics.waiting-messages", "JmeSimpleTestEvent");
+                "jeap.messaging.sequential-inbox.waiting-messages", "JmeSimpleTestEvent");
         assertThat(gaugeOptional)
                 .isPresent()
                 .hasValueSatisfying(gauge ->

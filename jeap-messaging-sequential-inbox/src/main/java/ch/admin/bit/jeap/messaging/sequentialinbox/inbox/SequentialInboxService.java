@@ -34,7 +34,7 @@ public class SequentialInboxService {
     @Value("${jeap.messaging.sequential-inbox.sequencing-start-timestamp:#{null}}")
     public LocalDateTime sequencingStartTimestamp;
 
-    @Timed(value = "jeap.sequentialinbox.handlemessage", histogram = true, percentiles = {0.5, 0.95, 0.99})
+    @Timed(value = "jeap.messaging.sequential-inbox.handle-message", percentiles = {0.5, 0.8, 0.95, 0.99})
     public void handleMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord,
                               SequentialInboxMessageHandler messageHandler,
                               Acknowledgment acknowledgment) {
