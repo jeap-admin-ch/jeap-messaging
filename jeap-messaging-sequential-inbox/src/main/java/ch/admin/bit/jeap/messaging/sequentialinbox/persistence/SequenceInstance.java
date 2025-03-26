@@ -13,7 +13,7 @@ import static lombok.AccessLevel.PROTECTED;
 @ToString
 @Getter
 @Entity
-@Table(name = "sequence_instance", uniqueConstraints = {@UniqueConstraint(name = "SEQUENCE_INSTANCE_NAME_CONTEXT_ID_UK", columnNames = {"type", "context_id"})})
+@Table(name = "sequence_instance")
 public class SequenceInstance {
 
     @Id
