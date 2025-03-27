@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [8.31.0] - 2025-03-27
+## [8.31.0] - 2025-03-31
 
 ### Changed
 
 - Update parent from 5.6.1 to 5.7.0
+- Update jeap-crypto from 3.13.0 to 3.14.0
+- Update avro-serializer from 7.7.2 to 7.9.0
+- Update aws-msk-iam-auth from 2.3.0 to 2.3.1
+- Update protobuf-java from 4.29.0 to 4.30.2
+- Update org.eclipse.jgit.version from 7.1.0.202411261347-r to 7.2.0.202503040940-r
+- Update maven-invoker from 3.2.0 to 3.3.0
 
 ## [8.30.3] - 2025-03-28
 

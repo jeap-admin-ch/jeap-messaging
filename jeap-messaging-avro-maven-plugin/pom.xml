@@ -13,11 +13,6 @@
     <artifactId>jeap-messaging-avro-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
 
-    <properties>
-        <file-management.version>3.1.0</file-management.version>
-        <maven-invoker.version>3.3.0</maven-invoker.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>

@@ -44,7 +44,7 @@ class SignatureVerifierTest {
 
     @Test
     void validateSignature_fail_whenValidationFailed() {
-        PublicKey publicKey = Mockito.mock(PublicKey.class);
+        PublicKey publicKey = null;
         SignatureCertificate certificate = Mockito.mock(SignatureCertificate.class);
         when(certificate.getPublicKey()).thenReturn(publicKey);
 
