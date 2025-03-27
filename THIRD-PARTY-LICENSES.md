@@ -380,7 +380,7 @@ BSD License 3
 Bouncy Castle Licence
 -------------------------------
 
- * Bouncy Castle Provider - [org.bouncycastle:bcprov-jdk18on](https://www.bouncycastle.org/java.html)
+ * Bouncy Castle Provider - [org.bouncycastle:bcprov-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
 
 CDDL/GPLv2+CE
 -------------------------------
