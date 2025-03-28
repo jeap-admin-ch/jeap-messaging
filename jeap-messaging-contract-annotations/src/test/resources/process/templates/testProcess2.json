@@ -1,0 +1,14 @@
+{
+  "events": [
+    {
+      "eventName": "JeapInitializerSimpleTestEvent",
+      "topicName": "topic1"
+    }
+  ],
+  "messages": [
+    {
+      "messageName": "JmeSimpleTestEvent",
+      "topicName": "simple-test-event-topic"
+    }
+  ]
+}

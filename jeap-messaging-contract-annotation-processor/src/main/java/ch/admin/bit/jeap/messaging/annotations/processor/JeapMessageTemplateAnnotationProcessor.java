@@ -53,7 +53,7 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
             String templatePath = templatePathResolver.getTemplatePath(annotatedElement);
 
             if (templatePath != null && !annotatedClasses.isEmpty()) {
-                Map<String, List<String>> templateMessages = templateMessageCollector.collectTemplateMessages(templatePath, processingEnv.getMessager());
+                Map<String, Set<String>> templateMessages = templateMessageCollector.collectTemplateMessages(templatePath, processingEnv.getMessager());
 
                 if (!templateMessages.isEmpty()) {
                     generateConsumerContracts(annotatedElement, annotatedClasses, templateMessages);
@@ -63,12 +63,12 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
         return processed;
     }
 
-    private void generateConsumerContracts(Element annotatedElement, Set<Class<?>> annotatedClasses, Map<String, List<String>> templateMessages) {
+    private void generateConsumerContracts(Element annotatedElement, Set<Class<?>> annotatedClasses, Map<String, Set<String>> templateMessages) {
         String appName = annotatedElement.getAnnotation(JeapMessageConsumerContractsByTemplates.class).appName();
 
-        for (Map.Entry<String, List<String>> entry : templateMessages.entrySet()) {
+        for (Map.Entry<String, Set<String>> entry : templateMessages.entrySet()) {
             String name = entry.getKey();
-            List<String> topics = entry.getValue();
+            Set<String> topics = entry.getValue();
             TypeMirror typeMirror = TypeRefFinder.findTypeRefOfClassByShortName(processingEnv, annotatedClasses, name);
 
             if (typeMirror != null) {

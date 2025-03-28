@@ -79,8 +79,8 @@ class JeapMessageTemplateAnnotationProcessorTest {
         when(avroClassFinder.getAvroGeneratedClasses()).thenReturn(annotatedClasses);
         when(templatePathResolver.getTemplatePath(annotatedElement)).thenReturn("/path/to/templates");
 
-        Map<String, List<String>> templateMessages = new HashMap<>();
-        templateMessages.put("TestMessage", Arrays.asList("topic1", "topic2"));
+        Map<String, Set<String>> templateMessages = new HashMap<>();
+        templateMessages.put("TestMessage", Set.of("topic1", "topic2"));
         when(templateMessageCollector.collectTemplateMessages(anyString(), any())).thenReturn(templateMessages);
 
         boolean result = processor.process(Collections.singleton(annotation), roundEnv);

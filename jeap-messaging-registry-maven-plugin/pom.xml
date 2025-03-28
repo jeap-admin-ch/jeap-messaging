@@ -7,7 +7,7 @@
     <parent>
         <artifactId>jeap-messaging</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>8.30.2-SNAPSHOT</version>
+        <version>8.30.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-messaging-registry-maven-plugin</artifactId>

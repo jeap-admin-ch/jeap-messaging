@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,21 +29,21 @@ class TemplateMessageCollectorTest {
     void testCollectTemplateMessages() {
         Path resourceDir = Paths.get("src/test/resources/process/templates");
 
-        Map<String, List<String>> result = collector.collectTemplateMessages(resourceDir.toString(), messager);
+        Map<String, Set<String>> result = collector.collectTemplateMessages(resourceDir.toString(), messager);
 
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.containsKey("JmeRacePreparedEvent"));
         assertTrue(result.containsKey("JmeRaceStartedEvent"));
-        assertEquals(List.of("jme-race-prepared"), result.get("JmeRacePreparedEvent"));
-        assertEquals(List.of("jme-race-started", "jme-race-started-tv"), result.get("JmeRaceStartedEvent"));
+        assertEquals(Set.of("jme-race-prepared"), result.get("JmeRacePreparedEvent"));
+        assertEquals(Set.of("jme-race-started", "jme-race-started-tv"), result.get("JmeRaceStartedEvent"));
     }
 
     @Test
     void testCollectTemplateMessagesWithInvalidPath() {
         String invalidPath = "invalid/path";
 
-        Map<String, List<String>> result = collector.collectTemplateMessages(invalidPath, messager);
+        Map<String, Set<String>> result = collector.collectTemplateMessages(invalidPath, messager);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
