@@ -38,7 +38,7 @@ class SequenceInstanceFactory {
                 // First, attempt to find an existing instance
                 Optional<Long> existingInstance = repository.findIdByNameAndContextId(sequence.getName(), contextId);
                 // Return the existing instance if found, otherwise create a new one
-                return existingInstance.orElseGet(() -> saveNewInstance(sequence, contextId).getId());
+                return existingInstance.orElseGet(() -> saveNewInstance(sequence, contextId));
             });
         } catch (DataIntegrityViolationException e) {
             // If another thread inserted the same contextId concurrently, find and return it
@@ -49,12 +49,12 @@ class SequenceInstanceFactory {
         }
     }
 
-    private SequenceInstance saveNewInstance(Sequence sequence, String contextId) {
+    private long saveNewInstance(Sequence sequence, String contextId) {
         SequenceInstance newInstance = SequenceInstance.builder()
                 .contextId(contextId)
                 .name(sequence.getName())
                 .retentionPeriod(sequence.getRetentionPeriod())
                 .build();
-        return repository.save(newInstance);
+        return repository.saveNewInstance(newInstance);
     }
 }

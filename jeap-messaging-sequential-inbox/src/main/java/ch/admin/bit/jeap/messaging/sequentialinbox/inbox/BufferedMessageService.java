@@ -41,7 +41,7 @@ class BufferedMessageService {
      * @return true if sequence is complete, false otherwise
      */
     boolean processBufferedMessages(SequenceInstance sequenceInstance, Sequence sequence) {
-        List<SequencedMessage> waitingAndProcessedMessages = messageRepository.getWaitingAndProcessedMessagesInNewTransaction(sequenceInstance);
+        List<SequencedMessage> waitingAndProcessedMessages = messageRepository.getWaitingAndProcessedMessagesInNewTransaction(sequenceInstance.getId());
         List<SequencedMessage> waitingMessages = waitingMessagesInModifiableList(waitingAndProcessedMessages);
         Set<String> processedMessageTypes = processedMessageTypes(waitingAndProcessedMessages);
 

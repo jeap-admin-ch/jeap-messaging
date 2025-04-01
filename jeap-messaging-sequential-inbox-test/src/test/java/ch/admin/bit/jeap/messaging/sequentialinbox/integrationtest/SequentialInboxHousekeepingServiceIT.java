@@ -86,7 +86,7 @@ class SequentialInboxHousekeepingServiceIT extends SequentialInboxITBase {
                 .name("test")
                 .retentionPeriod(Duration.ofNanos(1))
                 .build();
-        return sequenceInstanceRepository.save(sequenceInstance).getId();
+        return sequenceInstanceRepository.saveNewInstance(sequenceInstance);
     }
 
     private void saveMessage(String messageType, long sequenceInstanceId, String idempotenceId, boolean withHeaders) {

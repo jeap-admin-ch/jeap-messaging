@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.sequentialinbox.jpa;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequenceInstance;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +18,18 @@ public class SequenceInstanceRepository {
 
     private final SpringDataJpaSequenceInstanceRepository springDataJpaSequenceInstanceRepository;
     private final EntityManager entityManager;
+    private final JdbcTemplate jdbcTemplate;
 
     @Transactional
-    public SequenceInstance save(SequenceInstance sequenceInstance) {
-        SequenceInstance persistedInstance = springDataJpaSequenceInstanceRepository.save(sequenceInstance);
-        springDataJpaSequenceInstanceRepository.flush();
-        return persistedInstance;
+    public long saveNewInstance(SequenceInstance sequenceInstance) {
+        return insertInstance(sequenceInstance.getName(), sequenceInstance.getContextId(), sequenceInstance.getState().name(),
+                sequenceInstance.getCreatedAt(), sequenceInstance.getRetainUntil());
+    }
+
+    private long insertInstance(String name, String contextId, String state, ZonedDateTime createdAt, ZonedDateTime retainUntil) {
+        SequenceInstancePreparedStatementCreator psc = new SequenceInstancePreparedStatementCreator(name, contextId, state, createdAt, retainUntil);
+        //noinspection DataFlowIssue
+        return jdbcTemplate.query(psc, psc);
     }
 
     public Optional<Long> findIdByNameAndContextId(String name, String contextId) {

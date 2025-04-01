@@ -270,7 +270,6 @@ Apache License Version 2.0
  * org.opentest4j:opentest4j - [org.opentest4j:opentest4j](https://github.com/ota4j-team/opentest4j)
  * Reflections - [org.reflections:reflections](http://github.com/ronmamo/reflections)
  * Scala Library - [org.scala-lang:scala-library](https://www.scala-lang.org/)
- * Scala Library - [org.scala-lang:scala-library](https://www.scala-lang.org/)
  * Scala Reflect - [org.scala-lang:scala-reflect](https://www.scala-lang.org/)
  * scala-collection-compat - [org.scala-lang.modules:scala-collection-compat_2.13](http://www.scala-lang.org/)
  * scala-java8-compat - [org.scala-lang.modules:scala-java8-compat_2.13](http://www.scala-lang.org/)

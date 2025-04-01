@@ -1,7 +1,6 @@
 package ch.admin.bit.jeap.messaging.sequentialinbox.jpa;
 
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.BufferedMessage;
-import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequenceInstance;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessage;
 import ch.admin.bit.jeap.messaging.sequentialinbox.persistence.SequencedMessageState;
 import jakarta.persistence.EntityManager;
@@ -45,8 +44,8 @@ public class MessageRepository {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)
-    public List<SequencedMessage> getWaitingAndProcessedMessagesInNewTransaction(SequenceInstance sequenceInstance) {
-        return sequencedMessageRepository.findAllBySequenceInstanceIdAndStateIn(sequenceInstance.getId(), WAITING_AND_PROCESSED_STATE);
+    public List<SequencedMessage> getWaitingAndProcessedMessagesInNewTransaction(long sequenceInstanceId) {
+        return sequencedMessageRepository.findAllBySequenceInstanceIdAndStateIn(sequenceInstanceId, WAITING_AND_PROCESSED_STATE);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED)

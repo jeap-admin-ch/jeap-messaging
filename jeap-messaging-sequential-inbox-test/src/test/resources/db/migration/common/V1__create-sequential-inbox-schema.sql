@@ -1,4 +1,4 @@
-CREATE SEQUENCE sequence_instance_sequence START WITH 1 INCREMENT 50 CYCLE;
+CREATE SEQUENCE sequence_instance_sequence START WITH 1 INCREMENT 1 CYCLE; -- sequence is not used via Hibernate, not caching 50 values
 CREATE SEQUENCE buffered_message_sequence START WITH 1 INCREMENT 50 CYCLE;
 CREATE SEQUENCE sequenced_message_sequence START WITH 1 INCREMENT 50 CYCLE;
 
