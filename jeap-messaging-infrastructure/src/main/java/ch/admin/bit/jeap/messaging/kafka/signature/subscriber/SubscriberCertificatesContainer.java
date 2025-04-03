@@ -33,7 +33,13 @@ public class SubscriberCertificatesContainer {
     public void init() {
         this.certificateChainsByServiceName = toRealCertificatesChain(signatureSubscriberProperties.certificateChains());
         validateCertificates(certificateChainsByServiceName);
-        log.info("SubscriberCertificatesContainer initialized");
+        List<String> certificateSerialNumbers = new ArrayList<>();
+        for (CertificateChainEntry certificateChainEntry : certificateChainsByServiceName.values()) {
+            for (CertificateChain certificateChain : certificateChainEntry.chains()) {
+                certificateSerialNumbers.add(CertificateHelper.serialNumberHexString(certificateChain.getLeafCertificate().getSerialNumber()));
+            }
+        }
+        log.info("SubscriberCertificatesContainer initialized, certificate serial numbers: {}", certificateSerialNumbers);
     }
 
     public SignatureCertificateWithChainValidity getCertificateWithSerialNumber(byte[] certificateSerialNumber) {
@@ -134,12 +140,17 @@ public class SubscriberCertificatesContainer {
         private boolean valid = false;
 
         SignatureCertificateWithChainValidity getCertificateWithSerialNumber(byte[] certificateSerialNumber) {
-            SignatureCertificate leafCertificate = certificates.getFirst();
+            SignatureCertificate leafCertificate = getLeafCertificate();
             if (Objects.deepEquals(leafCertificate.getSerialNumber(), certificateSerialNumber)) {
                 return new SignatureCertificateWithChainValidity(leafCertificate, valid);
             }
             return null;
         }
+
+        SignatureCertificate getLeafCertificate() {
+            return certificates.getFirst();
+        }
+
 
         public void updateValidity(boolean valid) {
             this.valid = valid;
