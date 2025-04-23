@@ -72,17 +72,6 @@ class DefaultContractsValidatorContractsTests {
     }
 
     @Test
-    void test_whenConsumingSharedEvent_thenNoException() {
-        MessageType messageType = AvroDomainEventType.newBuilder()
-                .setName("ProcessInstanceCompletedEvent")
-                .setVersion("1.2.3")
-                .build();
-
-        assertThatCode(() -> contractsValidator.ensurePublisherContract(messageType, ANY_TOPIC))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
     void test_whenPublisherContractWrongTopic_thenThrowsException() {
         MessageType messageType = AvroDomainEventType.newBuilder()
                 .setName(TEST_APP_PRODUCED_TYPE)

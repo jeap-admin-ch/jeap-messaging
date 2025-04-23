@@ -50,9 +50,6 @@ public class DefaultContractsValidator implements ContractsValidator {
 
     @Override
     public void ensureConsumerContract(String messageTypeName, String topic) {
-        if (ContractValidationExemptions.isExemptedFromReceiverValidation(messageTypeName)) {
-            return;
-        }
         if (!hasConsumerContractFor(messageTypeName, topic)) {
             throw NoContractException.noContract(appName, ROLE_CONSUMER, messageTypeName, topic);
         }
