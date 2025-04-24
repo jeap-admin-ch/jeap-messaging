@@ -23,10 +23,13 @@ import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.ContainerCustomizer;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.CompositeRecordInterceptor;
+import org.springframework.kafka.listener.RecordInterceptor;
 import org.springframework.kafka.support.ProducerListener;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.transaction.KafkaTransactionManager;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,9 +58,12 @@ class JeapKafkaBeanDefinitionFactory {
             // kafkaListenerContainerFactoryConfigurer is provided by KafkaAnnotationDrivenConfiguration
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer = (ConcurrentKafkaListenerContainerFactoryConfigurer) beanFactory.getBean("kafkaListenerContainerFactoryConfigurer");
             configurer.configure(factory, kafkaConsumerFactory);
+
+            setRecordInterceptors(factory);
+
             factory.setReplyTemplate(kafkaTemplate);
             ObjectProvider<KafkaTransactionManager> kafkaTransactionManager = beanFactory.getBeanProvider(KafkaTransactionManager.class);
-            kafkaTransactionManager.ifAvailable(factory.getContainerProperties()::setTransactionManager);
+            kafkaTransactionManager.ifAvailable(factory.getContainerProperties()::setKafkaAwareTransactionManager);
             ObjectProvider<ContainerCustomizer> containerCustomizer = beanFactory.getBeanProvider(ContainerCustomizer.class);
             factory.setContainerCustomizer(container -> {
                 containerCustomizer.ifAvailable(c -> c.configure(container));
@@ -79,6 +85,17 @@ class JeapKafkaBeanDefinitionFactory {
         beanDefinition.addQualifier(new AutowireCandidateQualifier(Qualifier.class, clusterName));
         beanDefinition.setPrimary(jeapKafkaBeanNames.isPrimaryBean(clusterName));
         return beanDefinition;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void setRecordInterceptors(ConcurrentKafkaListenerContainerFactory<Object, Object> factory) {
+        Collection<RecordInterceptor> recordInterceptors = beanFactory.getBeanProvider(RecordInterceptor.class).stream().toList();
+        int count = recordInterceptors.size();
+        if (count == 1) {
+            factory.setRecordInterceptor(recordInterceptors.iterator().next());
+        } else if (count > 1) {
+            factory.setRecordInterceptor(new CompositeRecordInterceptor<>(recordInterceptors.toArray(new RecordInterceptor[0])));
+        }
     }
 
     GenericBeanDefinition createKafkaAdmin(String clusterName) {
