@@ -45,11 +45,11 @@ public class ConsumerLoggingInterceptor implements ConsumerInterceptor<Object, O
     private void onConsume(ConsumerRecord<Object, Object> record) {
         // Spring Cloud Sleuth will later remove the tracing headers from the record before the record is handed over for processing.
         // This results in the tracing headers not being available from the record in the error handling e.g. for relating the logging
-        // of the error event sending to the causing record. That's why we backup the tracing headers for later use here.
+        // of the error event sending to the causing record. That's why we back up the tracing headers for later use here.
         backupTracingHeaders(record);
 
         // Spring Cloud Sleuth Kafka did not yet establish a context because it only kicks in after the Kafka consumer
-        // interceptors have been processed. Therefore we need to establish the context ourselves in this interceptor to
+        // interceptors have been processed. Therefore, we need to establish the context ourselves in this interceptor to
         // log the incoming record with tracing information.
         try (TracerBridge.TracerBridgeElement span = getSpan(record)) {
             if (log.isInfoEnabled()) {

@@ -36,7 +36,6 @@ public class ProducerLoggerInterceptor implements ProducerInterceptor<Object, Ob
             Object value = record.value();
             if (MESSAGE_TYPES_LOGGED_ON_DEBUG_LEVEL.contains(value.getClass().getSimpleName())) {
                 log.debug("Published {} to {} using cluster {}", MessageLogger.message(value), topic(record), clusterName);
-                ;
             } else {
                 log.info("Published {} to {} using cluster {}", MessageLogger.message(value), topic(record), clusterName);
             }
