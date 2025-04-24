@@ -7,6 +7,8 @@ import ch.admin.bit.jeap.messaging.kafka.contract.ContractsValidator;
 import ch.admin.bit.jeap.messaging.kafka.contract.ProducerContractInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.ClusterNameHeaderInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.CreateSerializedMessageHolder;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.CallbackInterceptor;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.kafka.log.ConsumerLoggingInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.log.ProducerLoggerInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.metrics.ConsumerMetricsInterceptor;
@@ -138,6 +140,7 @@ public class KafkaConfiguration {
             props.put(ConsumerMetricsInterceptor.APPLICATION_NAME, applicationName);
             interceptors.add(ConsumerMetricsInterceptor.class);
         }
+
         props.put(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG, commaSeparatedClassList(interceptors));
         return props;
     }
@@ -171,6 +174,14 @@ public class KafkaConfiguration {
             props.put(ProducerMetricsInterceptor.SIGNATURE_ENABLED, signaturePublisherProperties.isSigningEnabled());
             interceptors.add(ProducerMetricsInterceptor.class);
         }
+
+        List<JeapKafkaMessageCallback> callbacks = beanFactory.getBeanProvider(JeapKafkaMessageCallback.class)
+                .stream().toList();
+        if (!callbacks.isEmpty()) {
+            props.put(CallbackInterceptor.CALLBACK_LIST, callbacks);
+            interceptors.add(CallbackInterceptor.class);
+        }
+
         props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, commaSeparatedClassList(interceptors));
         return props;
     }

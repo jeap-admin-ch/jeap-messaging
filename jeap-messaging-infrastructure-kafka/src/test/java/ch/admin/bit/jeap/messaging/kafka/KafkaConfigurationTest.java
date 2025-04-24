@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka;
 
 import ch.admin.bit.jeap.messaging.kafka.auth.KafkaAuthProperties;
 import ch.admin.bit.jeap.messaging.kafka.contract.ContractsValidator;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProperties;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
@@ -9,9 +10,11 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,6 +60,10 @@ class KafkaConfigurationTest {
         doReturn(providerMock).when(beanFactoryMock).getBean("kafkaAvroSerdeProvider");
         KafkaAuthProperties authPropertiesMock = mock(KafkaAuthProperties.class);
         doReturn(authPropertiesMock).when(beanFactoryMock).getBean("kafkaAuthProperties");
+        @SuppressWarnings("unchecked")
+        ObjectProvider<JeapKafkaMessageCallback> objProviderMock = mock(ObjectProvider.class);
+        doReturn(objProviderMock).when(beanFactoryMock).getBeanProvider(JeapKafkaMessageCallback.class);
+        doReturn(Stream.of()).when(objProviderMock).stream();
 
         return new KafkaConfiguration(
                 kafkaProperties,

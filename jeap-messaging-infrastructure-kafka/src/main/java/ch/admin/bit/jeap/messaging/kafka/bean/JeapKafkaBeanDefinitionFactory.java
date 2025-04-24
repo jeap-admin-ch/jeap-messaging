@@ -1,6 +1,8 @@
 package ch.admin.bit.jeap.messaging.kafka.bean;
 
 import ch.admin.bit.jeap.messaging.kafka.KafkaConfiguration;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.CallbackRecordInterceptor;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
 import ch.admin.bit.jeap.messaging.kafka.spring.JeapKafkaBeanNames;
 import ch.admin.bit.jeap.messaging.kafka.tracing.JeapKafkaTracing;
@@ -29,9 +31,7 @@ import org.springframework.kafka.support.ProducerListener;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.transaction.KafkaTransactionManager;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -89,10 +89,19 @@ class JeapKafkaBeanDefinitionFactory {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void setRecordInterceptors(ConcurrentKafkaListenerContainerFactory<Object, Object> factory) {
-        Collection<RecordInterceptor> recordInterceptors = beanFactory.getBeanProvider(RecordInterceptor.class).stream().toList();
+        Collection<RecordInterceptor> recordInterceptorsFromContext =
+                beanFactory.getBeanProvider(RecordInterceptor.class).stream().toList();
+        List<RecordInterceptor> recordInterceptors = new ArrayList<>(recordInterceptorsFromContext);
+
+        List<JeapKafkaMessageCallback> callbacks = beanFactory.getBeanProvider(JeapKafkaMessageCallback.class)
+                .stream().toList();
+        if (!callbacks.isEmpty()) {
+            recordInterceptors.add(new CallbackRecordInterceptor(callbacks));
+        }
+
         int count = recordInterceptors.size();
         if (count == 1) {
-            factory.setRecordInterceptor(recordInterceptors.iterator().next());
+            factory.setRecordInterceptor(recordInterceptors.getFirst());
         } else if (count > 1) {
             factory.setRecordInterceptor(new CompositeRecordInterceptor<>(recordInterceptors.toArray(new RecordInterceptor[0])));
         }

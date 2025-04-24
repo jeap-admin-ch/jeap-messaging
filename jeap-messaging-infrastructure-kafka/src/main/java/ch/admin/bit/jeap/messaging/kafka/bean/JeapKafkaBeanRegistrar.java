@@ -37,6 +37,7 @@ public class JeapKafkaBeanRegistrar implements ImportBeanDefinitionRegistrar, En
         beanNames = new JeapKafkaBeanNames(propertyFactory.getJeapKafkaProperties().getDefaultClusterName());
         beanDefinitionFactory = new JeapKafkaBeanDefinitionFactory(
                 beanFactory, propertyFactory.getSpringKafkaProperties(), beanNames, propertyFactory.getJeapKafkaProperties().getDefaultProducerClusterOverride());
+
         propertyFactory.getClusterNames().forEach(clusterName ->
                 registerBeansForClusterName(registry, clusterName));
     }
