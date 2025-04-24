@@ -5,7 +5,9 @@ import org.apache.kafka.clients.producer.ProducerInterceptor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import static ch.admin.bit.jeap.messaging.kafka.log.TopicLogger.topic;
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -15,6 +17,9 @@ import static org.springframework.util.StringUtils.hasText;
 public class ProducerLoggerInterceptor implements ProducerInterceptor<Object, Object> {
     public static final String CLUSTER_NAME_CONFIG = "clusternameheaderinterceptor.clustername";
     private String clusterName;
+
+    private static final Collection<String> MESSAGE_TYPES_LOGGED_ON_DEBUG_LEVEL =
+            Set.of("ReactionIdentifiedEvent", "ReactionsObservedEvent");
 
     @Override
     public void configure(Map<String, ?> configs) {
@@ -27,8 +32,14 @@ public class ProducerLoggerInterceptor implements ProducerInterceptor<Object, Ob
 
     @Override
     public ProducerRecord<Object, Object> onSend(ProducerRecord<Object, Object> record) {
-        if (log.isInfoEnabled()) {
-            log.info("Published {} to {} using cluster {}", MessageLogger.message(record.value()), topic(record), clusterName);
+        if (log.isInfoEnabled() || log.isDebugEnabled()) {
+            Object value = record.value();
+            if (MESSAGE_TYPES_LOGGED_ON_DEBUG_LEVEL.contains(value.getClass().getSimpleName())) {
+                log.debug("Published {} to {} using cluster {}", MessageLogger.message(value), topic(record), clusterName);
+                ;
+            } else {
+                log.info("Published {} to {} using cluster {}", MessageLogger.message(value), topic(record), clusterName);
+            }
         }
         return record;
     }
