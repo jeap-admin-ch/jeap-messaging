@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.35.0] - 2025-04-30
+
+### Changed
+
+- Update jeap-crypto from 3.14.0 to 3.15.0
+- Update aws-msk-iam-auth from 2.3.1 to 2.3.2
+- Update file-management from 3.1.0 to 3.2.0
+
 ## [8.34.0] - 2025-04-30
 
 ### Changed

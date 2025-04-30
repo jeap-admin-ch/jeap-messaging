@@ -26,7 +26,7 @@
     </licenses>
 
     <artifactId>jeap-messaging</artifactId>
-    <version>8.34.0-SNAPSHOT</version>
+    <version>8.35.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -67,15 +67,15 @@
     <properties>
         <avro-serializer.version>7.9.0</avro-serializer.version>
         <avro.version>1.12.0</avro.version>
-        <jeap-crypto.version>3.14.0</jeap-crypto.version>
+        <jeap-crypto.version>3.15.0</jeap-crypto.version>
         <maven.api.version>3.9.9</maven.api.version>
         <maven.plugin.version>3.15.1</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
-        <aws-msk-iam-auth.version>2.3.1</aws-msk-iam-auth.version>
+        <aws-msk-iam-auth.version>2.3.2</aws-msk-iam-auth.version>
         <schema-registry-serde.version>1.1.23</schema-registry-serde.version>
         <protobuf-java.version>4.30.2</protobuf-java.version>
         <org.eclipse.jgit.version>7.2.0.202503040940-r</org.eclipse.jgit.version>
-        <file-management.version>3.1.0</file-management.version>
+        <file-management.version>3.2.0</file-management.version>
         <maven-invoker.version>3.3.0</maven-invoker.version>
         <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
         <commons-compress.version>1.27.1</commons-compress.version>
