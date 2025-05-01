@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.transactionaloutbox.outbox;
 
 import ch.admin.bit.jeap.messaging.avro.MessageVersionAccessor;
 import ch.admin.bit.jeap.messaging.kafka.contract.ContractsValidator;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.Callbacks;
 import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.model.Message;
 import lombok.RequiredArgsConstructor;
@@ -193,15 +194,7 @@ public class TransactionalOutbox {
     }
 
     private void invokeOnSendCallbacks(Message msg) {
-        callbacks.forEach(callback -> invokeCallback(msg, callback));
-    }
-
-    private void invokeCallback(Message msg, JeapKafkaMessageCallback callback) {
-        try {
-            callback.onSend(msg);
-        } catch (Exception e) {
-            log.warn("Exception in callback", e);
-        }
+        callbacks.forEach(callback -> Callbacks.invokeCallback(msg, callback::onSend));
     }
 
     private void ensurePublisherContract(Message message, String topic) {
