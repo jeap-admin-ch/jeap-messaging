@@ -69,7 +69,7 @@ class TransactionalOutboxTracingIT {
     void testSend_WhenTraceContextProviderNotPresent_ThenNoTraceInDeferredMessage() {
         transactionalOutbox = new TransactionalOutbox("testclustername", messageSerializer,
                 deferredMessageRepository, failedMessageRepository, afterCommitMessageSender,
-                contractsValidator, Optional.empty(), outboxTracing);
+                contractsValidator, Optional.empty(), outboxTracing, List.of());
         assertThat(deferredMessageRepository.findAll()).isEmpty();
 
         transactionalOutbox.sendMessage(TEST_MESSAGE_1, TEST_KEY_1, TOPIC_1);
@@ -91,7 +91,7 @@ class TransactionalOutboxTracingIT {
                 .build());
         transactionalOutbox = new TransactionalOutbox("testclustername", messageSerializer,
                 deferredMessageRepository, failedMessageRepository, afterCommitMessageSender,
-                contractsValidator, Optional.empty(), outboxTracing);
+                contractsValidator, Optional.empty(), outboxTracing, List.of());
         assertThat(deferredMessageRepository.findAll()).isEmpty();
 
         transactionalOutbox.sendMessage(TEST_MESSAGE_1, TEST_KEY_1, TOPIC_1);

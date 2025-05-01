@@ -4,6 +4,7 @@ import brave.kafka.clients.KafkaTracing;
 import brave.propagation.TraceContext;
 import ch.admin.bit.jeap.messaging.kafka.KafkaConfiguration;
 import ch.admin.bit.jeap.messaging.kafka.contract.ContractsValidator;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.test.KafkaIntegrationTestBase;
 import ch.admin.bit.jeap.messaging.transactionaloutbox.test.TestEvent;
@@ -52,6 +53,8 @@ class TransactionalOutboxIT extends KafkaIntegrationTestBase {
     private ContractsValidator contractsValidator; // Disable contract checking by mocking the contracts validator
     @MockitoBean
     private TestEventListener testEventListener;
+    @MockitoBean
+    private JeapKafkaMessageCallback jeapKafkaMessageCallback;
     @Captor
     private ArgumentCaptor<TestEvent> testEventArgumentCaptor;
     @Captor
@@ -128,6 +131,9 @@ class TransactionalOutboxIT extends KafkaIntegrationTestBase {
         assertThat(traceIdString).isEqualTo(originalTraceContext.traceIdString());
         assertThat(deferredMessages.stream().filter(dm -> dm.getTraceContext().getTraceId().equals(traceId)).count()).isEqualTo(2);
         assertHeaderFromConsumedMessage(traceIdString, 2);
+
+        verify(jeapKafkaMessageCallback).onSend(testEvent1);
+        verify(jeapKafkaMessageCallback).onSend(testEvent2);
     }
 
     @Transactional

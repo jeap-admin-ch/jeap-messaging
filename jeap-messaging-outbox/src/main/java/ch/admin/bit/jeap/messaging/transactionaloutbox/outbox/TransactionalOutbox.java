@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.transactionaloutbox.outbox;
 
 import ch.admin.bit.jeap.messaging.avro.MessageVersionAccessor;
 import ch.admin.bit.jeap.messaging.kafka.contract.ContractsValidator;
+import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.model.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,7 @@ public class TransactionalOutbox {
     private final ContractsValidator contractsValidator;
     private final Optional<OutboxMetrics> outboxMetrics;  // Collection of outbox metrics depends on a metrics setup being provided.
     private final OutboxTracing outboxTracing;
+    private final List<JeapKafkaMessageCallback> callbacks;
 
     /**
      * Send the given message to the given topic. Sending will happen immediately after the surrounding transaction got committed.
@@ -187,6 +189,19 @@ public class TransactionalOutbox {
             afterCommitMessageSender.sendImmediatelyAfterTransactionCommit(persistedDeferredMessage);
         }
         outboxMetrics.ifPresent(metrics -> metrics.countTransactionalSend(sendImmediately));
+        invokeOnSendCallbacks(message);
+    }
+
+    private void invokeOnSendCallbacks(Message msg) {
+        callbacks.forEach(callback -> invokeCallback(msg, callback));
+    }
+
+    private void invokeCallback(Message msg, JeapKafkaMessageCallback callback) {
+        try {
+            callback.onSend(msg);
+        } catch (Exception e) {
+            log.warn("Exception in callback", e);
+        }
     }
 
     private void ensurePublisherContract(Message message, String topic) {
