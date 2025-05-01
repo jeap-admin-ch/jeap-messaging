@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest;
 
+import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.DeclarationCreatedEventListener;
 import ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.MultipleTestEventListener;
 import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
@@ -8,14 +9,20 @@ import ch.admin.bit.jme.test.JmeSimpleTestEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.UUID;
 
 import static ch.admin.bit.jeap.messaging.sequentialinbox.integrationtest.message.TestMessages.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @Slf4j
 @TestPropertySource(properties = "jeap.messaging.sequential-inbox.config-location=classpath:/messaging/jeap-sequential-inbox-three-messages.yml")
 class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
+
+    @MockitoBean
+    private JeapKafkaMessageCallback jeapKafkaMessageCallback;
 
     @Test
     void testInbox_twoMessagesWithPredecessors_bufferedAndThenProcessedAfterPredecessorHandled() {
@@ -51,6 +58,18 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequencedMessageProcessedSuccessfully(thirdEvent);
         assertSequenceOfMessages(contextId, firstEvent, secondEvent, thirdEvent);
         assertSequenceClosed(contextId);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(secondEvent);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
     }
 
     @Test
@@ -90,6 +109,18 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequenceOfMessages(contextId, firstEvent, secondEvent, thirdEvent);
         assertSequenceClosed(contextId);
         assertBufferedMessageCount(contextId, 0);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(secondEvent);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
     }
 
     @Test
@@ -140,6 +171,18 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequencedMessageProcessedSuccessfully(thirdEvent);
         assertSequenceOfMessages(contextId, firstEvent, secondEvent, thirdEvent);
         assertSequenceClosed(contextId);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(secondEvent);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
     }
 
     @Test
@@ -186,5 +229,17 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequencedMessageProcessedSuccessfully(thirdEvent);
         assertSequenceOfMessages(contextId, firstEvent, secondEvent, thirdEvent);
         assertSequenceClosed(contextId);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+
+        verify(jeapKafkaMessageCallback, times(2)).beforeConsume(secondEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
+        verify(jeapKafkaMessageCallback, times(2)).afterRecord(secondEvent);
+
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
     }
 }

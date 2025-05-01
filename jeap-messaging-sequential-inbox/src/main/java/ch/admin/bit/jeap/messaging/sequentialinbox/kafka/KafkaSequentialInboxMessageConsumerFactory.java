@@ -76,6 +76,11 @@ public class KafkaSequentialInboxMessageConsumerFactory {
     private void startConsumer(String topicName, String clusterName, AcknowledgingMessageListener<AvroMessageKey, AvroMessage> messageListener) {
         ConcurrentMessageListenerContainer<AvroMessageKey, AvroMessage> container =
                 getKafkaListenerContainerFactory(clusterName).createContainer(topicName);
+        // The inbox invokes the JeapKafkaMessageCallback explicitly, avoid duplicate invocations by the interceptor
+        // The inbox does not support record interceptors in general as buffered records might be consumed/buffered by
+        // the inbox and not by the application's business logic. The inbox will then invoke the message handler as
+        // soon as the release condition for the message is satisfied.
+        container.setRecordInterceptor(null);
         container.setupMessageListener(messageListener);
         container.start();
         containers.add(container);

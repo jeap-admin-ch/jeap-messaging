@@ -113,7 +113,7 @@ public class SequentialInboxService {
 
             // If the release condition is not satisfied, buffer the message and return
             if (!sequencedMessageService.isReleaseConditionSatisfied(sequencedMessageType, sequenceInstanceId)) {
-                bufferMessage(consumerRecord, avroMessage, sequence, contextId, existingSequencedMessage, sequenceInstanceId, qualifiedSequencedMessageTypeName);
+                bufferMessage(consumerRecord, sequence, contextId, existingSequencedMessage, sequenceInstanceId, qualifiedSequencedMessageTypeName);
                 return;
             }
 
@@ -140,7 +140,7 @@ public class SequentialInboxService {
         }
     }
 
-    private void bufferMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, AvroMessage avroMessage, Sequence sequence, String contextId, Optional<SequencedMessage> existingSequencedMessage, long sequenceInstanceId, String qualifiedSequencedMessageTypeName) {
+    private void bufferMessage(ConsumerRecord<AvroMessageKey, AvroMessage> consumerRecord, Sequence sequence, String contextId, Optional<SequencedMessage> existingSequencedMessage, long sequenceInstanceId, String qualifiedSequencedMessageTypeName) {
         log.info("Buffering message {} in sequence {} with context ID {}", qualifiedSequencedMessageTypeName, sequence.getName(), contextId);
         sequencedMessageService.storeSequencedMessage(qualifiedSequencedMessageTypeName, existingSequencedMessage, sequenceInstanceId, SequencedMessageState.WAITING, consumerRecord);
     }

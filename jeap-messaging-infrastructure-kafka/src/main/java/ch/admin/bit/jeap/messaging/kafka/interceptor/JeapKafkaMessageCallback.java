@@ -16,6 +16,9 @@ public interface JeapKafkaMessageCallback {
 
     /**
      * Invoked on the kafka consumer thread before a message is consumed by the listener.
+     * Note that all consumer methods are re-entrant: The sequential inbox might invoke messages consumers in the
+     * thread of the message consumer that triggered buffered messages. Implementations should thus keep a stack of
+     * invocations. afterRecord() is always guaranteed to be invoked after a beforeConsume() invocation.
      * @see org.springframework.kafka.listener.RecordInterceptor#intercept(ConsumerRecord, Consumer)
      */
     void beforeConsume(Message message);
@@ -31,4 +34,5 @@ public interface JeapKafkaMessageCallback {
      * @see org.springframework.kafka.listener.RecordInterceptor#afterRecord(ConsumerRecord, Consumer)
      */
     void afterRecord(Message message);
+
 }
