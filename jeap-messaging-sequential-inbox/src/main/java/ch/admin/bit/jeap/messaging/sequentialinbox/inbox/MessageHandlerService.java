@@ -34,16 +34,16 @@ class MessageHandlerService {
     }
 
     private void invokeMessageHandler(DeserializedMessage deserializedMessage, SequentialInboxMessageHandler messageHandler) {
-        invokeMessageHandler(deserializedMessage.key(), deserializedMessage.message(), messageHandler);
+        invokeMessageHandler(deserializedMessage.key(), deserializedMessage.message(), deserializedMessage.topicName(), messageHandler);
     }
 
-    void invokeMessageHandler(AvroMessageKey key, AvroMessage message, SequentialInboxMessageHandler messageHandler) {
-        callbacks.forEach(callback -> Callbacks.invokeCallback(message, callback::beforeConsume));
+    void invokeMessageHandler(AvroMessageKey key, AvroMessage message, String topicName, SequentialInboxMessageHandler messageHandler) {
+        callbacks.forEach(callback -> Callbacks.invokeCallback(message, topicName, callback::beforeConsume));
         try {
             doInvokeMessageHandler(key, message, messageHandler);
-            callbacks.forEach(callback -> Callbacks.invokeCallback(message, callback::afterConsume));
+            callbacks.forEach(callback -> Callbacks.invokeCallback(message, topicName, callback::afterConsume));
         } finally {
-            callbacks.forEach(callback -> Callbacks.invokeCallback(message, callback::afterRecord));
+            callbacks.forEach(callback -> Callbacks.invokeCallback(message, topicName, callback::afterRecord));
         }
     }
 

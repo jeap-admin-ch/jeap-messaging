@@ -68,25 +68,25 @@ class CallbackIT extends KafkaIntegrationTestBase {
         JeapKafkaMessageCallback jeapKafkaMessageCallback() {
             return new JeapKafkaMessageCallback() {
                 @Override
-                public void beforeConsume(Message message) {
+                public void beforeConsume(Message message, String topicName) {
                     log.info("Before consume: {}", message);
                     callbackInvocations.add("beforeConsume");
                 }
 
                 @Override
-                public void afterConsume(Message message) {
+                public void afterConsume(Message message, String topicName) {
                     log.info("After consume: {}", message);
                     callbackInvocations.add("afterConsume");
                 }
 
                 @Override
-                public void afterRecord(Message message) {
+                public void afterRecord(Message message, String topicName) {
                     log.info("After record: {}", message);
                     callbackInvocations.add("afterRecord");
                 }
 
                 @Override
-                public void onSend(Message message) {
+                public void onSend(Message message, String topicName) {
                     log.info("On send: {}", message);
                     callbackInvocations.add("onSend");
                 }

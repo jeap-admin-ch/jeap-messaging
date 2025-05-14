@@ -130,7 +130,7 @@ public class SequentialInboxService {
         AvroMessage avroMessage = consumerRecord.value();
         try {
             log.debug("Invoking message handler for message {} (id={})", qualifiedSequencedMessageTypeName, avroMessage.getIdentity().getId());
-            messageHandlerService.invokeMessageHandler(consumerRecord.key(), avroMessage, messageHandler);
+            messageHandlerService.invokeMessageHandler(consumerRecord.key(), avroMessage, consumerRecord.topic(), messageHandler);
             sequencedMessageService.storeSequencedMessage(qualifiedSequencedMessageTypeName, existingSequencedMessage, sequenceInstanceId, SequencedMessageState.PROCESSED, consumerRecord);
         } catch (Exception ex) {
             // Exception is logged by the error service sender

@@ -12,7 +12,7 @@ public interface JeapKafkaMessageCallback {
      *
      * @see org.apache.kafka.clients.producer.ProducerInterceptor#onSend(ProducerRecord)
      */
-    void onSend(Message message);
+    void onSend(Message message, String topicName);
 
     /**
      * Invoked on the kafka consumer thread before a message is consumed by the listener.
@@ -21,18 +21,18 @@ public interface JeapKafkaMessageCallback {
      * invocations. afterRecord() is always guaranteed to be invoked after a beforeConsume() invocation.
      * @see org.springframework.kafka.listener.RecordInterceptor#intercept(ConsumerRecord, Consumer)
      */
-    void beforeConsume(Message message);
+    void beforeConsume(Message message, String topicName);
 
     /**
      * Invoked on the kafka consumer thread after a message has been successfully consumed by the listener.
      * @see org.springframework.kafka.listener.RecordInterceptor#success(ConsumerRecord, Consumer)
      */
-    void afterConsume(Message message);
+    void afterConsume(Message message, String topicName);
 
     /**
      * Invoked on the kafka consumer thread after a message has been consumed by the listener (sucessfully or not).
      * @see org.springframework.kafka.listener.RecordInterceptor#afterRecord(ConsumerRecord, Consumer)
      */
-    void afterRecord(Message message);
+    void afterRecord(Message message, String topicName);
 
 }

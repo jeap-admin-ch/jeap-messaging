@@ -69,7 +69,7 @@ class TransactionalOutboxTest {
 
         transactionalOutbox.sendMessage(testMessage, "topic");
 
-        verify(callback).onSend(testMessage);
+        verify(callback).onSend(testMessage, "topic");
         verifyNoMoreInteractions(callback);
     }
 }

@@ -59,17 +59,17 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequenceOfMessages(contextId, firstEvent, secondEvent, thirdEvent);
         assertSequenceClosed(contextId);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(secondEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
     }
 
     @Test
@@ -110,17 +110,17 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequenceClosed(contextId);
         assertBufferedMessageCount(contextId, 0);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(secondEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
     }
 
     @Test
@@ -172,17 +172,17 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequenceOfMessages(contextId, firstEvent, secondEvent, thirdEvent);
         assertSequenceClosed(contextId);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(secondEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
     }
 
     @Test
@@ -230,16 +230,16 @@ class SequentialInboxThreeSequentialMessageIT extends SequentialInboxITBase {
         assertSequenceOfMessages(contextId, firstEvent, secondEvent, thirdEvent);
         assertSequenceClosed(contextId);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(firstEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(firstEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(firstEvent, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback, times(2)).beforeConsume(secondEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(secondEvent);
-        verify(jeapKafkaMessageCallback, times(2)).afterRecord(secondEvent);
+        verify(jeapKafkaMessageCallback, times(2)).beforeConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback, times(2)).afterRecord(secondEvent, JmeSimpleTestEvent.TypeRef.DEFAULT_TOPIC);
 
-        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent);
-        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent);
+        verify(jeapKafkaMessageCallback).beforeConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterConsume(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
+        verify(jeapKafkaMessageCallback).afterRecord(thirdEvent, JmeEnumTestEvent.TypeRef.DEFAULT_TOPIC);
     }
 }

@@ -190,11 +190,11 @@ public class TransactionalOutbox {
             afterCommitMessageSender.sendImmediatelyAfterTransactionCommit(persistedDeferredMessage);
         }
         outboxMetrics.ifPresent(metrics -> metrics.countTransactionalSend(sendImmediately));
-        invokeOnSendCallbacks(message);
+        invokeOnSendCallbacks(message, topic);
     }
 
-    private void invokeOnSendCallbacks(Message msg) {
-        callbacks.forEach(callback -> Callbacks.invokeCallback(msg, callback::onSend));
+    private void invokeOnSendCallbacks(Message msg, String topic) {
+        callbacks.forEach(callback -> Callbacks.invokeCallback(msg, topic, callback::onSend));
     }
 
     private void ensurePublisherContract(Message message, String topic) {

@@ -132,8 +132,8 @@ class TransactionalOutboxIT extends KafkaIntegrationTestBase {
         assertThat(deferredMessages.stream().filter(dm -> dm.getTraceContext().getTraceId().equals(traceId)).count()).isEqualTo(2);
         assertHeaderFromConsumedMessage(traceIdString, 2);
 
-        verify(jeapKafkaMessageCallback).onSend(testEvent1);
-        verify(jeapKafkaMessageCallback).onSend(testEvent2);
+        verify(jeapKafkaMessageCallback).onSend(testEvent1, TestEventConsumer.TOPIC);
+        verify(jeapKafkaMessageCallback).onSend(testEvent2, TestEventConsumer.TOPIC);
     }
 
     @Transactional

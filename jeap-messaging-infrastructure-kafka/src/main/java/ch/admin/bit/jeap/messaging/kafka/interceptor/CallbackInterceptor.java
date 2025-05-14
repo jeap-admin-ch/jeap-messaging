@@ -28,7 +28,7 @@ public class CallbackInterceptor implements ProducerInterceptor<Object, Object> 
     @Override
     public ProducerRecord<Object, Object> onSend(ProducerRecord<Object, Object> record) {
         if (record.value() instanceof Message msg) {
-            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, cb::onSend));
+            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, record.topic(), cb::onSend));
         }
         return record;
     }

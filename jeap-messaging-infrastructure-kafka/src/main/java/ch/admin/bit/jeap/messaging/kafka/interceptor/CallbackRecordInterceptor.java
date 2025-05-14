@@ -20,7 +20,7 @@ public class CallbackRecordInterceptor implements RecordInterceptor<Object, Obje
     @Override
     public ConsumerRecord<Object, Object> intercept(ConsumerRecord<Object, Object> record, Consumer<Object, Object> consumer) {
         if (record.value() instanceof Message msg) {
-            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, cb::beforeConsume));
+            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, record.topic(), cb::beforeConsume));
         }
         return record;
     }
@@ -28,14 +28,14 @@ public class CallbackRecordInterceptor implements RecordInterceptor<Object, Obje
     @Override
     public void success(ConsumerRecord<Object, Object> record, Consumer<Object, Object> consumer) {
         if (record.value() instanceof Message msg) {
-            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, cb::afterConsume));
+            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, record.topic(), cb::afterConsume));
         }
     }
 
     @Override
     public void afterRecord(ConsumerRecord<Object, Object> record, Consumer<Object, Object> consumer) {
         if (record.value() instanceof Message msg) {
-            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, cb::afterRecord));
+            callbacks.forEach(cb -> Callbacks.invokeCallback(msg, record.topic(), cb::afterRecord));
         }
     }
 
