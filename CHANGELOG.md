@@ -1,23 +1,14 @@
 # Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
+to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [8.38.0] - 2025-05-26
+
 ### Changed
 - update jeap-crypto.version from 3.15.0 to 3.17.0
-- update jeap-spring-boot-vault-starter.version from 17.25.0 to 17.32.0
-- Update parent from 5.8.0 to 5.8.1
-All notable changes to this project will be documented in this file.
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
-to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
-to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [8.38.0] - 2025-05-26
-
-### Changed
-
 - Update parent from 5.8.0 to 5.8.1
 
 ## [8.37.0] - 2025-05-14
