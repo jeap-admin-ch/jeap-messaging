@@ -29,8 +29,8 @@ public class PrivateKeyFactory {
     private static PrivateKey doCreatePrivateKey(byte[] privateKeyBytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
         try {
             String pemContent = new String(privateKeyBytes)
-                    .replaceAll("-----BEGIN PRIVATE KEY-----", "")
-                    .replaceAll("-----END PRIVATE KEY-----", "")
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s+", "");
 
             byte[] keyBytes = Base64.getDecoder().decode(pemContent);

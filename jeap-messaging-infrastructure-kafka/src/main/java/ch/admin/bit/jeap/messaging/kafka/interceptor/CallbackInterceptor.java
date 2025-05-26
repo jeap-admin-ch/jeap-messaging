@@ -35,10 +35,12 @@ public class CallbackInterceptor implements ProducerInterceptor<Object, Object> 
 
     @Override
     public void onAcknowledgement(RecordMetadata metadata, Exception exception) {
+        // No-op: acknowledgement handling not required
     }
 
     @Override
     public void close() {
+        // No-op: no resources to clean up
     }
 
 }

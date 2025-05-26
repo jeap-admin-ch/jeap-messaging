@@ -90,7 +90,7 @@ class KafkaDeferredMessageSender implements DeferredMessageSender {
     }
 
     private int getIntMillis(Duration duration) {
-        return Long.valueOf(duration.toMillis()).intValue();
+        return (int) duration.toMillis();
     }
 
     private KafkaTemplate<byte[], byte[]> createKafkaTemplate(ProducerFactory<byte[], byte[]> producerFactory, Map<String, Object> additionalConfig) {

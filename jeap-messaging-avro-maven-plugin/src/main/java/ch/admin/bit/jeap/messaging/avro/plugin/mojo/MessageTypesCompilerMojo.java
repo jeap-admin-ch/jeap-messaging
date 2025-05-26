@@ -371,9 +371,7 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
     private void compileSchema(Path outputPath, AvroCompiler avroCompiler, MessageSchema messageSchema) throws MojoExecutionException {
         AvroCompiler.AvroCompilerBuilder avroCompilerBuilder = avroCompiler.toBuilder()
                 .outputDirectory(Paths.get(outputPath.toString(), "src", "main", "java").toFile());
-        if (messageSchema.getMessageTypeMetadata().isPresent()) {
-            avroCompilerBuilder.additionalTool(messageSchema.getMessageTypeMetadata().get());
-        }
+        messageSchema.getMessageTypeMetadata().ifPresent(avroCompilerBuilder::additionalTool);
 
         avroCompiler = avroCompilerBuilder.build();
 

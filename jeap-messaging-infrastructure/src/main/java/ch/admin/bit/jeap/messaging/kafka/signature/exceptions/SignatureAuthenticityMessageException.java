@@ -7,8 +7,8 @@ import jakarta.annotation.Nullable;
 
 public class SignatureAuthenticityMessageException extends RuntimeException implements MessageHandlerMessageExceptionInformation {
 
-    private final Message message;
-    private final MessageHandlerExceptionInformation messageHandlerExceptionInformation;
+    private final transient Message message;
+    private final transient MessageHandlerExceptionInformation messageHandlerExceptionInformation;
 
     private SignatureAuthenticityMessageException(Message message, MessageHandlerExceptionInformation messageHandlerExceptionInformation, Exception cause) {
         super(cause);

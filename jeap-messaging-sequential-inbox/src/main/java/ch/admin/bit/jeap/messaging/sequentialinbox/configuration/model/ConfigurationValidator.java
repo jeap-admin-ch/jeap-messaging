@@ -203,7 +203,7 @@ class ConfigurationValidator {
         return !smt.getJeapMessageTypeName().equals(smt.getQualifiedName());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "java:S1452"})
     static Class<Enum<?>> getSubTypeEnumReturnedBySubtypeResolver(SubTypeResolver<?, ?> resolver) {
         Class<Enum<?>> enumType = null;
         Type[] genericInterfaces = resolver.getClass().getGenericInterfaces();

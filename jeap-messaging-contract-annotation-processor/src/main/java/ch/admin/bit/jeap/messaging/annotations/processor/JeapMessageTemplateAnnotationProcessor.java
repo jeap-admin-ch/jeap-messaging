@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroClassFinder;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TemplateMessageCollector;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TemplatePathResolver;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TypeRefFinder;
-import lombok.AllArgsConstructor;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -16,7 +15,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +37,7 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
     }
 
     @Override
+    @SuppressWarnings("java:S2696")
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (alreadyProcessed) {
             return false;

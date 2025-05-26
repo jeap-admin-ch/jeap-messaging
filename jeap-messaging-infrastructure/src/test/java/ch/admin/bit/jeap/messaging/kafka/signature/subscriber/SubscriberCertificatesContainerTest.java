@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -151,7 +152,7 @@ class SubscriberCertificatesContainerTest {
         SignatureSubscriberProperties signatureSubscriberProperties = new SignatureSubscriberProperties(false, null, null, null);
         SubscriberCertificatesContainer subscriberCertificatesContainer = new SubscriberCertificatesContainer(signatureSubscriberProperties);
 
-        subscriberCertificatesContainer.init(); // expect no exception
+        assertDoesNotThrow(() -> subscriberCertificatesContainer.init());
     }
 
     @Test
