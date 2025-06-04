@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>jeap-messaging-contract-maven-plugin</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
     <build>

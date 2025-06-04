@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>jeap-messaging-infrastructure-kafka-reactive</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>

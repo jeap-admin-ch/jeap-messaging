@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>jeap-messaging-avro-errorevent</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>

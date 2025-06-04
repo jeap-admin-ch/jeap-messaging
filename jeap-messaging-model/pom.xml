@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>jeap-messaging-model</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>
