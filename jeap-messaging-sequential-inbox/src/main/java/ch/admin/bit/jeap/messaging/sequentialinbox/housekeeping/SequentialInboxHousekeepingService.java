@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.messaging.sequentialinbox.jpa.SequenceInstanceRepositor
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
@@ -36,6 +37,7 @@ public class SequentialInboxHousekeepingService {
     @Scheduled(cron = "${jeap.messaging.sequential-inbox.housekeeping.expiry-cron:0 */15 * * * *}")
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
     @Timed(value = "jeap.messaging.sequential-inbox.housekeeping.expired")
+    @SchedulerLock(name = "sequential-inbox-housekeeping-expired", lockAtLeastFor = "5s", lockAtMostFor = "1h")
     public void deleteExpiredMessages() {
         log.debug("Starting housekeeping task: deleting expired messages and sequence instances");
 
@@ -57,6 +59,7 @@ public class SequentialInboxHousekeepingService {
     @Scheduled(cron = "${jeap.messaging.sequential-inbox.housekeeping.closed-instances-cron:0 5/15 * * * *}")
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
     @Timed(value = "jeap.messaging.sequential-inbox.housekeeping.closed")
+    @SchedulerLock(name = "sequential-inbox-housekeeping-closed", lockAtLeastFor = "5s", lockAtMostFor = "1h")
     public void deleteClosedSequenceInstances() {
         log.debug("Starting housekeeping task: deleting closed sequence instances and related data");
 
