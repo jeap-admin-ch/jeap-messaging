@@ -8,8 +8,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [8.39.1] - 2025-06-05
 
 ### Changed
-
 - Update parent from 5.8.1 to 5.9.0
+- update jeap-crypto.version from 3.17.0 to 3.18.0
+- Update parent from 5.8.1 to 5.9.0
+- Project Name now required for uploads to Maven Central
 
 ## [8.39.0] - 2025-06-04
 
