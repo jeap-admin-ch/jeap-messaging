@@ -22,4 +22,5 @@ public class ValidationContext {
     MessagingType messagingType;
     boolean failOnUnusedImports;
     Log log;
+    String trunkBranchName;
 }

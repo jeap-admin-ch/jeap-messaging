@@ -34,6 +34,7 @@ class FileNotChangedValidatorTests {
                 .systemName("test")
                 .messageTypeName("test")
                 .messagingType(MessagingType.EVENT)
+                .trunkBranchName("test")
                 .build();
         oldCommon = new File(oldDescriptor, MessageTypeRegistryConstants.COMMON_DIR_NAME);
         newCommon = new File(newDescriptor, MessageTypeRegistryConstants.COMMON_DIR_NAME);

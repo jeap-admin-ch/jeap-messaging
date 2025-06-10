@@ -38,6 +38,10 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
     @Getter(AccessLevel.PROTECTED)
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject project;
+    @SuppressWarnings("unused")
+    @Getter(AccessLevel.PROTECTED)
+    @Parameter(defaultValue = "master", required = true, readonly = true)
+    private String trunkBranchName;
     @Getter(AccessLevel.PROTECTED)
     @Parameter(defaultValue = "true")
     @SuppressWarnings("unused")
@@ -53,6 +57,7 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
                     .importClassLoader(importClassLoader)
                     .failOnUnusedImports(failOnUnusedImports)
                     .log(getLog())
+                    .trunkBranchName(trunkBranchName)
                     .build();
             ValidationResult overallResult = DescriptorDirectoryValidator.validate(validationContext);
             if (!overallResult.isValid()) {
@@ -73,11 +78,11 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
             return descriptorDirectory;
         }
         try {
-            File tempDir = Files.createTempDirectory("master").toFile();
+            File tempDir = Files.createTempDirectory(trunkBranchName).toFile();
             FileUtils.forceDeleteOnExit(tempDir);
             Git.cloneRepository()
                     .setURI(gitUrl)
-                    .setBranch("master")
+                    .setBranch(trunkBranchName)
                     .setDirectory(tempDir)
                     .call();
             return new File(tempDir, descriptorDirectory.getName());

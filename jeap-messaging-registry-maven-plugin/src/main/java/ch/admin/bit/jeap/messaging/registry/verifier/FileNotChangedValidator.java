@@ -20,7 +20,7 @@ public class FileNotChangedValidator {
         File oldDescriptorFolder = descriptorDir(validationContext, true);
 
         return Arrays.stream(Objects.requireNonNullElse(oldDescriptorFolder.list(), new String[0]))
-                .map(filename -> fileNotDeleted(newDescriptorFolder, filename))
+                .map(filename -> fileNotDeleted(newDescriptorFolder, filename, validationContext.getTrunkBranchName()))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
     }
 
@@ -38,7 +38,7 @@ public class FileNotChangedValidator {
 
         File finalNewSystemDir = newSystemDir;
         return Arrays.stream(Objects.requireNonNullElse(oldSystemDir.list(), new String[0]))
-                .map(filename -> fileNotDeleted(finalNewSystemDir, filename))
+                .map(filename -> fileNotDeleted(finalNewSystemDir, filename, validationContext.getTrunkBranchName()))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
     }
 
@@ -52,21 +52,21 @@ public class FileNotChangedValidator {
         }
 
         if (!oldCommonRootDir.exists()) {
-            String message = "Common dir does not exist in master but does in this branch. You are not allowed to add a common dir on root level";
+            String message = String.format("Common dir does not exist in %s but does in this branch. You are not allowed to add a common dir on root level", validationContext.getTrunkBranchName());
             return ValidationResult.fail(message);
         }
 
         if (!newCommonRootDir.exists()) {
-            String message = "Common dir does exist in master but does not in this branch. You are not allowed to delete common dir on root level";
+            String message = String.format("Common dir does exist in %s but does not in this branch. You are not allowed to delete common dir on root level", validationContext.getTrunkBranchName());
             return ValidationResult.fail(message);
         }
 
         ValidationResult filesCreated = Arrays.stream(Objects.requireNonNullElse(newCommonRootDir.list(), new String[0]))
-                .map(filename -> fileExistedBefore(oldCommonRootDir, newCommonRootDir, filename))
+                .map(filename -> fileExistedBefore(oldCommonRootDir, newCommonRootDir, filename, validationContext.getTrunkBranchName()))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
 
         ValidationResult filesChanged = Arrays.stream(Objects.requireNonNullElse(oldCommonRootDir.list(), new String[0]))
-                .map(filename -> fileNotChanged(oldCommonRootDir, newCommonRootDir, filename))
+                .map(filename -> fileNotChanged(oldCommonRootDir, newCommonRootDir, filename, validationContext.getTrunkBranchName()))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
 
         return ValidationResult.merge(filesCreated, filesChanged);
@@ -82,13 +82,13 @@ public class FileNotChangedValidator {
         }
 
         if (!newCommonSystemDir.exists()) {
-            String message = String.format("Common dir for system %s exist in master but does in this branch." +
-                    " You are not allowed to delete a common dir", validationContext.getSystemName());
+            String message = String.format("Common dir for system %s exist in %s but does in this branch." +
+                    " You are not allowed to delete a common dir", validationContext.getSystemName(), validationContext.getTrunkBranchName());
             return ValidationResult.fail(message);
         }
 
         return Arrays.stream(Objects.requireNonNullElse(oldCommonSystemDir.list(), new String[0]))
-                .map(filename -> fileNotChanged(oldCommonSystemDir, newCommonSystemDir, filename))
+                .map(filename -> fileNotChanged(oldCommonSystemDir, newCommonSystemDir, filename, validationContext.getTrunkBranchName()))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
     }
 
@@ -102,43 +102,43 @@ public class FileNotChangedValidator {
         }
 
         return Arrays.stream(Objects.requireNonNullElse(oldEventDir.list(), new String[0]))
-                .map(filename -> fileNotChanged(oldEventDir, newEventDir, filename))
+                .map(filename -> fileNotChanged(oldEventDir, newEventDir, filename, validationContext.getTrunkBranchName()))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
     }
 
-    private static ValidationResult fileExistedBefore(File oldFolder, File newFolder, String filename) {
+    private static ValidationResult fileExistedBefore(File oldFolder, File newFolder, String filename, String trunkBranchName) {
         File newFile = new File(newFolder, filename);
         File oldFile = new File(oldFolder, filename);
         if (!oldFile.exists()) {
-            String message = String.format("File %s does not exist master but does  exist in this branch. " +
-                    "You are not allowed to create this file", newFile.getAbsolutePath());
+            String message = String.format("File %s does not exist %s but does exist in this branch. " +
+                    "You are not allowed to create this file", newFile.getAbsolutePath(), trunkBranchName);
             return ValidationResult.fail(message);
         }
         return ValidationResult.ok();
     }
 
-    private static ValidationResult fileNotChanged(File oldFolder, File newFolder, String filename) {
+    private static ValidationResult fileNotChanged(File oldFolder, File newFolder, String filename, String trunkBranchName) {
         File newFile = new File(newFolder, filename);
         File oldFile = new File(oldFolder, filename);
 
         if (!newFile.exists()) {
-            String message = String.format("File %s exists in master but does not exist in this branch. " +
-                    "You are not allowed to delete this file", newFile.getAbsolutePath());
+            String message = String.format("File %s exists in %s but does not exist in this branch. " +
+                    "You are not allowed to delete this file", newFile.getAbsolutePath(), trunkBranchName);
             return ValidationResult.fail(message);
         }
 
         if (!filename.endsWith("json")) {
-            return schemaFileNotChanged(oldFile, newFile);
+            return schemaFileNotChanged(oldFile, newFile, trunkBranchName);
         } else {
             return alreadyDefinedVersionInDescriptorFileNotChanged(oldFile, newFile);
         }
     }
 
-    private static ValidationResult schemaFileNotChanged(File oldFile, File newFile){
+    private static ValidationResult schemaFileNotChanged(File oldFile, File newFile, String trunkBranchName) {
         try {
             if (FileUtils.checksumCRC32(newFile) != FileUtils.checksumCRC32(oldFile)) {
-                return ValidationResult.fail(String.format("File %s has changed compared to master. " +
-                        "You are not allowed to change this file", newFile.getAbsolutePath()));
+                return ValidationResult.fail(String.format("File %s has changed compared to %s. " +
+                        "You are not allowed to change this file", newFile.getAbsolutePath(), trunkBranchName));
             }
         } catch (IOException e) {
             return ValidationResult.fail(String.format("Could not compute checksum: %s", e.getMessage()));
@@ -166,12 +166,12 @@ public class FileNotChangedValidator {
         return ValidationResult.ok();
     }
 
-    private static ValidationResult fileNotDeleted(File newFolder, String filename) {
+    private static ValidationResult fileNotDeleted(File newFolder, String filename, String trunkBranchName) {
         File newFile = new File(newFolder, filename);
 
         if (!newFile.exists()) {
-            String message = String.format("File %s exists in master but does not exist in this branch. " +
-                    "You are not allowed to delete this file", newFile.getAbsolutePath());
+            String message = String.format("File %s exists in %s but does not exist in this branch. " +
+                    "You are not allowed to delete this file", newFile.getAbsolutePath(), trunkBranchName);
             return ValidationResult.fail(message);
         }
         return ValidationResult.ok();
