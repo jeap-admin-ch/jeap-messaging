@@ -1,6 +1,0 @@
-sequences:
-  - name: test
-    retentionPeriod: P7D
-    messages:
-      - topic: test-topic-1
-        contextIdExtractor: ch.admin.bit.jeap.messaging.sequentialinbox.configuration.model.TestContextIdExtractor

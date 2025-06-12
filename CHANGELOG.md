@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.43.0] - 2025-06-13
+### Changed
+Moved jeap-messaging-outbox to its own repository.
+Moved jeap-messaging-sequential-inbox to its own repository.
+
 ## [8.42.0] - 2025-06-12
 ### Changed
 - update jeap-crypto.version from 3.19.0 to 3.20.0

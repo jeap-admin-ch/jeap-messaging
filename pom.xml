@@ -27,7 +27,7 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>8.42.0-SNAPSHOT</version>
+    <version>8.43.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -55,14 +55,10 @@
         <module>jeap-messaging-infrastructure-kafka-without-brave-test</module>
         <module>jeap-messaging-infrastructure-kafka-reactive-test</module>
         <module>jeap-messaging-registry-maven-plugin</module>
-        <module>jeap-messaging-outbox</module>
-        <module>jeap-messaging-outbox-test</module>
         <module>jeap-messaging-idempotence</module>
         <module>jeap-messaging-contract-annotations</module>
         <module>jeap-messaging-contract-annotation-processor</module>
         <module>jeap-messaging-contract-maven-plugin</module>
-        <module>jeap-messaging-sequential-inbox</module>
-        <module>jeap-messaging-sequential-inbox-test</module>
     </modules>
 
     <properties>
@@ -157,17 +153,7 @@
             </dependency>
             <dependency>
                 <groupId>ch.admin.bit.jeap</groupId>
-                <artifactId>jeap-messaging-outbox</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.admin.bit.jeap</groupId>
                 <artifactId>jeap-messaging-idempotence</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.admin.bit.jeap</groupId>
-                <artifactId>jeap-messaging-sequential-inbox</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -1,4 +1,0 @@
-jeap:
-  messaging:
-    kafka:
-      messageTypeEncryptionDisabled: false
