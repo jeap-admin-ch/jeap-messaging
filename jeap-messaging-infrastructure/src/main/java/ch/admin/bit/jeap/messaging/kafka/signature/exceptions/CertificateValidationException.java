@@ -39,7 +39,7 @@ public class CertificateValidationException extends RuntimeException implements 
         return new CertificateValidationException(message);
     }
 
-    public static CertificateValidationException certificateCommonNameNotValid(String commonName, String serviceName) {
+    public static CertificateValidationException certificateCommonNameNotValid(String serviceName, String commonName) {
         String message = String.format("Certificate common name %s is different to service name %s", commonName, serviceName);
         return new CertificateValidationException(Temporality.PERMANENT, message);
     }
