@@ -13,11 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -133,7 +129,7 @@ public class SubscriberCertificatesContainer {
 
     @RequiredArgsConstructor
     @Getter
-    private class CertificateChain {
+    private static class CertificateChain {
 
         private final String name;
         private final List<SignatureCertificate> certificates; //  a list of the certificates, first certificate in the list must be the leaf, last the root
@@ -142,7 +138,8 @@ public class SubscriberCertificatesContainer {
         SignatureCertificateWithChainValidity getCertificateWithSerialNumber(byte[] certificateSerialNumber) {
             SignatureCertificate leafCertificate = getLeafCertificate();
             if (Objects.deepEquals(leafCertificate.getSerialNumber(), certificateSerialNumber)) {
-                return new SignatureCertificateWithChainValidity(leafCertificate, valid);
+                String commonName = CertificateHelper.getCommonName(leafCertificate.getSubjectDistinguishedName());
+                return new SignatureCertificateWithChainValidity(leafCertificate, commonName, valid);
             }
             return null;
         }

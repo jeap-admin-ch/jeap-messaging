@@ -35,7 +35,6 @@ import static java.util.stream.Collectors.joining;
 class Benchmarks {
     private static final String TEST_SERVICE_NAME = "jme-messaging-receiverpublisher-service";
     private static final String CERT_PATH = "/perftest/perftest.crt";
-    private static final String PRIVATE_KEY_PATH = "/perftest/perftest-private.key";
     private static final String INTERMEDIATE_CA_PATH = "/perftest/intermediateCA.crt";
     private static final String ROOT_CA_PATH = "/perftest/rootCA.crt";
 
@@ -63,14 +62,14 @@ class Benchmarks {
         // Create and configure subscriber properties
         boolean requireSignature = true;
         SignatureSubscriberProperties props = new SignatureSubscriberProperties(
-                requireSignature, Set.of(), Map.of(), certificateChains);
+                requireSignature, Set.of(), Set.of(), Map.of(), certificateChains);
         
         // Initialize containers and validators
         SubscriberValidationPropertiesContainer validationContainer = initializeValidationContainer(props);
         SubscriberCertificatesContainer certificatesContainer = initializeCertificatesContainer(props);
         CertificateAndSignatureVerifier verifier = createVerifier(certificatesContainer);
-        
-        return new DefaultSignatureAuthenticityService(validationContainer, verifier, Optional.empty());
+
+        return new DefaultSignatureAuthenticityService(validationContainer, verifier, certificatesContainer, Optional.empty());
     }
 
     /**
@@ -169,12 +168,9 @@ class Benchmarks {
             SubscriberCertificatesContainer certificatesContainer) {
         SignatureCertificateValidator certificateValidator = new SignatureCertificateValidator();
         SignatureVerifier signatureVerifier = new SignatureVerifier();
-        
-        return new CertificateAndSignatureVerifier(
-                certificatesContainer, 
-                certificateValidator, 
-                signatureVerifier
-        );
+        SignatureSubscriberProperties props = new SignatureSubscriberProperties(true, null,
+                Set.of(), null, null);
+        return new CertificateAndSignatureVerifier(certificateValidator, signatureVerifier, props);
     }
 
     static byte[] simulateLargeEvent() {

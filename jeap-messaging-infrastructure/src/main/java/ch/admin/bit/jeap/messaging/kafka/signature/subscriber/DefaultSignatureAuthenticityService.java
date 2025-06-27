@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureMetricsService;
 import ch.admin.bit.jeap.messaging.kafka.signature.common.CryptoProviderHelper;
+import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.CertificateValidationException;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.MessageSignatureValidationException;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.SignatureAuthenticityMessageException;
 import ch.admin.bit.jeap.messaging.model.Message;
@@ -22,14 +23,17 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
     private final SubscriberValidationPropertiesContainer validationPropertiesContainer;
     private final CertificateAndSignatureVerifier certificateAndSignatureVerifier;
     private final SignatureMetricsService signatureMetricsService;
+    private final SubscriberCertificatesContainer subscriberCertificatesContainer;
     private AtomicLong signatureRequiredState;
 
     public DefaultSignatureAuthenticityService(SubscriberValidationPropertiesContainer validationPropertiesContainer,
                                                CertificateAndSignatureVerifier certificateAndSignatureVerifier,
+                                               SubscriberCertificatesContainer subscriberCertificatesContainer,
                                                Optional<SignatureMetricsService> signatureMetricsService) {
         this.validationPropertiesContainer = validationPropertiesContainer;
         this.certificateAndSignatureVerifier = certificateAndSignatureVerifier;
         this.signatureMetricsService = signatureMetricsService.orElse(null);
+        this.subscriberCertificatesContainer = subscriberCertificatesContainer;
         log.info("SignatureAuthenticityService initialized, requireSignature (strict mode): {}", validationPropertiesContainer.isSignatureRequired());
     }
 
@@ -72,7 +76,8 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, "unknown", "unknown");
 
         if (certificateHeader != null) { // then both headers are set
-            boolean result = certificateAndSignatureVerifier.verifyKeySignature(bytesToValidate, signatureHeader.value(), certificateHeader.value());
+            SignatureCertificateWithChainValidity cert = getCertificate(certificateHeader.value());
+            boolean result = certificateAndSignatureVerifier.verifyKeySignature(bytesToValidate, signatureHeader.value(), cert);
             if (!result) {
                 throw MessageSignatureValidationException.invalidSignatureKey();
             }
@@ -83,22 +88,34 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         String messageTypeName = message.getType().getName();
         String service = message.getPublisher().getService();
 
-        // TODO mirrormaker
-        if (!validationPropertiesContainer.isPublisherAllowedForMessage(messageTypeName, service)) {
-            throw MessageSignatureValidationException.publisherNotAllowed(messageTypeName, service);
-        }
-
         Header certificateHeader = headers.lastHeader(SignatureHeaders.SIGNATURE_CERTIFICATE_HEADER_KEY);
         Header signatureHeader = headers.lastHeader(SignatureHeaders.SIGNATURE_VALUE_HEADER_KEY);
         boolean signatureRequired = validationPropertiesContainer.isSignatureRequired(messageTypeName);
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, messageTypeName, service);
 
         if (certificateHeader != null) { // then both headers are set
-            boolean result = certificateAndSignatureVerifier.verifyValueSignature(service, bytesToValidate, signatureHeader.value(), certificateHeader.value());
+            SignatureCertificateWithChainValidity cert = getCertificate(certificateHeader.value());
+            validateAllowedPublisher(messageTypeName, service, cert);
+            boolean result = certificateAndSignatureVerifier.verifyValueSignature(service, bytesToValidate, signatureHeader.value(), cert);
             if (!result) {
                 throw MessageSignatureValidationException.invalidSignatureValue(messageTypeName, service);
             }
         }
+    }
+
+    private void validateAllowedPublisher(String messageTypeName, String service, SignatureCertificateWithChainValidity cert) {
+        boolean publisherAllowedForMessage = validationPropertiesContainer.isPublisherAllowedForMessage(messageTypeName, service);
+        if (!publisherAllowedForMessage && !certificateAndSignatureVerifier.isPrivilegedProducer(cert)) {
+            throw MessageSignatureValidationException.publisherNotAllowed(messageTypeName, service);
+        }
+    }
+
+    private SignatureCertificateWithChainValidity getCertificate(byte[] certificateSerialNumber) {
+        SignatureCertificateWithChainValidity certificateWithChainValidity = subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber);
+        if (certificateWithChainValidity == null) {
+            throw CertificateValidationException.certificateNotFound(certificateSerialNumber);
+        }
+        return certificateWithChainValidity;
     }
 
     private void validateHeaders(boolean signatureRequired, Header signatureHeader, Header certificateHeader, String messageTypeName, String service) {

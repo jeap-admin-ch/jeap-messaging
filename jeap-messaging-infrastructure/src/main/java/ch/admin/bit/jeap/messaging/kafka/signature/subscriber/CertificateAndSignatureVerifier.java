@@ -1,8 +1,6 @@
 package ch.admin.bit.jeap.messaging.kafka.signature.subscriber;
 
-import ch.admin.bit.jeap.messaging.kafka.signature.common.CertificateHelper;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.CertificateValidationException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -10,23 +8,27 @@ import java.util.Objects;
 import java.util.Set;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class CertificateAndSignatureVerifier {
 
-    private final SubscriberCertificatesContainer subscriberCertificatesContainer;
     private final SignatureCertificateValidator certificateValidator;
     private final SignatureVerifier signatureVerifier;
-    private final Set<String> privilegedProducerNames = Set.of("TODO-get-from-props-mirrormaker");
+    private final Set<String> privilegedProducerNames;
 
-    public boolean verifyKeySignature(byte[] bytesToValidate, byte[] signature, byte[] certificateSerialNumber) {
-        SignatureCertificateWithChainValidity cert = getCertificate(certificateSerialNumber);
+    public CertificateAndSignatureVerifier(SignatureCertificateValidator certificateValidator,
+                                           SignatureVerifier signatureVerifier,
+                                           SignatureSubscriberProperties signatureSubscriberProperties) {
+        this.certificateValidator = certificateValidator;
+        this.signatureVerifier = signatureVerifier;
+        this.privilegedProducerNames = signatureSubscriberProperties.privilegedProducerCommonNames();
+    }
+
+    public boolean verifyKeySignature(byte[] bytesToValidate, byte[] signature, SignatureCertificateWithChainValidity cert) {
         return doVerify(bytesToValidate, signature, cert);
     }
 
-    public boolean verifyValueSignature(String serviceName, byte[] bytesToValidate, byte[] signature, byte[] certificateSerialNumber) {
-        SignatureCertificateWithChainValidity cert = getCertificate(certificateSerialNumber);
-        validatePublisherNameMatchesCertificateCommonName(serviceName, cert);
+    public boolean verifyValueSignature(String serviceName, byte[] bytesToValidate, byte[] signature, SignatureCertificateWithChainValidity cert) {
+        validatePublisherIsPrivilegedOrNameMatchesCertCommonName(serviceName, cert);
         return doVerify(bytesToValidate, signature, cert);
     }
 
@@ -40,23 +42,19 @@ public class CertificateAndSignatureVerifier {
         return signatureVerifier.verify(cert.certificate(), bytesToValidate, signature);
     }
 
-    private SignatureCertificateWithChainValidity getCertificate(byte[] certificateSerialNumber) {
-        SignatureCertificateWithChainValidity certificateWithChainValidity = subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber);
-        if (certificateWithChainValidity == null) {
-            throw CertificateValidationException.certificateNotFound(certificateSerialNumber);
-        }
-        return certificateWithChainValidity;
-    }
-
-    private void validatePublisherNameMatchesCertificateCommonName(String serviceName, SignatureCertificateWithChainValidity certificateWithChainValidity) {
-        String commonName = CertificateHelper.getCommonName(certificateWithChainValidity.getSubjectDistinguishedName());
+    private void validatePublisherIsPrivilegedOrNameMatchesCertCommonName(String serviceName, SignatureCertificateWithChainValidity cert) {
+        String commonName = cert.commonName();
 
         boolean certificateCommonNameMatchesPublisher = Objects.equals(serviceName, commonName);
-        boolean certificateCommonNameIsPrivilegedProducer = privilegedProducerNames.contains(commonName);
+        boolean certificateCommonNameIsPrivilegedProducer = isPrivilegedProducer(cert);
 
         if (!certificateCommonNameMatchesPublisher && !certificateCommonNameIsPrivilegedProducer) {
             log.error("Service name {} does not match CN of certificate {}", serviceName, commonName);
             throw CertificateValidationException.certificateCommonNameNotValid(serviceName, commonName);
         }
+    }
+
+    public boolean isPrivilegedProducer(SignatureCertificateWithChainValidity cert) {
+        return privilegedProducerNames.contains(cert.commonName());
     }
 }

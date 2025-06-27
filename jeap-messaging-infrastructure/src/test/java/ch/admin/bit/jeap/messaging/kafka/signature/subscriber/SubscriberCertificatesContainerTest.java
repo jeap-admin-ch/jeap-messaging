@@ -10,11 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SubscriberCertificatesContainerTest {
 
@@ -149,7 +145,7 @@ class SubscriberCertificatesContainerTest {
 
     @Test
     void initWithEmptyProps() {
-        SignatureSubscriberProperties signatureSubscriberProperties = new SignatureSubscriberProperties(false, null, null, null);
+        SignatureSubscriberProperties signatureSubscriberProperties = new SignatureSubscriberProperties(false, null, null, null, null);
         SubscriberCertificatesContainer subscriberCertificatesContainer = new SubscriberCertificatesContainer(signatureSubscriberProperties);
 
         assertDoesNotThrow(() -> subscriberCertificatesContainer.init());
@@ -185,7 +181,7 @@ class SubscriberCertificatesContainerTest {
             certificateChains.put(certificateServiceEntry.serviceName(), certificateChainsByName);
 
         }
-        return new SignatureSubscriberProperties(false, null, null, certificateChains);
+        return new SignatureSubscriberProperties(false, null, null, null, certificateChains);
     }
 
     private record CertificateServiceEntry(String serviceName, CertificateChainEntry... certificateChainEntries) {

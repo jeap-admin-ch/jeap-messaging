@@ -15,8 +15,11 @@ import java.util.Set;
 @RefreshScope
 public class SignatureSubscriberProperties {
 
+    private static final Set<String> DEFAULT_PRIVILEGED_PRODUCER_COMMON_NAMES = Set.of("mirrormaker");
+
     private final boolean requireSignature;
     private final Set<String> acceptUnsignedMessagetypeWhitelist;
+    private final Set<String> privilegedProducerCommonNames;
     private final Map<String, List<String>> allowedPublishers;
     private final Map<String, Map<String, List<String>>> certificateChains;
 
@@ -30,10 +33,12 @@ public class SignatureSubscriberProperties {
      */
     public SignatureSubscriberProperties(@DefaultValue("false") boolean requireSignature,
                                          Set<String> acceptUnsignedMessagetypeWhitelist,
+                                         Set<String> privilegedProducerCommonNames,
                                          Map<String, List<String>> allowedPublishers,
                                          Map<String, Map<String, List<String>>> certificateChains) {
         this.requireSignature = requireSignature;
         this.acceptUnsignedMessagetypeWhitelist = acceptUnsignedMessagetypeWhitelist == null ? Set.of() : acceptUnsignedMessagetypeWhitelist;
+        this.privilegedProducerCommonNames = privilegedProducerCommonNames == null ? DEFAULT_PRIVILEGED_PRODUCER_COMMON_NAMES : privilegedProducerCommonNames;
         this.allowedPublishers = allowedPublishers == null ? Map.of() : allowedPublishers;
         this.certificateChains = certificateChains == null ? Map.of() : certificateChains;
     }
@@ -44,6 +49,10 @@ public class SignatureSubscriberProperties {
 
     public Set<String> acceptUnsignedMessagetypeWhitelist() {
         return acceptUnsignedMessagetypeWhitelist;
+    }
+
+    public Set<String> privilegedProducerCommonNames() {
+        return privilegedProducerCommonNames;
     }
 
     public Map<String, List<String>> allowedPublishers() {

@@ -2,11 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.signature;
 
 import ch.admin.bit.jeap.messaging.kafka.signature.publisher.DefaultSignatureService;
 import ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties;
-import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.CertificateAndSignatureVerifier;
-import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.DefaultSignatureAuthenticityService;
-import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureSubscriberProperties;
-import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureVerifier;
-import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SubscriberValidationPropertiesContainer;
+import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -46,8 +42,9 @@ public class SignatureConfiguration {
     @ConditionalOnProperty(prefix = "jeap.messaging.authentication.subscriber", name = "require-signature")
     public DefaultSignatureAuthenticityService signatureAuthenticityService(SubscriberValidationPropertiesContainer validationPropertiesContainer,
                                                                      CertificateAndSignatureVerifier certificateAndSignatureVerifier,
+                                                                            SubscriberCertificatesContainer subscriberCertificatesContainer,
                                                                      Optional<SignatureMetricsService> signatureMetricsService) {
-        return new DefaultSignatureAuthenticityService(validationPropertiesContainer, certificateAndSignatureVerifier, signatureMetricsService);
+        return new DefaultSignatureAuthenticityService(validationPropertiesContainer, certificateAndSignatureVerifier, subscriberCertificatesContainer, signatureMetricsService);
     }
 
     // Note: This must be a static inner class, annotated with ConditionalOnClass, to avoid Spring attempting to load the
