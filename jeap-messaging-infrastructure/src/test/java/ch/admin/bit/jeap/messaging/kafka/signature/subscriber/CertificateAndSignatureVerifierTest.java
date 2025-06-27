@@ -6,12 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class CertificateAndSignatureVerifierTest {
 
@@ -43,11 +39,11 @@ class CertificateAndSignatureVerifierTest {
     }
 
     @Test
-    void verifyWithService_returnTrue_whenValid() {
+    void verifyValueSignatureWithService_returnTrue_whenValid() {
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER)).thenReturn(certificateWithChainValidity);
         when(signatureVerifier.verify(certificateWithChainValidity.certificate(), BYTES_TO_VALIDATE, SIGNATURE)).thenReturn(true);
 
-        boolean verify = certificateAndSignatureVerifier.verify(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
+        boolean verify = certificateAndSignatureVerifier.verifyValueSignature(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
         assertTrue(verify);
         verify(subscriberCertificatesContainer).getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER);
         verify(certificateValidator).validate(certificateWithChainValidity);
@@ -55,11 +51,11 @@ class CertificateAndSignatureVerifierTest {
     }
 
     @Test
-    void verifyWithService_returnFalse_whenWrongSignature() {
+    void verifyValueSignatureWithService_returnFalse_whenWrongSignature() {
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER)).thenReturn(certificateWithChainValidity);
         when(signatureVerifier.verify(certificateWithChainValidity.certificate(), BYTES_TO_VALIDATE, SIGNATURE)).thenReturn(false);
 
-        boolean verify = certificateAndSignatureVerifier.verify(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
+        boolean verify = certificateAndSignatureVerifier.verifyValueSignature(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
         assertFalse(verify);
         verify(subscriberCertificatesContainer).getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER);
         verify(certificateValidator).validate(certificateWithChainValidity);
@@ -67,32 +63,31 @@ class CertificateAndSignatureVerifierTest {
     }
 
     @Test
-    void verifyWithService_doFail_whenNoCertificateFound() {
+    void verifyValueSignatureWithService_doFail_whenNoCertificateFound() {
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER)).thenReturn(null);
 
-        assertThrows(CertificateValidationException.class, () -> certificateAndSignatureVerifier.verify(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER));
+        assertThrows(CertificateValidationException.class, () -> certificateAndSignatureVerifier.verifyValueSignature(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER));
         verify(subscriberCertificatesContainer).getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER);
         verifyNoInteractions(certificateValidator);
         verifyNoInteractions(signatureVerifier);
     }
 
     @Test
-    void verifyWithService_doFail_whenCommonNameMismatch() {
+    void verifyValueSignatureWithService_doFail_whenCommonNameMismatch() {
         String otherServiceName = "my-other-service";
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER)).thenReturn(certificateWithChainValidity);
 
-        assertThrows(CertificateValidationException.class, () -> certificateAndSignatureVerifier.verify(otherServiceName, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER));
+        assertThrows(CertificateValidationException.class, () -> certificateAndSignatureVerifier.verifyValueSignature(otherServiceName, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER));
         verify(subscriberCertificatesContainer).getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER);
-        verify(certificateValidator).validate(certificateWithChainValidity);
         verifyNoInteractions(signatureVerifier);
     }
 
     @Test
-    void verifyWithoutService_returnTrue_whenValid() {
+    void verifyKeySignatureWithoutService_returnTrue_whenValid() {
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER)).thenReturn(certificateWithChainValidity);
         when(signatureVerifier.verify(certificateWithChainValidity.certificate(), BYTES_TO_VALIDATE, SIGNATURE)).thenReturn(true);
 
-        boolean verify = certificateAndSignatureVerifier.verify(BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
+        boolean verify = certificateAndSignatureVerifier.verifyKeySignature(BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
         assertTrue(verify);
         verify(subscriberCertificatesContainer).getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER);
         verify(certificateValidator).validate(certificateWithChainValidity);
@@ -100,11 +95,11 @@ class CertificateAndSignatureVerifierTest {
     }
 
     @Test
-    void verifyWithoutService_returnFalse_whenWrongSignature() {
+    void verifyKeySignatureWithoutService_returnFalse_whenWrongSignature() {
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER)).thenReturn(certificateWithChainValidity);
         when(signatureVerifier.verify(certificateWithChainValidity.certificate(), BYTES_TO_VALIDATE, SIGNATURE)).thenReturn(false);
 
-        boolean verify = certificateAndSignatureVerifier.verify(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
+        boolean verify = certificateAndSignatureVerifier.verifyValueSignature(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER);
         assertFalse(verify);
         verify(subscriberCertificatesContainer).getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER);
         verify(certificateValidator).validate(certificateWithChainValidity);
@@ -112,10 +107,10 @@ class CertificateAndSignatureVerifierTest {
     }
 
     @Test
-    void verifyWithoutService_doFail_whenNoCertificateFound() {
+    void verifyKeySignatureWithoutService_doFail_whenNoCertificateFound() {
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER)).thenReturn(null);
 
-        assertThrows(CertificateValidationException.class, () -> certificateAndSignatureVerifier.verify(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER));
+        assertThrows(CertificateValidationException.class, () -> certificateAndSignatureVerifier.verifyValueSignature(SERVICE_NAME, BYTES_TO_VALIDATE, SIGNATURE, CERTIFICATE_SERIAL_NUMBER));
         verify(subscriberCertificatesContainer).getCertificateWithSerialNumber(CERTIFICATE_SERIAL_NUMBER);
         verifyNoInteractions(certificateValidator);
         verifyNoInteractions(signatureVerifier);

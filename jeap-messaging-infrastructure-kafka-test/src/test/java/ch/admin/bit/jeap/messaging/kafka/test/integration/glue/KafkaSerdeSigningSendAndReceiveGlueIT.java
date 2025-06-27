@@ -108,13 +108,13 @@ class KafkaSerdeSigningSendAndReceiveGlueIT extends KafkaGlueIntegrationTestBase
             Object result = invocation.callRealMethod(); // Call real method
             authenticityCheckResults.add(result);
             return result;
-        }).when(certificateAndSignatureVerifier).verify(any(), any(), any(), any());
+        }).when(certificateAndSignatureVerifier).verifyValueSignature(any(), any(), any(), any());
         // For key
         doAnswer(invocation -> {
             Object result = invocation.callRealMethod(); // Call real method
             authenticityKeyCheckResults.add(result);
             return result;
-        }).when(certificateAndSignatureVerifier).verify(any(), any(), any());
+        }).when(certificateAndSignatureVerifier).verifyKeySignature(any(), any(), any());
 
         sendSync(awsKafkaTemplate, JmeDeclarationCreatedEventCustomDeserializerPropertiesConsumer.OTHER_TOPIC_NAME, messageKey, message);
 
@@ -155,7 +155,7 @@ class KafkaSerdeSigningSendAndReceiveGlueIT extends KafkaGlueIntegrationTestBase
             Object result = invocation.callRealMethod(); // Call real method
             authenticityCheckResults.add(result); // Store the return value
             return result;  // Return the actual value
-        }).when(certificateAndSignatureVerifier).verify(eq("jme-messaging-receiverpublisher-service"), any(), any(), any());
+        }).when(certificateAndSignatureVerifier).verifyValueSignature(eq("jme-messaging-receiverpublisher-service"), any(), any(), any());
 
         sendSync(awsKafkaTemplate, JmeCreateDeclarationCommand.TypeRef.DEFAULT_TOPIC, createDeclarationCommand);
         sendSync(awsKafkaTemplate, JmeDeclarationCreatedEvent.TypeRef.DEFAULT_TOPIC, declarationCreatedEvent);

@@ -75,13 +75,13 @@ public class MessagingSigningSendAndReceiveNoKeyExposureIT extends KafkaIntegrat
             Object result = invocation.callRealMethod(); // Call real method
             authenticityCheckResults.add(result);
             return result;
-        }).when(certificateAndSignatureVerifier).verify(any(), any(), any(), any());
+        }).when(certificateAndSignatureVerifier).verifyValueSignature(any(), any(), any(), any());
         // For key
         doAnswer(invocation -> {
             Object result = invocation.callRealMethod(); // Call real method
             authenticityKeyCheckResults.add(result);
             return result;
-        }).when(certificateAndSignatureVerifier).verify(any(), any(), any());
+        }).when(certificateAndSignatureVerifier).verifyKeySignature(any(), any(), any());
 
         sendSync(JmeDeclarationCreatedEventConsumer.TOPIC_NAME, messageKey, message);
 

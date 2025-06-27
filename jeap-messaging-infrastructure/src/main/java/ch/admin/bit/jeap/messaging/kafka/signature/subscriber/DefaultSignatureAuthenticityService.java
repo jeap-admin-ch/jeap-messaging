@@ -72,7 +72,7 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, "unknown", "unknown");
 
         if (certificateHeader != null) { // then both headers are set
-            boolean result = certificateAndSignatureVerifier.verify(bytesToValidate, signatureHeader.value(), certificateHeader.value());
+            boolean result = certificateAndSignatureVerifier.verifyKeySignature(bytesToValidate, signatureHeader.value(), certificateHeader.value());
             if (!result) {
                 throw MessageSignatureValidationException.invalidSignatureKey();
             }
@@ -83,6 +83,7 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         String messageTypeName = message.getType().getName();
         String service = message.getPublisher().getService();
 
+        // TODO mirrormaker
         if (!validationPropertiesContainer.isPublisherAllowedForMessage(messageTypeName, service)) {
             throw MessageSignatureValidationException.publisherNotAllowed(messageTypeName, service);
         }
@@ -93,7 +94,7 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, messageTypeName, service);
 
         if (certificateHeader != null) { // then both headers are set
-            boolean result = certificateAndSignatureVerifier.verify(service, bytesToValidate, signatureHeader.value(), certificateHeader.value());
+            boolean result = certificateAndSignatureVerifier.verifyValueSignature(service, bytesToValidate, signatureHeader.value(), certificateHeader.value());
             if (!result) {
                 throw MessageSignatureValidationException.invalidSignatureValue(messageTypeName, service);
             }

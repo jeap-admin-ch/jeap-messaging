@@ -46,14 +46,14 @@ class DefaultSignatureAuthenticityServiceTest {
 
         when(validationPropertiesContainer.isPublisherAllowedForMessage("MyMessage", "my-service")).thenReturn(true);
         when(validationPropertiesContainer.isSignatureRequired("MyMessage")).thenReturn(true);
-        when(certificateAndSignatureVerifier.verify("my-service", bytesToValidate, signatureValue, certificateSerialNumber)).thenReturn(true);
+        when(certificateAndSignatureVerifier.verifyValueSignature("my-service", bytesToValidate, signatureValue, certificateSerialNumber)).thenReturn(true);
 
         signatureAuthenticityService.checkAuthenticityValue(message, headers, bytesToValidate);
 
         verify(validationPropertiesContainer).isSignatureRequired();
         verify(validationPropertiesContainer).isPublisherAllowedForMessage("MyMessage", "my-service");
         verify(validationPropertiesContainer).isSignatureRequired("MyMessage");
-        verify(certificateAndSignatureVerifier).verify("my-service", bytesToValidate, signatureValue, certificateSerialNumber);
+        verify(certificateAndSignatureVerifier).verifyValueSignature("my-service", bytesToValidate, signatureValue, certificateSerialNumber);
     }
 
     @Test
@@ -70,14 +70,14 @@ class DefaultSignatureAuthenticityServiceTest {
 
         when(validationPropertiesContainer.isPublisherAllowedForMessage("MyMessage", "my-service")).thenReturn(true);
         when(validationPropertiesContainer.isSignatureRequired("MyMessage")).thenReturn(true);
-        when(certificateAndSignatureVerifier.verify("my-service", bytesToValidate, signatureValue, certificateSerialNumber)).thenReturn(true);
+        when(certificateAndSignatureVerifier.verifyValueSignature("my-service", bytesToValidate, signatureValue, certificateSerialNumber)).thenReturn(true);
 
         signatureAuthenticityService.checkAuthenticityValue(message, headers, bytesToValidate);
 
         verify(validationPropertiesContainer, atLeast(1)).isSignatureRequired();
         verify(validationPropertiesContainer).isPublisherAllowedForMessage("MyMessage", "my-service");
         verify(validationPropertiesContainer).isSignatureRequired("MyMessage");
-        verify(certificateAndSignatureVerifier).verify("my-service", bytesToValidate, signatureValue, certificateSerialNumber);
+        verify(certificateAndSignatureVerifier).verifyValueSignature("my-service", bytesToValidate, signatureValue, certificateSerialNumber);
         verify(signatureMetricsService).recordSignatureValidation("MyMessage", true);
     }
 
@@ -133,7 +133,7 @@ class DefaultSignatureAuthenticityServiceTest {
 
         when(validationPropertiesContainer.isPublisherAllowedForMessage("MyMessage", "my-service")).thenReturn(true);
         when(validationPropertiesContainer.isSignatureRequired("MyMessage")).thenReturn(true);
-        when(certificateAndSignatureVerifier.verify("my-service", bytesToValidate, signatureValue, certificateSerialNumber)).thenReturn(false);
+        when(certificateAndSignatureVerifier.verifyValueSignature("my-service", bytesToValidate, signatureValue, certificateSerialNumber)).thenReturn(false);
 
         assertThrows(SignatureAuthenticityMessageException.class, () -> signatureAuthenticityService.checkAuthenticityValue(message, headers, bytesToValidate));
     }
@@ -260,11 +260,11 @@ class DefaultSignatureAuthenticityServiceTest {
         Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
         byte[] bytesToValidate = {1, 1, 1};
 
-        when(certificateAndSignatureVerifier.verify(bytesToValidate, signatureKey, certificateSerialNumber)).thenReturn(true);
+        when(certificateAndSignatureVerifier.verifyKeySignature(bytesToValidate, signatureKey, certificateSerialNumber)).thenReturn(true);
 
         signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate);
 
-        verify(certificateAndSignatureVerifier).verify(bytesToValidate, signatureKey, certificateSerialNumber);
+        verify(certificateAndSignatureVerifier).verifyKeySignature(bytesToValidate, signatureKey, certificateSerialNumber);
     }
 
     @Test
@@ -279,11 +279,11 @@ class DefaultSignatureAuthenticityServiceTest {
         Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
         byte[] bytesToValidate = {1, 1, 1};
 
-        when(certificateAndSignatureVerifier.verify(bytesToValidate, signatureKey, certificateSerialNumber)).thenReturn(true);
+        when(certificateAndSignatureVerifier.verifyKeySignature(bytesToValidate, signatureKey, certificateSerialNumber)).thenReturn(true);
 
         signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate);
 
-        verify(certificateAndSignatureVerifier).verify(bytesToValidate, signatureKey, certificateSerialNumber);
+        verify(certificateAndSignatureVerifier).verifyKeySignature(bytesToValidate, signatureKey, certificateSerialNumber);
         verifyNoInteractions(signatureMetricsService);
     }
 
@@ -313,7 +313,7 @@ class DefaultSignatureAuthenticityServiceTest {
         Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
         byte[] bytesToValidate = {1, 1, 1};
 
-        when(certificateAndSignatureVerifier.verify("my-service", bytesToValidate, signatureKey, certificateSerialNumber)).thenReturn(false);
+        when(certificateAndSignatureVerifier.verifyValueSignature("my-service", bytesToValidate, signatureKey, certificateSerialNumber)).thenReturn(false);
 
         assertThrows(MessageSignatureValidationException.class, () -> signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate));
     }

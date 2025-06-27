@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -16,13 +17,17 @@ public class CertificateAndSignatureVerifier {
     private final SubscriberCertificatesContainer subscriberCertificatesContainer;
     private final SignatureCertificateValidator certificateValidator;
     private final SignatureVerifier signatureVerifier;
+    private final Set<String> privilegedProducerNames = Set.of("TODO-get-from-props-mirrormaker");
 
-    public boolean verify(byte[] bytesToValidate, byte[] signature, byte[] certificateSerialNumber) {
-        return doVerify(null, bytesToValidate, signature, certificateSerialNumber);
+    public boolean verifyKeySignature(byte[] bytesToValidate, byte[] signature, byte[] certificateSerialNumber) {
+        SignatureCertificateWithChainValidity cert = getCertificate(certificateSerialNumber);
+        return doVerify(bytesToValidate, signature, cert);
     }
 
-    public boolean verify(String serviceName, byte[] bytesToValidate, byte[] signature, byte[] certificateSerialNumber) {
-        return doVerify(serviceName, bytesToValidate, signature, certificateSerialNumber);
+    public boolean verifyValueSignature(String serviceName, byte[] bytesToValidate, byte[] signature, byte[] certificateSerialNumber) {
+        SignatureCertificateWithChainValidity cert = getCertificate(certificateSerialNumber);
+        validatePublisherNameMatchesCertificateCommonName(serviceName, cert);
+        return doVerify(bytesToValidate, signature, cert);
     }
 
     /**
@@ -30,19 +35,28 @@ public class CertificateAndSignatureVerifier {
      *
      * @param serviceName the name of the service to check against the common name in the certificate, might be null
      */
-    private boolean doVerify(String serviceName, byte[] bytesToValidate, byte[] signature, byte[] certificateSerialNumber) {
+    private boolean doVerify(byte[] bytesToValidate, byte[] signature, SignatureCertificateWithChainValidity cert) {
+        certificateValidator.validate(cert);
+        return signatureVerifier.verify(cert.certificate(), bytesToValidate, signature);
+    }
+
+    private SignatureCertificateWithChainValidity getCertificate(byte[] certificateSerialNumber) {
         SignatureCertificateWithChainValidity certificateWithChainValidity = subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber);
         if (certificateWithChainValidity == null) {
             throw CertificateValidationException.certificateNotFound(certificateSerialNumber);
         }
-        certificateValidator.validate(certificateWithChainValidity);
+        return certificateWithChainValidity;
+    }
 
+    private void validatePublisherNameMatchesCertificateCommonName(String serviceName, SignatureCertificateWithChainValidity certificateWithChainValidity) {
         String commonName = CertificateHelper.getCommonName(certificateWithChainValidity.getSubjectDistinguishedName());
-        if (serviceName != null && !Objects.equals(serviceName, commonName)) {
+
+        boolean certificateCommonNameMatchesPublisher = Objects.equals(serviceName, commonName);
+        boolean certificateCommonNameIsPrivilegedProducer = privilegedProducerNames.contains(commonName);
+
+        if (!certificateCommonNameMatchesPublisher && !certificateCommonNameIsPrivilegedProducer) {
             log.error("Service name {} does not match CN of certificate {}", serviceName, commonName);
             throw CertificateValidationException.certificateCommonNameNotValid(serviceName, commonName);
         }
-        return signatureVerifier.verify(certificateWithChainValidity.certificate(), bytesToValidate, signature);
     }
-
 }

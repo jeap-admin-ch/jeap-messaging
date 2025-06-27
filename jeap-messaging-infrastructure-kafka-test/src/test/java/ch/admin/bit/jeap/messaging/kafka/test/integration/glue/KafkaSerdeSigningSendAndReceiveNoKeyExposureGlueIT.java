@@ -94,13 +94,13 @@ class KafkaSerdeSigningSendAndReceiveNoKeyExposureGlueIT extends KafkaGlueIntegr
             Object result = invocation.callRealMethod(); // Call real method
             authenticityCheckResults.add(result);
             return result;
-        }).when(certificateAndSignatureVerifier).verify(any(), any(), any(), any());
+        }).when(certificateAndSignatureVerifier).verifyValueSignature(any(), any(), any(), any());
         // For key
         doAnswer(invocation -> {
             Object result = invocation.callRealMethod(); // Call real method
             authenticityKeyCheckResults.add(result);
             return result;
-        }).when(certificateAndSignatureVerifier).verify(any(), any(), any());
+        }).when(certificateAndSignatureVerifier).verifyKeySignature(any(), any(), any());
 
         sendSync(awsKafkaTemplate, JmeDeclarationCreatedEventCustomDeserializerPropertiesConsumer.OTHER_TOPIC_NAME, messageKey, message);
 
