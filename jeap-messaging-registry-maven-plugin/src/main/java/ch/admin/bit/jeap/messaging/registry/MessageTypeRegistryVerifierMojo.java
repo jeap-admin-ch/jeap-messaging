@@ -11,8 +11,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -30,7 +28,6 @@ import java.util.Optional;
 
 @Mojo(name = "registry", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.VERIFY, threadSafe = true)
 public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
-    private final Log log = new SystemStreamLog();
     @SuppressWarnings("unused")
     @Getter(AccessLevel.PROTECTED)
     @Parameter(name = "descriptorDirectory", defaultValue = "${basedir}/descriptor")
@@ -85,7 +82,7 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
             getLog().warn("No Git repo set, cannot compare to previous state");
             return descriptorDirectory;
         }
-        log.info("Comparing message type registry to Git repository '%s'.".formatted(gitUrl));
+        getLog().info("Comparing message type registry to Git repository '%s'.".formatted(gitUrl));
         try {
             File tempDir = Files.createTempDirectory(trunkBranchName).toFile();
             FileUtils.forceDeleteOnExit(tempDir);
@@ -95,7 +92,7 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
             } else {
                 cloneMessageTypeRepoWithSystemGit(tempDir);
             }
-            log.info("Cloned message type repository branch '" + trunkBranchName + "' successfully.");
+            getLog().info("Cloned message type repository branch '" + trunkBranchName + "' successfully.");
             return new File(tempDir, descriptorDirectory.getName());
         } catch (IOException | GitAPIException e) {
             throw new MojoExecutionException("Cannot checkout old repo", e);
@@ -103,18 +100,18 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
     }
 
     private String getGitToken() {
-        log.info("The message type repo git token env variable name configured is: " + messageTypeRepoGitTokenEnvVariableName);
+        getLog().info("The message type repo git token env variable name configured is: " + messageTypeRepoGitTokenEnvVariableName);
         String token = Optional.ofNullable(System.getenv(messageTypeRepoGitTokenEnvVariableName))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .orElse(null);
-        log.info("The env variable " + messageTypeRepoGitTokenEnvVariableName + " is " +
+        getLog().info("The env variable " + messageTypeRepoGitTokenEnvVariableName + " is " +
                 (token != null ? "set." : "not set."));
         return token;
     }
 
     private void cloneMessageTypeRepoWithToken(File targetDir, String token) throws GitAPIException {
-        log.info("Using JGit with a token to clone the message type repository.");
+        getLog().info("Using JGit with a token to clone the message type repository.");
         //noinspection EmptyTryBlock
         try (Git ignored = Git.cloneRepository()
                 .setURI(gitUrl)
@@ -127,7 +124,7 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
     }
 
     private void cloneMessageTypeRepoWithSystemGit(File targetDir) throws IOException {
-        log.info("Using a system Git process to clone the message type repository.");
+        getLog().info("Using a system Git process to clone the message type repository.");
         ProcessBuilder pb = new ProcessBuilder("git", "clone", "--branch", trunkBranchName, "--single-branch",
                 gitUrl, targetDir.getAbsolutePath());
         Process process = pb.start();
@@ -135,13 +132,13 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 String message = "The Git clone process failed to clone the repository. Exit code: " + exitCode;
-                log.error(message);
+                getLog().error(message);
                 throw new IllegalStateException(message);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             String message = "Interrupted while waiting for the Git clone process to finish.";
-            log.error(message);
+            getLog().error(message);
             throw new IllegalStateException(message, e);
         }
     }
