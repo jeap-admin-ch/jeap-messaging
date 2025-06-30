@@ -119,7 +119,7 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
                 .enableDecimalLogicalType(enableDecimalLogicalType)
                 .build();
 
-        GitClient gitClient = new GitClient(this.project.getBasedir().getAbsolutePath(), this.gitUrl, this.trunkBranchName);
+        GitClient gitClient = new GitClient(this.project.getBasedir().getAbsolutePath(), this.trunkBranchName);
 
         if (generateAllMessageTypes) {
             compile(avroCompiler);

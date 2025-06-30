@@ -30,14 +30,12 @@ public class GitClient {
     private final Log log;
     private final Repository repo;
     private final Git git;
-    private final String remoteUrl;
     private final String trunkBranchName;
     private final String sourceDirectory;
 
-    public GitClient(String sourceDirectory, String remoteUrl, String trunkBranchName) throws MojoExecutionException {
+    public GitClient(String sourceDirectory, String trunkBranchName) throws MojoExecutionException {
         this.sourceDirectory = sourceDirectory;
         this.log = new SystemStreamLog();
-        this.remoteUrl = remoteUrl;
         this.trunkBranchName = trunkBranchName;
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
@@ -87,11 +85,8 @@ public class GitClient {
 
     private RevCommit retrieveLastCommitFromLastTag() throws MojoExecutionException {
         try {
-            log.debug("get remote tags with remote url " + this.remoteUrl);
-            Collection<Ref> tags = Git.lsRemoteRepository()
-                    .setTags(true)
-                    .setRemote(this.remoteUrl)
-                    .call();
+            log.debug("get tags");
+            Collection<Ref> tags = git.tagList().call();
             log.debug("found " + tags.size() + " tags");
 
             //Find the most recent tag from the reversed sorted list

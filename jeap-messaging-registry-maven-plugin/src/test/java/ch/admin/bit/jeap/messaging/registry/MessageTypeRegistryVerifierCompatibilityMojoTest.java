@@ -16,7 +16,10 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +29,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+@ExtendWith(SystemStubsExtension.class)
 class MessageTypeRegistryVerifierCompatibilityMojoTest extends AbstractMojoTestCase {
     private final static File RESOURCES_DIR = new File("src/test/resources/");
 
@@ -48,7 +52,17 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest extends AbstractMojoTestC
     }
 
     @Test
-    void compatibleChange(@TempDir File tmpDir) throws Exception {
+    void compatibleChange_WithoutGitTokenConfigured(@TempDir File tmpDir) throws Exception {
+        File testDir = new File(RESOURCES_DIR, "compatibleChange");
+        FileUtils.copyDirectory(testDir, tmpDir);
+        MessageTypeRegistryVerifierMojo mojo = (MessageTypeRegistryVerifierMojo) open(tmpDir);
+        mojo.setGitUrl(createEmptyTestRepo());
+        assertDoesNotThrow(mojo::execute);
+    }
+
+    @Test
+    void compatibleChange_WithGitTokenConfigured(@TempDir File tmpDir, EnvironmentVariables env) throws Exception {
+        env.set("MESSAGE_TYPE_REPO_GIT_TOKEN", "test-token-value");
         File testDir = new File(RESOURCES_DIR, "compatibleChange");
         FileUtils.copyDirectory(testDir, tmpDir);
         MessageTypeRegistryVerifierMojo mojo = (MessageTypeRegistryVerifierMojo) open(tmpDir);
