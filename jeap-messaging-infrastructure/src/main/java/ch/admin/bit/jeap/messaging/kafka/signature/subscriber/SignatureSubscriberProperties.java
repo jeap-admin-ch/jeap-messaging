@@ -15,8 +15,6 @@ import java.util.Set;
 @RefreshScope
 public class SignatureSubscriberProperties {
 
-    private static final Set<String> DEFAULT_PRIVILEGED_PRODUCER_COMMON_NAMES = Set.of("mirrormaker");
-
     private final boolean requireSignature;
     private final Set<String> acceptUnsignedMessagetypeWhitelist;
     private final Set<String> privilegedProducerCommonNames;
@@ -38,7 +36,7 @@ public class SignatureSubscriberProperties {
                                          Map<String, Map<String, List<String>>> certificateChains) {
         this.requireSignature = requireSignature;
         this.acceptUnsignedMessagetypeWhitelist = acceptUnsignedMessagetypeWhitelist == null ? Set.of() : acceptUnsignedMessagetypeWhitelist;
-        this.privilegedProducerCommonNames = privilegedProducerCommonNames == null ? DEFAULT_PRIVILEGED_PRODUCER_COMMON_NAMES : privilegedProducerCommonNames;
+        this.privilegedProducerCommonNames = privilegedProducerCommonNames == null ? Set.of() : privilegedProducerCommonNames;
         this.allowedPublishers = allowedPublishers == null ? Map.of() : allowedPublishers;
         this.certificateChains = certificateChains == null ? Map.of() : certificateChains;
     }
