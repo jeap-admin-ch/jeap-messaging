@@ -65,6 +65,7 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
         myMojo.setCurrentBranch("my-branch");
         myMojo.setCommitId("cafebabe");
         myMojo.setGitUrl("gitUrl");
+        myMojo.setFetchTags(false); // not a valid git url provided, so we cannot fetch tags
         myMojo.setGroupIdPrefix("ch.bit.admin.test");
 
         // act
@@ -118,6 +119,7 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
         myMojo.setCurrentBranch("my-branch");
         myMojo.setCommitId("cafebabe");
         myMojo.setGitUrl("gitUrl");
+        myMojo.setFetchTags(false); // not a valid git url provided, so we cannot fetch tags
         myMojo.setGroupIdPrefix("ch.bit.admin.test");
         myMojo.setPomTemplateFile(new File(testDirectory, "messagetype-template.pom.xml"));
 
@@ -157,6 +159,7 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
         myMojo.setCurrentBranch("master");
         myMojo.setCommitId("cafebabe");
         myMojo.setGitUrl("gitUrl");
+        myMojo.setFetchTags(false); // not a valid git url provided, so we cannot fetch tags
         myMojo.setGroupIdPrefix("ch.bit.admin.test");
 
         // act

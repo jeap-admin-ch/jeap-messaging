@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.messaging.avro.plugin.git;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -14,6 +14,9 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.TagOpt;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
@@ -30,13 +33,21 @@ public class GitClient {
     private final Log log;
     private final Repository repo;
     private final Git git;
+    private final String remoteUrl;
     private final String trunkBranchName;
     private final String sourceDirectory;
+    private final ProcessBuilderFactory processBuilderFactory;
 
-    public GitClient(String sourceDirectory, String trunkBranchName) throws MojoExecutionException {
+    public GitClient(String sourceDirectory, String remoteUrl, String trunkBranchName, Log log) throws MojoExecutionException {
+        this(sourceDirectory, remoteUrl, trunkBranchName, log, new ProcessBuilderFactory());
+    }
+
+    public GitClient(String sourceDirectory, String remoteUrl, String trunkBranchName, Log log, ProcessBuilderFactory processBuilderFactory) throws MojoExecutionException {
         this.sourceDirectory = sourceDirectory;
-        this.log = new SystemStreamLog();
+        this.log = log;
+        this.remoteUrl = remoteUrl;
         this.trunkBranchName = trunkBranchName;
+        this.processBuilderFactory = processBuilderFactory;
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try {
             this.repo = builder.setGitDir(new File(sourceDirectory + "/.git")).setMustExist(true).build();
@@ -54,13 +65,60 @@ public class GitClient {
         }
     }
 
+    public void gitFetchTags(String token) throws MojoExecutionException {
+        if (token != null) {
+            gitFetchTagsWithToken(token);
+        } else {
+            gitFetchTagsWithSystemGit();
+        }
+    }
+
+    private void gitFetchTagsWithToken(String token) throws MojoExecutionException {
+        log.info("Using JGit with a token to fetch tags from the remote repository.");
+        FetchCommand fetch = git.fetch()
+                .setRemote(remoteUrl)
+                .setRefSpecs(new RefSpec("+refs/tags/*:refs/tags/*"))
+                .setTagOpt(TagOpt.FETCH_TAGS)
+                .setForceUpdate(true)
+                .setCredentialsProvider(new UsernamePasswordCredentialsProvider("no-username-with-token", token));
+        try {
+            fetch.call();
+        }  catch (GitAPIException e) {
+            if (e.getMessage() != null && e.getMessage().contains("Nothing to fetch")) {
+                log.info("No new tags to fetch; repository is up-to-date.");
+            } else {
+                throw new MojoExecutionException("Cannot fetch tags: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    private void gitFetchTagsWithSystemGit() throws MojoExecutionException {
+        log.info("Using a system Git process to to fetch tags from the remote repository.");
+        try {
+            ProcessBuilder pb = processBuilderFactory.createProcessBuilder("git", "fetch", "--tags", "--force", remoteUrl);
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                String message = "The Git fetch process failed to fetch the tags from the remote repository. Exit code: " + exitCode;
+                throw new MojoExecutionException(message);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+                String message = "Interrupted while waiting for the Git fetch tags process to finish.";
+                throw new MojoExecutionException(message);
+        } catch (IOException e) {
+            String message = "Failed to fetch the tags from the remote repository using a Git process: " + e.getMessage();
+            throw new MojoExecutionException(message, e);
+        }
+    }
+
     protected GitDiffDto getDiffFromLastTag() throws MojoExecutionException {
-        log.debug("Retrieve Git Diff from last tag...");
+        log.info("Retrieve Git Diff from last tag...");
         return executeDiffBetweenCommits(retrieveLastCommitFromLastTag(), retrieveLastCommitFromCurrentBranch());
     }
 
     protected GitDiffDto getDiffFromTrunk() throws MojoExecutionException {
-        log.debug("Retrieve Git Diff from " + trunkBranchName + " branch...");
+        log.info("Retrieve Git Diff from " + trunkBranchName + " branch...");
         return executeDiffBetweenCommits(retrieveLastCommitFromTrunk(), retrieveLastCommitFromCurrentBranch());
     }
 
@@ -91,7 +149,7 @@ public class GitClient {
 
             //Find the most recent tag from the reversed sorted list
             final Ref lastTag = findMostRecentTag(tags);
-            log.debug("last tag: " + lastTag.getName());
+            log.info("last tag: " + lastTag.getName());
 
             // fetch all commits for this tag
             final LogCommand logFromTag = git.log();

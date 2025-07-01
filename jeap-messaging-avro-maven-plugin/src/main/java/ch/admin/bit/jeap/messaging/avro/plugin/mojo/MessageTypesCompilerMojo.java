@@ -92,6 +92,12 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
     @Parameter(name = "skip", defaultValue = "false", required = true)
     @Setter
     private boolean skip;
+    @Parameter(name = "fetchTags", defaultValue = "true")
+    @Setter
+    private boolean fetchTags;
+    @Setter
+    @Parameter(name= "messageTypeRepoGitTokenEnvVariableName", defaultValue = "MESSAGE_TYPE_REPO_GIT_TOKEN")
+    private String messageTypeRepoGitTokenEnvVariableName;
     @Getter(AccessLevel.PROTECTED)
     @Parameter(defaultValue = "false")
     @SuppressWarnings("unused")
@@ -119,7 +125,12 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
                 .enableDecimalLogicalType(enableDecimalLogicalType)
                 .build();
 
-        GitClient gitClient = new GitClient(this.project.getBasedir().getAbsolutePath(), this.trunkBranchName);
+        GitClient gitClient = new GitClient(this.project.getBasedir().getAbsolutePath(), this.gitUrl, this.trunkBranchName, getLog());
+
+        if (fetchTags) {
+            getLog().info("Fetching tags from remote Git repository.");
+            gitClient.gitFetchTags(getGitToken());
+        }
 
         if (generateAllMessageTypes) {
             compile(avroCompiler);
@@ -140,6 +151,17 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
         if (!overallResult.isValid()) {
             throw new MojoExecutionException("At least one avro schema is not a valid message. Check log for details");
         }
+    }
+
+    private String getGitToken() {
+        getLog().info("The message type repo git token env variable name configured is: " + messageTypeRepoGitTokenEnvVariableName);
+        String token = Optional.ofNullable(System.getenv(messageTypeRepoGitTokenEnvVariableName))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .orElse(null);
+        getLog().info("The env variable " + messageTypeRepoGitTokenEnvVariableName + " is " +
+                (token != null ? "set." : "not set."));
+        return token;
     }
 
     private String newTypes(Set<NewMessageTypeVersionDto> newMessageTypeVersionDtos) {

@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import uk.org.webcompere.systemstubs.rules.EnvironmentVariablesRule;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +22,9 @@ public class MessageTypesCompilerGitDiffMojoTest extends AbstractAvroMojoTest {
 
     @Rule
     public MojoRule mojoRule = new MojoRule();
+    
+    @Rule
+    public EnvironmentVariablesRule environmentVariables = new EnvironmentVariablesRule();
 
     private MessageTypesCompilerMojo myMojo;
 
@@ -122,6 +126,27 @@ public class MessageTypesCompilerGitDiffMojoTest extends AbstractAvroMojoTest {
         assertFileExists("target/generated-sources/activ/_common/src/main/java/ch/admin/bazg/activ/test/common/SystemCommon.java");
         assertFileExists("target/generated-sources/activ/ActivZoneEnteredEvent/1.0.0/src/main/java/ch/admin/bazg/activ/test/event/ActivZoneEnteredEvent.java");
         assertFileExists("target/generated-sources/activ/ActivZoneEnteredEvent/2.0.0/src/main/java/ch/admin/bazg/activ/test/event/v2/ActivZoneEnteredEvent.java");
+    }
+
+    @Test
+    public void execute_diff_withGitToken() throws Exception {
+        // Set the environment variable for the git token to make the plugin fetch tags using JGit and a token.
+        // All other tests use the system git to fetch the tags as they don't set the token.
+        environmentVariables.set("MESSAGE_TYPE_REPO_GIT_TOKEN", "test-token-value");
+        // set last tag on commit 2
+        testRepo.repo().tag()
+                .setObjectId(testRepo.commits().get(2))
+                .setName("v2.0.0")
+                .call();
+        // checkout commit 3, which adds a command
+        testRepo.checkoutCommit(3);
+
+        // act
+        myMojo.execute();
+
+        // assert activ not regenerated, command is generated
+        assertFileDoesNotExist("target/generated-sources/activ");
+        assertFileExists("target/generated-sources/autorisaziun/AutorisaziunCancelPermitConsumptionCommand/1.0.0/src/main/java/ch/admin/bazg/autorisaziun/common/api/domain/command/permit/AutorisaziunCancelPermitConsumptionCommand.java");
     }
 
     private void assertFileExists(String file) {

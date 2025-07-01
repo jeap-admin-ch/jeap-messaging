@@ -1,9 +1,16 @@
 package ch.admin.bit.jeap.messaging.avro.plugin.git;
 
+import ch.admin.bit.jeap.messaging.avro.pluginIntegration.repo.TestRegistryRepo;
+import lombok.SneakyThrows;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.assertj.core.api.Assertions;
 import org.eclipse.jgit.lib.Ref;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,6 +18,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class GitClientTest {
+
+    private TestRegistryRepo testRepo;
+
+    @BeforeEach
+    @SneakyThrows
+    void setUp() {
+        testRepo = TestRegistryRepo.testRepoWithThreeCommitsAddingMessageTypeV1AndV2AndCommand();
+    }
+
+    @AfterEach
+    @SneakyThrows
+    void tearDown() {
+        testRepo.delete();
+    }
 
     @Test
     void findMostRecentTag_semantic() throws MojoExecutionException {
@@ -87,6 +108,63 @@ class GitClientTest {
                         createMockRef("1.0-alpha")),
                 "2.0.0-20240208133822");
     }
+
+    @Test
+    @SneakyThrows
+    void fetchTags_WhenUsingSystemAndGitProcessThrowsIOException_thenThrowsMojoExecutionException() {
+        final String remoteUrl = "some-remote-url";
+        ProcessBuilderFactory processBuilderFactory = mock(ProcessBuilderFactory.class);
+        ProcessBuilder processBuilder = mock(ProcessBuilder.class);
+        when(processBuilderFactory.createProcessBuilder("git", "fetch", "--tags", "--force", remoteUrl)).thenReturn(processBuilder);
+        when(processBuilder.start()).thenThrow(new IOException());
+        GitClient gitClient = new GitClient(testRepo.repoDir().toString(), remoteUrl, "some-trunk-branch-name", new SystemStreamLog(), processBuilderFactory);
+
+        Assertions.assertThatThrownBy(
+                        () -> gitClient.gitFetchTags(null) // no token -> system git is used
+                )
+                .isInstanceOf(MojoExecutionException.class)
+                .hasMessageStartingWith("Failed to fetch the tags from the remote repository using a Git process");
+    }
+
+    @Test
+    @SneakyThrows
+    void fetchTags_WhenUsingSystemAndGitProcessIsInterrupted_thenThrowsMojoExecutionException() {
+        final String remoteUrl = "some-remote-url";
+        ProcessBuilderFactory processBuilderFactory = mock(ProcessBuilderFactory.class);
+        ProcessBuilder processBuilder = mock(ProcessBuilder.class);
+        when(processBuilderFactory.createProcessBuilder("git", "fetch", "--tags", "--force", remoteUrl)).thenReturn(processBuilder);
+        Process process = mock(Process.class);
+        when(processBuilder.start()).thenReturn(process);
+        when(process.waitFor()).thenThrow(new InterruptedException());
+        GitClient gitClient = new GitClient(testRepo.repoDir().toString(), remoteUrl, "some-trunk-branch-name", new SystemStreamLog(), processBuilderFactory);
+
+        Assertions.assertThatThrownBy(
+                        () -> gitClient.gitFetchTags(null) // no token -> system git is used
+                )
+                .isInstanceOf(MojoExecutionException.class)
+                .hasMessageStartingWith("Interrupted while waiting for the Git fetch tags process to finish");
+    }
+
+    @Test
+    @SneakyThrows
+    void fetchTags_WhenUsingSystemAndGitAndProcessReturnsNonZero_thenThrowsMojoExecutionException() {
+        final String remoteUrl = "some-remote-url";
+        ProcessBuilderFactory processBuilderFactory = mock(ProcessBuilderFactory.class);
+        ProcessBuilder processBuilder = mock(ProcessBuilder.class);
+        when(processBuilderFactory.createProcessBuilder("git", "fetch", "--tags", "--force", remoteUrl)).thenReturn(processBuilder);
+        Process process = mock(Process.class);
+        when(processBuilder.start()).thenReturn(process);
+        when(process.waitFor()).thenReturn(42);
+        GitClient gitClient = new GitClient(testRepo.repoDir().toString(), remoteUrl, "some-trunk-branch-name", new SystemStreamLog(), processBuilderFactory);
+
+        Assertions.assertThatThrownBy(
+                        () -> gitClient.gitFetchTags(null) // no token -> system git is used
+                )
+                .isInstanceOf(MojoExecutionException.class)
+                .hasMessageStartingWith("The Git fetch process failed to fetch the tags from the remote repository");
+    }
+
+    private
 
     void doFindMostRecentTag(List<Ref> tags, String expectedResult) throws MojoExecutionException {
         Ref mostRecentTag = GitClient.findMostRecentTag(tags);
