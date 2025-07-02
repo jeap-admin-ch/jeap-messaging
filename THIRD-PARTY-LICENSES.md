@@ -474,6 +474,7 @@ MIT License
  * SLF4J API Module - [org.slf4j:slf4j-api](http://www.slf4j.org)
  * SLF4J Simple Provider - [org.slf4j:slf4j-simple](http://www.slf4j.org)
  * System Stubs Core - [uk.org.webcompere:system-stubs-core](https://github.com/webcompere/system-stubs/system-stubs-core/)
+ * System Stubs JUnit4 - [uk.org.webcompere:system-stubs-junit4](https://github.com/webcompere/system-stubs/system-stubs-junit4/)
  * System Stubs Jupiter - [uk.org.webcompere:system-stubs-jupiter](https://github.com/webcompere/system-stubs/system-stubs-jupiter/)
 
 MPL 1.1
