@@ -62,16 +62,16 @@
     </modules>
 
     <properties>
-        <avro-serializer.version>7.9.0</avro-serializer.version>
+        <avro-serializer.version>7.9.2</avro-serializer.version>
         <avro.version>1.12.0</avro.version>
         <jeap-crypto.version>3.24.0</jeap-crypto.version>
-        <maven.api.version>3.9.9</maven.api.version>
+        <maven.api.version>3.9.10</maven.api.version>
         <maven.plugin.version>3.15.1</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <aws-msk-iam-auth.version>2.3.2</aws-msk-iam-auth.version>
-        <schema-registry-serde.version>1.1.23</schema-registry-serde.version>
-        <protobuf-java.version>4.30.2</protobuf-java.version>
-        <org.eclipse.jgit.version>7.2.0.202503040940-r</org.eclipse.jgit.version>
+        <schema-registry-serde.version>1.1.24</schema-registry-serde.version>
+        <protobuf-java.version>4.31.1</protobuf-java.version>
+        <org.eclipse.jgit.version>7.3.0.202506031305-r</org.eclipse.jgit.version>
         <file-management.version>3.2.0</file-management.version>
         <maven-invoker.version>3.3.0</maven-invoker.version>
         <maven-plugin-testing-harness.version>3.3.0</maven-plugin-testing-harness.version>
@@ -194,15 +194,15 @@
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
             </dependency>
-            <!-- This is needed because commons-io 2.11.0  (CVE-2024-47554) is coming with spring-kafka-test 3.3.6 -->
-            <!-- might be fixed with https://jira.bit.admin.ch/browse/JEAP-5650 -->
+            <!-- This is needed because commons-io 2.11.0  (CVE-2024-47554) is coming with spring-kafka-test 3.3.7 -->
+            <!-- this is tracked by the jEAP team -->
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
             </dependency>
-            <!-- This is needed because commons-beanutils 1.9.4 (CVE-2025-48734) is coming with spring-kafka-test 3.3.6 -->
-            <!-- might be fixed with https://jira.bit.admin.ch/browse/JEAP-5650 -->
+            <!-- This is needed because commons-beanutils 1.9.4 (CVE-2025-48734) is coming with spring-kafka-test 3.3.7 -->
+            <!-- this is tracked by the jEAP team -->
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
