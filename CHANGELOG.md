@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.51.2] - 2025-07-09
+### Changed
+- update jeap-crypto from 3.24.1 to 3.24.2
+- update jeap-spring-boot-vault-starter from 17.39.1 to 17.39.2
+- ServletRequestSecurityTracer now properly handles non-REST requests (e.g., SOAP) by falling back to the request URI when the REST HandlerMapping pattern is not available.
+
+
 ## [8.51.1] - 2025-07-07
 ### Changed
 - update jeap-crypto from 3.24.0 to 3.24.1
