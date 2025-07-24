@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-messaging</artifactId>
-        <version>8.51.3-SNAPSHOT</version>
+        <version>8.52.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-messaging-aws-msk-iam-auth</artifactId>
@@ -61,6 +61,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jeap-messaging-infrastructure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.admin.bit.jeap</groupId>
+            <artifactId>jeap-spring-boot-roles-anywhere-starter</artifactId>
         </dependency>
 
         <dependency>

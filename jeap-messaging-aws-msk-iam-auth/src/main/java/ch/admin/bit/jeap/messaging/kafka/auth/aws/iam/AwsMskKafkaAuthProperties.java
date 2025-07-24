@@ -26,6 +26,9 @@ public class AwsMskKafkaAuthProperties implements KafkaAuthProperties {
     @Value("${spring.application.name}")
     private String sessionName;
 
+    @Value("${jeap.aws.rolesanywhere.enabled:false}")
+    private boolean rolesAnywhereEnabled;
+
     public AwsMskKafkaAuthProperties(KafkaProperties kafkaProperties) {
         this.kafkaProperties = kafkaProperties;
     }
@@ -46,7 +49,12 @@ public class AwsMskKafkaAuthProperties implements KafkaAuthProperties {
 
         props.put(SaslConfigs.SASL_MECHANISM, AWS_MSK_IAM);
         props.put(SaslConfigs.SASL_JAAS_CONFIG, createSaslJaasConfig(mskAuthProperties));
-        props.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, IAMClientCallbackHandler.class.getName());
+
+        if (rolesAnywhereEnabled) {
+            props.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, IAMRolesAnywhereCallbackHandler.class.getName());
+        } else {
+            props.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, IAMClientCallbackHandler.class.getName());
+        }
 
         return props;
     }
