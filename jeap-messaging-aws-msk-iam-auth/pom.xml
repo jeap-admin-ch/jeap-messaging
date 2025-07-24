@@ -65,6 +65,7 @@
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>
             <artifactId>jeap-spring-boot-roles-anywhere-starter</artifactId>
+            <version>${jeap-spring-boot-roles-anywhere-starter.version}</version>
         </dependency>
 
         <dependency>
