@@ -46,10 +46,7 @@ public class IAMRolesAnywhereCallbackHandler implements AuthenticateCallbackHand
     @Override
     public void handle(@NonNull Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (Callback callback : callbacks) {
-            if (log.isDebugEnabled()) {
-                log.debug("Type information for callback: " + debugClassString(callback.getClass()) + " from "
-                        + debugClassString(this.getClass()));
-            }
+            log.debug("Type information for callback: {} from {}", debugClassString(callback.getClass()), debugClassString(this.getClass()));
             if (callback instanceof AWSCredentialsCallback) {
                 handleCallback((AWSCredentialsCallback) callback);
             } else {
@@ -69,9 +66,7 @@ public class IAMRolesAnywhereCallbackHandler implements AuthenticateCallbackHand
     }
 
     protected void handleCallback(AWSCredentialsCallback callback) throws IOException {
-        if (log.isDebugEnabled()) {
-            log.debug("Selecting provider {} to load credentials", provider.getClass().getName());
-        }
+        log.debug("Selecting provider {} to load credentials", provider.getClass().getName());
         try {
             callback.setAwsCredentials(provider.resolveCredentials());
         } catch (Exception e) {

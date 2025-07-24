@@ -67,4 +67,23 @@ class IAMRolesAnywhereCallbackHandlerTest {
         assertThrows(UnsupportedCallbackException.class, () ->
                 handler.handle(new javax.security.auth.callback.Callback[]{unsupportedCallback}));
     }
+
+    @Test
+    void testHandleWithMixedCallbacksThrowsOnUnsupported() {
+        AwsCredentials mockCredentials = mock(AwsCredentials.class);
+        when(mockProvider.resolveCredentials()).thenReturn(mockCredentials);
+
+        try (MockedStatic<IAMRolesAnywhereCredentialsProviderHolder> mockedStatic = mockStatic(IAMRolesAnywhereCredentialsProviderHolder.class)) {
+            mockedStatic.when(IAMRolesAnywhereCredentialsProviderHolder::getProvider).thenReturn(mockProvider);
+            handler.configure(Map.of(), "AWS_MSK_IAM", Collections.emptyList());
+
+            AWSCredentialsCallback supported = new AWSCredentialsCallback();
+            javax.security.auth.callback.Callback unsupported = mock(javax.security.auth.callback.Callback.class);
+
+            UnsupportedCallbackException exception = assertThrows(UnsupportedCallbackException.class, () ->
+                    handler.handle(new javax.security.auth.callback.Callback[]{supported, unsupported}));
+
+            assertNotNull(exception);
+        }
+    }
 }
