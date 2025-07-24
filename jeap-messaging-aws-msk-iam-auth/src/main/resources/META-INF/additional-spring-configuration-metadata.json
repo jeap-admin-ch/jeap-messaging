@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "jeap.aws.rolesanywhere.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Enables IAM Roles Anywhere support for AWS MSK IAM authentication."
+    }
+  ]
+}
