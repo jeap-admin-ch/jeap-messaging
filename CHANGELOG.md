@@ -15,6 +15,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - update jeap-crypto from 3.24.3 to 3.25.0
 - updated wiremock from 3.12.1 to 3.13.1
 - update commons-compress from 1.27.1 to 1.28.0
+  
+- update jeap-spring-boot-roles-anywhere-starter from 1.0.0 to 1.1.1
 
 ## [8.52.0] - 2025-07-24
 ### Added
