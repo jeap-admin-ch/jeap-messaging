@@ -1,0 +1,32 @@
+publiccodeYmlVersion: 0.4.0
+name: jeap-messaging
+applicationSuite: jEAP
+softwareVersion: 8.53.0
+releaseDate: 2025-08-08
+url: "https://github.com/jeap-admin-ch/jeap-messaging.git"
+landingURL: "https://github.com/jeap-admin-ch/jeap"
+platforms:
+  - web
+categories:
+  - application-development
+developmentStatus: stable
+softwareType: library
+description:
+  en:
+    localisedName: jeap-messaging
+    shortDescription: TODO (Max. 150 characters)
+    longDescription: >
+      TODO (Min. 150 characters)
+    features:
+      - TODO
+legal:
+  license: Apache-2.0
+maintenance:
+  type: internal
+  contacts:
+    - name: Federal Office of Information Technology, Systems and Telecommunication FOITT
+      email: jeap-community@bit.admin.ch
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
