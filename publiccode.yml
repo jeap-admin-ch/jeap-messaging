@@ -14,11 +14,28 @@ softwareType: library
 description:
   en:
     localisedName: jeap-messaging
-    shortDescription: TODO (Max. 150 characters)
+    shortDescription: jEAP Messaging is a library to handle messaging using kafka with well-defined message types.
     longDescription: >
-      TODO (Min. 150 characters)
+      jEAP Messaging is a Spring Kafka–based library that standardizes messaging between
+      microservices using well-defined, strongly typed message formats. Message types are
+      specified via Avro schemas and descriptors, ensuring schema consistency and
+      interoperability across services. The library provides Avro serialization to Kafka
+      records, pre-configured producer and consumer beans, and Java annotations to declare
+      message type usage on topics. It integrates seamlessly with the jEAP error handling
+      service to handle failed messages, guaranteeing no message is lost.
+      Designed for both events and commands, jEAP Messaging enforces clear contracts,
+      supports robust error recovery, and accelerates development of reliable,
+      maintainable event-driven systems.
     features:
-      - TODO
+      - A structured definition of message types using Avro Schema and message type descriptors
+      - Avro serialization of message types to kafka records
+      - Pre-configured Spring Kafka beans for producers and consumers
+      - Declaration of consumed/produced message types on topics using Java annotations
+      - Idempotent receiver pattern using a simple Java annotation
+      - Maven plugins for managing a Message Type Registry repository
+      - Support both SASL-SCRAM and AWS IAM authentication for Kafka
+      - Support for Confluent and AWS Glue Schema Registries
+      - Error handling for messages that fail during processing (integration with a jeap-error-handling service)
 legal:
   license: Apache-2.0
 maintenance:
