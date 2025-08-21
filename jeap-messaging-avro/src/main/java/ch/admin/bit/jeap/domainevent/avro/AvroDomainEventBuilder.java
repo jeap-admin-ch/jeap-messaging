@@ -80,6 +80,7 @@ public abstract class AvroDomainEventBuilder<BuilderType extends AvroDomainEvent
         AvroDomainEventType type = new AvroDomainEventType();
         type.setName(name);
         type.setVersion(version);
+        type.setVariant(variant);
         return type;
     }
 }

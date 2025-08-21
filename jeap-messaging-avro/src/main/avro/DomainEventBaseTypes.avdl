@@ -9,6 +9,7 @@ protocol DomainEventBaseProtocol {
   record AvroDomainEventType {
     string name;
     string version;
+    string? variant = null;
   }
 
   record AvroDomainEventIdentity {

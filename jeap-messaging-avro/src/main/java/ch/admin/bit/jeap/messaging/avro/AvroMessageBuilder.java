@@ -16,6 +16,7 @@ public abstract class AvroMessageBuilder<BuilderType extends AvroMessageBuilder,
     private MessagePayload payload;
     private MessageReferences references;
     private String processId;
+    protected String variant;
 
     protected abstract String getServiceName();
 
@@ -51,6 +52,14 @@ public abstract class AvroMessageBuilder<BuilderType extends AvroMessageBuilder,
             throw AvroMessageBuilderException.propertyValue("identity.idempotenceId", idempotenceId);
         }
         this.idempotenceId = idempotenceId;
+        return self();
+    }
+
+    public BuilderType variant(String variant) {
+        if (isBlank(variant)) {
+            throw AvroMessageBuilderException.propertyValue("type.variant", variant);
+        }
+        this.variant = variant;
         return self();
     }
 

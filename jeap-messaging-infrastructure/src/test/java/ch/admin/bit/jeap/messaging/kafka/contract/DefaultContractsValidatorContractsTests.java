@@ -72,6 +72,24 @@ class DefaultContractsValidatorContractsTests {
     }
 
     @Test
+    void test_whenConsumerContractPresentDifferentVariants_thenNoException() {
+        MessageType messageType = AvroDomainEventType.newBuilder()
+                .setName(TEST_APP_CONSUMED_TYPE)
+                .setVersion(TEST_APP_CONSUMED_TYPE_VERSION_1)
+                .build();
+        MessageType messageTypeWithVariant = AvroDomainEventType.newBuilder()
+                .setName(TEST_APP_CONSUMED_TYPE)
+                .setVersion(TEST_APP_CONSUMED_TYPE_VERSION_1)
+                .setVariant("variant1")
+                .build();
+
+        assertThatCode(() -> contractsValidator.ensureConsumerContract(messageType, TEST_APP_CONSUMED_TYPE_VERSION_1_TOPIC))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> contractsValidator.ensureConsumerContract(messageTypeWithVariant, TEST_APP_CONSUMED_TYPE_VERSION_1_TOPIC))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     void test_whenPublisherContractWrongTopic_thenThrowsException() {
         MessageType messageType = AvroDomainEventType.newBuilder()
                 .setName(TEST_APP_PRODUCED_TYPE)

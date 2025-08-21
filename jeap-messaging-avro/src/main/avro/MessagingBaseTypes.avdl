@@ -9,6 +9,7 @@ protocol MessagingBaseProtocol {
   record AvroMessageType {
     string name;
     string version;
+    string? variant = null;
   }
 
   record AvroMessageIdentity {

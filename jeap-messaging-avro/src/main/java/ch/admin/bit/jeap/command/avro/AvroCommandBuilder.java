@@ -77,6 +77,7 @@ public abstract class AvroCommandBuilder<BuilderType extends AvroCommandBuilder,
         AvroMessageType type = new AvroMessageType();
         type.setName(name);
         type.setVersion(version);
+        type.setVariant(variant);
         return type;
     }
 

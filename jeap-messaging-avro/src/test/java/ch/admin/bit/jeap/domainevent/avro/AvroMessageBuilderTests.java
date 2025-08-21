@@ -104,6 +104,14 @@ class AvroMessageBuilderTests {
     }
 
     @Test
+    void eventTypeWithVariant() {
+        DomainEvent target = SimpleBuilderWithVariant.create().idempotenceId("idempotenceId").variant("variant1").build();
+        assertNotNull(target.getType());
+        assertEquals("SimpleEventWithVariant", target.getType().getName());
+        assertEquals("variant1", target.getType().getVariant());
+    }
+
+    @Test
     void commandTypeWithGeneratedVersion() {
         AvroMessage target = SimpleCommandBuilderWithGeneratedVersion.create().idempotenceId("idempotenceId").build();
         assertNotNull(target.getType());
@@ -219,6 +227,43 @@ class AvroMessageBuilderTests {
 
         @Override
         public SimpleCommandWithGeneratedVersion build() {
+            setReferences(mock(MessageReferences.class));
+            return super.build();
+        }
+    }
+
+    @Data
+    private static class SimpleEventWithVariant implements AvroDomainEvent {
+        private Schema schema = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"SimpleEventWithVariant\",\"namespace\":\"ch.admin.bit.jeap.domainevent.avro.event.protocol\",\"fields\":[]}");
+        private String domainEventVersion;
+        private AvroDomainEventIdentity identity;
+        private AvroDomainEventPublisher publisher;
+        private AvroDomainEventType type;
+        private MessageReferences references;
+        private byte[] serializedMessage;
+    }
+
+    @Getter
+    private static class SimpleBuilderWithVariant extends AvroDomainEventBuilder<SimpleBuilderWithVariant, SimpleEventWithVariant> {
+        private final String systemName = "DomainEventTest";
+        private final String serviceName = "IdlTest";
+        private final String specifiedMessageTypeVersion = "1.0.0";
+
+        private SimpleBuilderWithVariant() {
+            super(SimpleEventWithVariant::new);
+        }
+
+        static SimpleBuilderWithVariant create() {
+            return new SimpleBuilderWithVariant();
+        }
+
+        @Override
+        protected SimpleBuilderWithVariant self() {
+            return this;
+        }
+
+        @Override
+        public SimpleEventWithVariant build() {
             setReferences(mock(MessageReferences.class));
             return super.build();
         }

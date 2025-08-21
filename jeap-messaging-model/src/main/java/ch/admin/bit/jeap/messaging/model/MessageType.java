@@ -4,4 +4,6 @@ public interface MessageType {
     String getName();
 
     String getVersion();
+
+    String getVariant();
 }

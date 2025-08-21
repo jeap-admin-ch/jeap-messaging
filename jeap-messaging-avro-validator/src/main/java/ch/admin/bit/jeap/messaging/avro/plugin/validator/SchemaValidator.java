@@ -42,6 +42,7 @@ public class SchemaValidator {
     private static final RecordValidator TYPE_VALIDATOR = RecordValidator.create()
             .required("name").type("string").end()
             .required("version").type("string").end()
+            .optional("variant").type("string").end()
             .noOtherFields();
 
     private static final RecordValidator EVENT_IDENTITY_VALIDATOR = RecordValidator.create()

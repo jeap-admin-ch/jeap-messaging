@@ -51,6 +51,7 @@ class IdlCommandTest {
         assertNotNull(target.getType());
         assertEquals("IdlTestCommand", target.getType().getName());
         assertEquals("1.0.0", target.getType().getVersion());
+        assertNull(target.getType().getVariant());
         assertTrue(target.getOptionalPayload().isPresent());
         assertNotNull(target.getReferences());
         assertEquals("referenceId", target.getReferences().getCustomReference().getReferenceId());
@@ -69,9 +70,37 @@ class IdlCommandTest {
     }
 
     @Test
+    void builderWithoutVariant() {
+        IdlTestCommand target = IdlCommandBuilder.create()
+                .idempotenceId("ID-123")
+                .build();
+        assertNull(target.getType().getVariant());
+    }
+
+    @Test
+    void builderWithVariant() {
+        IdlTestCommand target = IdlCommandBuilder.create()
+                .idempotenceId("ID-123")
+                .variant("variant1")
+                .build();
+        assertEquals("variant1", target.getType().getVariant());
+    }
+
+    @Test
     void serializationTest() throws Exception {
         IdlTestCommand target = IdlCommandBuilder.create()
                 .idempotenceId("idempotenceId")
+                .build();
+        byte[] serialized = AvroSerializationHelper.serialize(target);
+        IdlTestCommand result = AvroSerializationHelper.deserialize(serialized, IdlTestCommand.class);
+        assertEquals(target, result);
+    }
+
+    @Test
+    void serializationWithVariantTest() throws Exception {
+        IdlTestCommand target = IdlCommandBuilder.create()
+                .idempotenceId("idempotenceId")
+                .variant("variant1")
                 .build();
         byte[] serialized = AvroSerializationHelper.serialize(target);
         IdlTestCommand result = AvroSerializationHelper.deserialize(serialized, IdlTestCommand.class);

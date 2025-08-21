@@ -66,6 +66,11 @@ public class TestEvent implements AvroMessage {
             public String getVersion() {
                 return "1.0.0";
             }
+
+            @Override
+            public String getVariant() {
+                return null;
+            }
         };
     }
 
