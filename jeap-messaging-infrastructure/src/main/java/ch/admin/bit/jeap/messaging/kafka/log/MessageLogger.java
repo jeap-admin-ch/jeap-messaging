@@ -24,6 +24,10 @@ class MessageLogger implements StructuredArgument {
     @Override
     public void writeTo(JsonGenerator generator) throws IOException {
         generator.writeStringField("messageType", message.getType().getName());
+        if (message.getType().getVariant() != null) {
+            generator.writeStringField("messageVariant", message.getType().getVariant());
+        }
+        generator.writeStringField("messageType", message.getType().getName());
         generator.writeStringField("messageVersion", message.getType().getVersion());
         generator.writeStringField("messageId", message.getIdentity().getId());
         generator.writeStringField("messageIdempotenceId", message.getIdentity().getIdempotenceId());
