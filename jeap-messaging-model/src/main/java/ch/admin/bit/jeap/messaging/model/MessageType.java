@@ -5,5 +5,7 @@ public interface MessageType {
 
     String getVersion();
 
-    String getVariant();
+    default String getVariant() {
+        return null;
+    }
 }

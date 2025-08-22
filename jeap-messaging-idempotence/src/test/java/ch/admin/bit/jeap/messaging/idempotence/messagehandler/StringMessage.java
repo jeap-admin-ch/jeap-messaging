@@ -89,11 +89,6 @@ public class StringMessage implements Message {
         public String getVersion() {
             return "1.0.0";
         }
-
-        @Override
-        public String getVariant() {
-            return null;
-        }
     }
 
     private class StringMessagePayload implements MessagePayload {

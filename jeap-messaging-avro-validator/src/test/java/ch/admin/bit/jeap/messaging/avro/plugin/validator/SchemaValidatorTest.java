@@ -43,6 +43,17 @@ class SchemaValidatorTest {
     }
 
     @Test
+    void okWithVariant() throws IOException {
+        InputStream in = this.getClass().getClassLoader()
+                .getResourceAsStream("unittest/validEventWithVariant.avsc");
+        Schema schema = new Schema.Parser().parse(in);
+
+        ValidationResult result = SchemaValidator.validate(RecordCollection.of(schema));
+
+        Assertions.assertEquals(ValidationResult.ok(), result);
+    }
+
+    @Test
     void invalidIdentity() throws IOException {
         InputStream in = this.getClass().getClassLoader()
                 .getResourceAsStream("unittest/invalidIdentity.avsc");

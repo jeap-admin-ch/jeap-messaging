@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Added a new optional field 'variant' to interface MessageType
+- Updated Domain Event and Command version to 1.3.0 to include the new 'variant' field
 
 ## [8.54.0] - 2025-08-14
 

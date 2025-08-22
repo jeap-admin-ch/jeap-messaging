@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 @SuppressWarnings({"java:S1133", "java:S5738"}) // Deprecation
 public abstract class AvroCommandBuilder<BuilderType extends AvroCommandBuilder, CommandType extends AvroCommand> extends AvroMessageBuilder<BuilderType, CommandType> {
 
-    private final static String COMMAND_VERSION = "1.2.0";
+    private final static String COMMAND_VERSION = "1.3.0";
     private AvroMessageUser user;
 
     protected AvroCommandBuilder(Supplier<CommandType> constructor) {

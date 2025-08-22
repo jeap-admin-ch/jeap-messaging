@@ -32,7 +32,7 @@ class AvroMessageBuilderTests {
     @Test
     void domainEventVersion() {
         DomainEvent target = SimpleBuilder.create().idempotenceId("idempotenceId").build();
-        assertEquals("1.2.0", target.getDomainEventVersion());
+        assertEquals("1.3.0", target.getDomainEventVersion());
     }
 
     @Test

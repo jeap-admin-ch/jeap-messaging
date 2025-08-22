@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 @SuppressWarnings({"java:S1133", "java:S5738"}) // Deprecation
 public abstract class AvroDomainEventBuilder<BuilderType extends AvroDomainEventBuilder, EventType extends AvroDomainEvent> extends AvroMessageBuilder<BuilderType, EventType> {
 
-    private final static String DOMAIN_EVENT_VERSION = "1.2.0";
+    private final static String DOMAIN_EVENT_VERSION = "1.3.0";
     private AvroDomainEventUser user;
 
     protected AvroDomainEventBuilder(Supplier<EventType> constructor) {
