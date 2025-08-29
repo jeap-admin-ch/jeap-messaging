@@ -32,7 +32,7 @@ Apache License Version 2.0
  * jme-backward-schema-evolution-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * jme-create-declaration-command - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-create-declaration-command](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * jme-declaration-created-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-declaration-created-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
- * jme-messaging-common - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
+ * ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-messaging-common](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * jme-simple-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * jme-simple-test-v2-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-v2-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * AWS SDK for Java - Core - [com.amazonaws:aws-java-sdk-core](https://aws.amazon.com/sdkforjava)
