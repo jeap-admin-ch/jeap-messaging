@@ -34,8 +34,6 @@ public class CertificateAndSignatureVerifier {
 
     /**
      * Checks the authenticity of the given bytes with the given signature and certificate serial number.
-     *
-     * @param serviceName the name of the service to check against the common name in the certificate, might be null
      */
     private boolean doVerify(byte[] bytesToValidate, byte[] signature, SignatureCertificateWithChainValidity cert) {
         certificateValidator.validate(cert);

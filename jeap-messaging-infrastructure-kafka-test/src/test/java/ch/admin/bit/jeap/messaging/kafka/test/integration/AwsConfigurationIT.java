@@ -46,7 +46,7 @@ class AwsConfigurationIT {
                 .isInstanceOf(AwsMskKafkaAuthProperties.class);
         assertThat(kafkaAvroSerdeProvider.getValueSerializer())
                 .isInstanceOf(JeapGlueAvroSerializer.class);
-        assertThat(kafkaAvroSerdeProvider.getGenericDataRecordDeserializer())
+        assertThat(kafkaAvroSerdeProvider.getGenericDataRecordDeserializerWithoutSignatureCheck())
                 .isInstanceOf(JeapGlueAvroDeserializer.class);
     }
 }

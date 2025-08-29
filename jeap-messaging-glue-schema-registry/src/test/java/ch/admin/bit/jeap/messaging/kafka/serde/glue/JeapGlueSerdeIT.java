@@ -34,7 +34,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
 
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
-        Deserializer<GenericData.Record> deserializer = kafkaAvroSerdeProvider.getGenericDataRecordDeserializer();
+        Deserializer<GenericData.Record> deserializer = kafkaAvroSerdeProvider.getGenericDataRecordDeserializerWithoutSignatureCheck();
 
         AvroMessage testEvent = createTestEvent();
         byte[] serializedRecord = serializer.serialize("test-topic2", testEvent);

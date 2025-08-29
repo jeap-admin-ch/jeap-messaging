@@ -50,8 +50,7 @@ class ConfluentSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanReg
         KafkaAvroSerializer keySerializer = new CustomKafkaAvroSerializer(registryClient, null, signatureService);
         keySerializer.configure(serdeProperties.avroSerializerProperties(clusterName), true);
 
-        Deserializer<GenericData.Record> genericDataRecordDeserializer =
-                createGenericRecordDataDeserializer(clusterName, registryClient, serdeProperties, signatureAuthenticityService);
+        Deserializer<GenericData.Record> genericDataRecordDeserializer = createGenericRecordDataDeserializer(clusterName, registryClient, serdeProperties);
 
         return new KafkaAvroSerdeProvider(valueSerializer, keySerializer, genericDataRecordDeserializer, serdeProperties);
     }
@@ -64,9 +63,8 @@ class ConfluentSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanReg
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static Deserializer<GenericData.Record> createGenericRecordDataDeserializer(String clusterName,
                                                                                         SchemaRegistryClient registryClient,
-                                                                                        KafkaConfluentAvroSerdeProperties serdeProperties,
-                                                                                        SignatureAuthenticityService signatureAuthenticityService) {
-        Deserializer genericRecordValueDeserializer = new CustomKafkaAvroDeserializer(registryClient, null, signatureAuthenticityService);
+                                                                                        KafkaConfluentAvroSerdeProperties serdeProperties) {
+        Deserializer genericRecordValueDeserializer = new CustomKafkaAvroDeserializer(registryClient, null, null);
         Map<String, Object> props = new HashMap<>(serdeProperties.avroDeserializerProperties(clusterName));
         // Deserializing to GenericData.Record instead of SpecificRecordBase
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, false);

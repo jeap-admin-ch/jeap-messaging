@@ -63,7 +63,7 @@ public class GlueSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanR
         Serializer<Object> keySerializer = new JeapGlueAvroSerializer(glueCredentialsProvider, cryptoConfig, signatureService);
         keySerializer.configure(serdeProperties.avroSerializerProperties(clusterName), IS_KEY);
 
-        Deserializer<GenericData.Record> genericRecordDataDeserializer = createGenericRecordDataDeserializer(clusterName, glueCredentialsProvider, serdeProperties, signatureAuthenticityService);
+        Deserializer<GenericData.Record> genericRecordDataDeserializer = createGenericRecordDataDeserializer(clusterName, glueCredentialsProvider, serdeProperties);
 
         return new KafkaAvroSerdeProvider(valueSerializer, keySerializer, genericRecordDataDeserializer, serdeProperties);
     }
@@ -84,9 +84,8 @@ public class GlueSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanR
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static Deserializer<GenericData.Record> createGenericRecordDataDeserializer(String clusterName,
                                                                                         AwsCredentialsProvider glueCredentialsProvider,
-                                                                                        GlueKafkaAvroSerdeProperties serdeProperties,
-                                                                                        SignatureAuthenticityService signatureAuthenticityService) {
-        Deserializer genericDataRecordDeserializer = new JeapGlueAvroDeserializer(glueCredentialsProvider, signatureAuthenticityService);
+                                                                                        GlueKafkaAvroSerdeProperties serdeProperties) {
+        Deserializer genericDataRecordDeserializer = new JeapGlueAvroDeserializer(glueCredentialsProvider, null);
         Map<String, Object> props = new HashMap<>(serdeProperties.avroDeserializerProperties(clusterName));
         props.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
         genericDataRecordDeserializer.configure(props, IS_VALUE);

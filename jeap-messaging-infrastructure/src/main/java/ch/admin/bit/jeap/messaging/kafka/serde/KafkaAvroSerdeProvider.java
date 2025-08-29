@@ -20,6 +20,6 @@ public class KafkaAvroSerdeProvider {
      * have the java bindings on the classpath, such as the jEAP Error Handling Service. The deserializer provided
      * here does not support any jEAP-specific features such as error handling or decryption.
      */
-    Deserializer<GenericData.Record> genericDataRecordDeserializer;
+    Deserializer<GenericData.Record> genericDataRecordDeserializerWithoutSignatureCheck;
     KafkaAvroSerdeProperties serdeProperties;
 }

@@ -27,7 +27,7 @@ public class ConfluentSerdeIT extends AbstractConfluentSerdeTestBase {
     @Test
     void testSerdeRoundtripWithGenericDeserializer() {
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
-        Deserializer<GenericData.Record> deserializer = kafkaAvroSerdeProvider.getGenericDataRecordDeserializer();
+        Deserializer<GenericData.Record> deserializer = kafkaAvroSerdeProvider.getGenericDataRecordDeserializerWithoutSignatureCheck();
         Payment payment = new Payment("id-123", "vor", "nach", 303.808d);
 
         byte[] serializedRecord = serializer.serialize("test-topic", payment);

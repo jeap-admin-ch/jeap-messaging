@@ -63,7 +63,7 @@ public class MessageSignatureValidationException extends RuntimeException implem
     }
 
     public static MessageSignatureValidationException notAllowedMessageType(Object messageObject) {
-        String message = String.format("%s is not allowed", messageObject);
+        String message = String.format("Message type is not allowed: %s", messageObject);
         return new MessageSignatureValidationException(Temporality.TEMPORARY, message);
     }
 
