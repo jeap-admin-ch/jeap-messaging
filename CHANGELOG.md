@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.0.0] - 2025-09-02
+### Changed
+- update jeap-crypto from 3.28.0 to 4.0.0
+- update jeap-spring-boot-vault-starter from 17.43.0 to 18.0.0
+- Support for the Spring Cloud bootstrap context mechanism has been removed. Use the spring.config.import mechanism
+  instead for your (external) microservice configuration. 
+
+
 ## [8.57.1] - 2025-09-02
 
 ### Fixed
