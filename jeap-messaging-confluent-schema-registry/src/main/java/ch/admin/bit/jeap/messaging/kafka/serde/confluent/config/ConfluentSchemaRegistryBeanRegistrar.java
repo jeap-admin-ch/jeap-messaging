@@ -68,6 +68,8 @@ class ConfluentSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanReg
         Map<String, Object> props = new HashMap<>(serdeProperties.avroDeserializerProperties(clusterName));
         // Deserializing to GenericData.Record instead of SpecificRecordBase
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, false);
+        // we don't want any signature checks here
+        props.remove(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE);
         genericRecordValueDeserializer.configure(props, false);
         return genericRecordValueDeserializer;
     }

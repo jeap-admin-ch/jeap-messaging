@@ -88,6 +88,8 @@ public class GlueSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanR
         Deserializer genericDataRecordDeserializer = new JeapGlueAvroDeserializer(glueCredentialsProvider, null);
         Map<String, Object> props = new HashMap<>(serdeProperties.avroDeserializerProperties(clusterName));
         props.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.GENERIC_RECORD.getName());
+        // we don't want any signature checks here
+        props.remove(GlueKafkaAvroSerdeProperties.JEAP_SIGNATURE_AUTHENTICITY_SERVICE);
         genericDataRecordDeserializer.configure(props, IS_VALUE);
         return genericDataRecordDeserializer;
     }
