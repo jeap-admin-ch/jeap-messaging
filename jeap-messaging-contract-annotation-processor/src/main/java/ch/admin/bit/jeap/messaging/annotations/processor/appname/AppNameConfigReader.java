@@ -21,10 +21,7 @@ import static java.util.stream.Collectors.toSet;
 class AppNameConfigReader {
 
     private static final String[] CONFIG_FILENAMES = {
-            "bootstrap.properties",
             "application.properties",
-            "bootstrap.yml",
-            "bootstrap.yaml",
             "application.yml",
             "application.yaml"};
     private static final String CONFIG_FILE_LOCATION = Paths.get("src", "main", "resources").toString();

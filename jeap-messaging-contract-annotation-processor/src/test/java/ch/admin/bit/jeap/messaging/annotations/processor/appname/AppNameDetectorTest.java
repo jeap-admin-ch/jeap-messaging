@@ -92,7 +92,7 @@ class AppNameDetectorTest {
         Path sourceFile = createAnnotatedSourceFileIn(projectRoot);
         createFile(projectRoot.resolve("pom.xml"));
         createFile(projectRoot.resolve("src/main/resources/application.yaml"), "spring.application.name: the-app");
-        createFile(projectRoot.resolve("src/main/resources/bootstrap.yaml"), "spring.application.name: another-app");
+        createFile(projectRoot.resolve("src/main/resources/application.properties"), "spring.application.name: another-app");
         Element annotatedElement = mock(Element.class);
         String noAppNameFromAnnotation = null;
 

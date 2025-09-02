@@ -22,11 +22,11 @@ class AppNameContractAnnotationTest {
 
     @Test
     @JeapMessageConsumerContract(TypeRefExamples.TypeRef6.class)
-    void generatedContractWithAppNameFromBootstrapYaml() throws Exception {
-        String expectedName = "application-name-from-bootstrap-yaml-" + TypeRefExamples.TypeRef6.MESSAGE_TYPE_NAME + "-" + TypeRefExamples.TypeRef6.MESSAGE_TYPE_VERSION + ".consumer-contract.json";
+    void generatedContractWithAppNameFromApplicaitonYaml() throws Exception {
+        String expectedName = "application-name-from-application-yaml-" + TypeRefExamples.TypeRef6.MESSAGE_TYPE_NAME + "-" + TypeRefExamples.TypeRef6.MESSAGE_TYPE_VERSION + ".consumer-contract.json";
 
         JSONObject actual = loadContractJson(expectedName);
 
-        JSONAssert.assertEquals("{appName: \"application-name-from-bootstrap-yaml\"}", actual, false);
+        JSONAssert.assertEquals("{appName: \"application-name-from-application-yaml\"}", actual, false);
     }
 }

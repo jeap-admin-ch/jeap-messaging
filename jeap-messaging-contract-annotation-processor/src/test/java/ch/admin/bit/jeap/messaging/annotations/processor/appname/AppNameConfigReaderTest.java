@@ -72,7 +72,7 @@ class AppNameConfigReaderTest {
                 .findSpringApplicationNames(workingDirectory);
 
         assertThat(appNames)
-                .containsExactly("appBootstrapProperties");
+                .containsExactly("appProperties");
     }
 
     @Test
@@ -83,6 +83,6 @@ class AppNameConfigReaderTest {
         Set<String> springApplicationNames = AppNameConfigReader.findSpringApplicationNames(workingDirectory);
 
         assertThat(springApplicationNames)
-                .containsOnly("app1", "app2", "appProperties");
+                .containsOnly("app1", "app2");
     }
 }

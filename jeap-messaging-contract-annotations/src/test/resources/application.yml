@@ -1,7 +1,7 @@
 something1:
   sss: aaa
 spring.application:
-  name: application-name-from-bootstrap-yaml
+  name: application-name-from-application-yaml
 something:
   else: ssss
 
