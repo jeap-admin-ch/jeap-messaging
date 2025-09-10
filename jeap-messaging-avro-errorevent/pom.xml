@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-messaging</artifactId>
-        <version>9.0.1-SNAPSHOT</version>
+        <version>9.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-messaging-avro-errorevent</artifactId>
@@ -50,6 +50,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jeap-messaging-avro-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 

@@ -44,10 +44,8 @@ public class MessageProcessingFailedEventBuilder extends AvroDomainEventBuilder<
 
     public MessageProcessingFailedEventBuilder originalMessage(ConsumerRecord<?, ?> originalMessage, Message message, String... preservedHeaderNames) {
         this.originalMessage = originalMessage;
-        if (message != null) {
-            this.processId = message.getOptionalProcessId().orElse(null);
-            this.causingMessageMetadata = CausingMessageMetadata.from(message, originalMessage.headers(), preservedHeaderNames);
-        }
+        this.processId = message == null ? null : message.getOptionalProcessId().orElse(null);
+        this.causingMessageMetadata = CausingMessageMetadata.from(message, originalMessage.headers(), preservedHeaderNames);
         return self();
     }
 

@@ -24,11 +24,16 @@ record CausingMessageMetadata(
 
     static CausingMessageMetadata from(Message message, Headers headers, String... preservedHeaderNames) {
         Map<String, ByteBuffer> headerMap = createHeaderMap(headers, preservedHeaderNames);
-        MessageIdentity identity = message.getIdentity();
-        MessagePublisher publisher = message.getPublisher();
-        MessageType type = message.getType();
+        MessageIdentity identity = message == null ? null : message.getIdentity();
+        MessagePublisher publisher = message == null ? null : message.getPublisher();
+        MessageType type = message == null ? null : message.getType();
         // All fields are optional to avoid errors when generating the failed message
         // A possible cause for the original message to produce an error might be an incomplete message
+
+        if (identity == null && publisher == null && type == null && headerMap.isEmpty()) {
+            return null;
+        }
+
         return new CausingMessageMetadata(
                 identity != null ? identity.getId() : null,
                 identity != null ? identity.getIdempotenceId() : null,
