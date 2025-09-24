@@ -76,7 +76,11 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, "unknown", "unknown");
 
         if (certificateHeader != null) { // then both headers are set
-            SignatureCertificateWithChainValidity cert = getCertificate(certificateHeader.value());
+            SignatureCertificateWithChainValidity cert = getCertificate(certificateHeader.value(), validationPropertiesContainer.isSignatureRequired());
+            if (cert == null) {
+                log.warn("Message Key from service unknown has no valid certificate, but signature is not required");
+                return;
+            }
             boolean result = certificateAndSignatureVerifier.verifyKeySignature(bytesToValidate, signatureHeader.value(), cert);
             if (!result) {
                 throw MessageSignatureValidationException.invalidSignatureKey();
@@ -94,7 +98,11 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, messageTypeName, service);
 
         if (certificateHeader != null) { // then both headers are set
-            SignatureCertificateWithChainValidity cert = getCertificate(certificateHeader.value());
+            SignatureCertificateWithChainValidity cert = getCertificate(certificateHeader.value(), validationPropertiesContainer.isSignatureRequired());
+            if (cert == null) {
+                log.warn("Message {} from service {} has no valid certificate, but signature is not required", messageTypeName, service);
+                return;
+            }
             validateAllowedPublisher(messageTypeName, service, cert);
             boolean result = certificateAndSignatureVerifier.verifyValueSignature(service, bytesToValidate, signatureHeader.value(), cert);
             if (!result) {
@@ -110,9 +118,9 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         }
     }
 
-    private SignatureCertificateWithChainValidity getCertificate(byte[] certificateSerialNumber) {
+    private SignatureCertificateWithChainValidity getCertificate(byte[] certificateSerialNumber, boolean signatureRequired) {
         SignatureCertificateWithChainValidity certificateWithChainValidity = subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber);
-        if (certificateWithChainValidity == null) {
+        if (certificateWithChainValidity == null && signatureRequired) {
             throw CertificateValidationException.certificateNotFound(certificateSerialNumber);
         }
         return certificateWithChainValidity;

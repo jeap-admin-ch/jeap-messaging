@@ -39,7 +39,6 @@ public class SignatureConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "jeap.messaging.authentication.subscriber", name = "require-signature")
     public DefaultSignatureAuthenticityService signatureAuthenticityService(SubscriberValidationPropertiesContainer validationPropertiesContainer,
                                                                      CertificateAndSignatureVerifier certificateAndSignatureVerifier,
                                                                             SubscriberCertificatesContainer subscriberCertificatesContainer,

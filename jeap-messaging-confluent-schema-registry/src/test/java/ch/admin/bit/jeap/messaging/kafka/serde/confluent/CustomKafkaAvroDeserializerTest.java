@@ -4,14 +4,19 @@ import ch.admin.bit.jeap.kafka.examples.Payment;
 import ch.admin.bit.jeap.kafka.examples.PaymentV2;
 import ch.admin.bit.jeap.kafka.serde.confluent.AbstractConfluentSerdeTestBase;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroDeserializerConfig;
+import ch.admin.bit.jeap.messaging.kafka.signature.subscriber.DefaultSignatureAuthenticityService;
 import org.apache.kafka.common.serialization.Serializer;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CustomKafkaAvroDeserializerTest extends AbstractConfluentSerdeTestBase {
+
+    @MockitoBean // mock it to prevent MessageSignatureValidationException
+    private DefaultSignatureAuthenticityService signatureAuthenticityService;
 
     @Test
     void deserializeValueWithCustomTargetType() {

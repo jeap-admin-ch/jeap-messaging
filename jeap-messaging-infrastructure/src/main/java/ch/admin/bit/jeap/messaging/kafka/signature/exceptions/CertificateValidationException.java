@@ -44,7 +44,6 @@ public class CertificateValidationException extends RuntimeException implements 
         return new CertificateValidationException(Temporality.PERMANENT, message);
     }
 
-
     @Override
     public String getErrorCode() {
         return ERROR_CODE;
