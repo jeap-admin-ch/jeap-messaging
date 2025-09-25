@@ -62,7 +62,7 @@ class Benchmarks {
         // Create and configure subscriber properties
         boolean requireSignature = true;
         SignatureSubscriberProperties props = new SignatureSubscriberProperties(
-                requireSignature, Set.of(), Set.of(), Map.of(), certificateChains);
+                requireSignature, Set.of(), Set.of(), Map.of(), certificateChains, false);
         
         // Initialize containers and validators
         SubscriberValidationPropertiesContainer validationContainer = initializeValidationContainer(props);
@@ -169,7 +169,7 @@ class Benchmarks {
         SignatureCertificateValidator certificateValidator = new SignatureCertificateValidator();
         SignatureVerifier signatureVerifier = new SignatureVerifier();
         SignatureSubscriberProperties props = new SignatureSubscriberProperties(true, null,
-                Set.of(), null, null);
+                Set.of(), null, null, false);
         return new CertificateAndSignatureVerifier(certificateValidator, signatureVerifier, props);
     }
 

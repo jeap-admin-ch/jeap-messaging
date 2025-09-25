@@ -33,7 +33,7 @@ class CertificateAndSignatureVerifierTest {
         when(certificateWithChainValidity.certificate()).thenReturn(signatureCertificate);
 
         SignatureSubscriberProperties props = new SignatureSubscriberProperties(true, null,
-                Set.of(PRIVILEGED_PRODUCER), null, null);
+                Set.of(PRIVILEGED_PRODUCER), null, null, false);
         certificateAndSignatureVerifier = new CertificateAndSignatureVerifier(certificateValidator, signatureVerifier, props);
     }
 

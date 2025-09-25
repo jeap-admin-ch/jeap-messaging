@@ -62,8 +62,8 @@ public class MessageSignatureValidationException extends RuntimeException implem
         return new MessageSignatureValidationException(message);
     }
 
-    public static MessageSignatureValidationException notAllowedMessageType(Object messageObject) {
-        String message = String.format("Message type is not allowed: %s", messageObject);
+    public static MessageSignatureValidationException notAllowedNonJeapMessageType(Object messageObject) {
+        String message = String.format("Non jEAP Message type is not allowed: %s", messageObject);
         return new MessageSignatureValidationException(Temporality.TEMPORARY, message);
     }
 

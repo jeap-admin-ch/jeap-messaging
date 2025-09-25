@@ -20,6 +20,7 @@ public class SignatureSubscriberProperties {
     private final Set<String> privilegedProducerCommonNames;
     private final Map<String, List<String>> allowedPublishers;
     private final Map<String, Map<String, List<String>>> certificateChains;
+    private final boolean allowNonJeapMessages;
 
     /**
      * Configuration properties for the subscriber side of the message signing.
@@ -33,12 +34,14 @@ public class SignatureSubscriberProperties {
                                          Set<String> acceptUnsignedMessagetypeWhitelist,
                                          Set<String> privilegedProducerCommonNames,
                                          Map<String, List<String>> allowedPublishers,
-                                         Map<String, Map<String, List<String>>> certificateChains) {
+                                         Map<String, Map<String, List<String>>> certificateChains,
+                                         @DefaultValue("false") boolean allowNonJeapMessages) {
         this.requireSignature = requireSignature;
         this.acceptUnsignedMessagetypeWhitelist = acceptUnsignedMessagetypeWhitelist == null ? Set.of() : acceptUnsignedMessagetypeWhitelist;
         this.privilegedProducerCommonNames = privilegedProducerCommonNames == null ? Set.of() : privilegedProducerCommonNames;
         this.allowedPublishers = allowedPublishers == null ? Map.of() : allowedPublishers;
         this.certificateChains = certificateChains == null ? Map.of() : certificateChains;
+        this.allowNonJeapMessages = allowNonJeapMessages;
     }
 
     public boolean requireSignature() {
@@ -59,5 +62,9 @@ public class SignatureSubscriberProperties {
 
     public Map<String, Map<String, List<String>>> certificateChains() {
         return certificateChains;
+    }
+
+    public boolean allowNonJeapMessages() {
+        return allowNonJeapMessages;
     }
 }

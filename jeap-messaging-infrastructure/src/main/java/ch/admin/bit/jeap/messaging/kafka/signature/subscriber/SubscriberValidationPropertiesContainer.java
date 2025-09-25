@@ -46,6 +46,10 @@ public class SubscriberValidationPropertiesContainer {
         return signatureSubscriberProperties.requireSignature();
     }
 
+    public boolean allowNonJeapMessages() {
+        return signatureSubscriberProperties.allowNonJeapMessages();
+    }
+
     private boolean isMessageTypeWhitelisted(String messageType) {
         return signatureSubscriberProperties.acceptUnsignedMessagetypeWhitelist().contains(messageType);
     }

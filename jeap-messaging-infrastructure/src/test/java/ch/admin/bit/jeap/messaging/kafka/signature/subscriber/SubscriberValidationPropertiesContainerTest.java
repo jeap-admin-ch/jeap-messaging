@@ -14,7 +14,7 @@ class SubscriberValidationPropertiesContainerTest {
 
     @Test
     void isSignatureRequired_returnTrue_whenRequiredAndNoExceptionConfigured() {
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(true, null, null, null, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(true, null, null, null, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
@@ -27,7 +27,7 @@ class SubscriberValidationPropertiesContainerTest {
         String messageTypeName2 = "MyMessage2";
 
         Set<String> acceptUnsignedMessagetypeWhitelist = Set.of(messageTypeName1);
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(true, acceptUnsignedMessagetypeWhitelist, null, null, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(true, acceptUnsignedMessagetypeWhitelist, null, null, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
@@ -39,7 +39,7 @@ class SubscriberValidationPropertiesContainerTest {
         String messageTypeName1 = "MyMessage1";
 
         Set<String> acceptUnsignedMessagetypeWhitelist = Set.of(messageTypeName1);
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(true, acceptUnsignedMessagetypeWhitelist, null, null, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(true, acceptUnsignedMessagetypeWhitelist, null, null, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
@@ -49,7 +49,7 @@ class SubscriberValidationPropertiesContainerTest {
 
     @Test
     void isSignatureRequired_returnFalse_whenNotRequiredAndNoExceptionConfigured() {
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, null, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, null, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
@@ -62,7 +62,7 @@ class SubscriberValidationPropertiesContainerTest {
         String messageTypeName2 = "MyMessage2";
 
         Set<String> acceptUnsignedMessagetypeWhitelist = Set.of(messageTypeName1);
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, acceptUnsignedMessagetypeWhitelist, null, null, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, acceptUnsignedMessagetypeWhitelist, null, null, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
@@ -75,7 +75,7 @@ class SubscriberValidationPropertiesContainerTest {
         String serviceName = "MyService1";
 
         Map<String, List<String>> allowedPublishers = Map.of(messageTypeName, List.of(serviceName));
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, allowedPublishers, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, allowedPublishers, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
@@ -88,7 +88,7 @@ class SubscriberValidationPropertiesContainerTest {
         String serviceName = "MyService";
 
         Map<String, List<String>> allowedPublishers = Map.of();
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, allowedPublishers, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, allowedPublishers, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
@@ -101,11 +101,29 @@ class SubscriberValidationPropertiesContainerTest {
         String serviceName1 = "MyService1";
 
         Map<String, List<String>> allowedPublishers = Map.of(messageTypeName, List.of(serviceName1));
-        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, allowedPublishers, null);
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, allowedPublishers, null, false);
         SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
         container.init();
 
         String serviceName2 = "MyService2";
         assertFalse(container.isPublisherAllowedForMessage(messageTypeName, serviceName2));
+    }
+
+    @Test
+    void isPublisherAllowedForMessage_returnTrue_whenSetToTrue() {
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, Map.of(), null, true);
+        SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
+        container.init();
+
+        assertTrue(container.allowNonJeapMessages() );
+    }
+
+    @Test
+    void isPublisherAllowedForMessage_returnFalse_whenSetToFalse() {
+        SignatureSubscriberProperties properties = new SignatureSubscriberProperties(false, null, null, Map.of(), null, true);
+        SubscriberValidationPropertiesContainer container = new SubscriberValidationPropertiesContainer(properties);
+        container.init();
+
+        assertTrue(container.allowNonJeapMessages() );
     }
 }

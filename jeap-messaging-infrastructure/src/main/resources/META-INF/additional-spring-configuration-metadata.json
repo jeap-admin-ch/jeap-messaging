@@ -76,6 +76,50 @@
       "name": "jeap.messaging.kafka.error-topic-name",
       "type": "java.lang.String",
       "sourceType": "ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties"
+    },
+    {
+      "name": "jeap.messaging.authentication.publisher.signatureKey",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties",
+      "description": "The private key to sign messages."
+    },
+    {
+      "name": "jeap.messaging.authentication.publisher.signatureCertificate",
+      "type": "java.lang.String",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.signature.publisher.SignaturePublisherProperties",
+      "description": "The public certificate to include in the message for signature verification."
+    },
+    {
+      "name": "jeap.messaging.authentication.subscriber.requireSignature",
+      "type": "java.lang.Boolean",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureSubscriberProperties",
+      "description": "Whether to require a signature on incoming messages (strict-mode if true). If set to false, messages without signature will be accepted, but messages with invalid signatures will still be rejected.",
+      "defaultValue": "false"
+    },
+    {
+      "name": "jeap.messaging.authentication.subscriber.acceptUnsignedMessagetypeWhitelist",
+      "type": "java.util.Set<java.lang.String>",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureSubscriberProperties",
+      "description": "A set of message types that are allowed to be received without a signature, even if requireSignature is true."
+    },
+    {
+      "name": "jeap.messaging.authentication.subscriber.allowedPublishers",
+      "type": "java.util.Map<java.lang.String,java.util.List<java.lang.String>>",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureSubscriberProperties",
+      "description": "A map with key: the message type and value: a list of services that are allowed to publish them."
+    },
+    {
+      "name": "jeap.messaging.authentication.subscriber.certificateChains",
+      "type": "java.util.Map<java.lang.String, java.util.Map<java.lang.String,java.util.List<java.lang.String>>>",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureSubscriberProperties",
+      "description": "A map with key: the certitiface name and value: the chain with a list of chain entries (certificates)"
+    },
+    {
+      "name": "jeap.messaging.authentication.subscriber.allowNonJeapMessages",
+      "type": "java.lang.Boolean",
+      "sourceType": "ch.admin.bit.jeap.messaging.kafka.signature.subscriber.SignatureSubscriberProperties",
+      "description": "Whether to allow messages that are not instances of jEAP Message (ch.admin.bit.jeap.messaging.model.Message). If true, such messages will be accepted without signature verification.",
+      "defaultValue": "false"
     }
   ],
   "hints": []

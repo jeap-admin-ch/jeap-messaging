@@ -292,6 +292,27 @@ class DefaultSignatureAuthenticityServiceTest {
         assertThrows(MessageSignatureValidationException.class, () -> signatureAuthenticityService.checkAuthenticityValue(message, headers, bytesToValidate));
 
         verify(validationPropertiesContainer).isSignatureRequired();
+        verify(validationPropertiesContainer).allowNonJeapMessages();
+        verifyNoMoreInteractions(validationPropertiesContainer);
+        verifyNoInteractions(certificateAndSignatureVerifier);
+    }
+
+    @Test
+    void checkAuthenticityValue_doFail_whenNotAMessageAndPropertyNonJeapMessageAllowedIsSet() {
+        Object message = new Object();
+        byte[] certificateSerialNumber = {4, 5, 6};
+        byte[] signatureValue = {7, 8, 9};
+        byte[] signatureKey = null;
+
+        Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
+        byte[] bytesToValidate = {1, 1, 1};
+
+        when(validationPropertiesContainer.allowNonJeapMessages()).thenReturn(true);
+
+        signatureAuthenticityService.checkAuthenticityValue(message, headers, bytesToValidate);
+
+        verify(validationPropertiesContainer).allowNonJeapMessages();
+        verify(validationPropertiesContainer).isSignatureRequired();
         verifyNoMoreInteractions(validationPropertiesContainer);
         verifyNoInteractions(certificateAndSignatureVerifier);
     }

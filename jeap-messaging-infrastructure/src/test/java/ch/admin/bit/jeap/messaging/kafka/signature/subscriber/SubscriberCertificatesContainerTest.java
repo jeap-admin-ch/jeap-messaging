@@ -145,7 +145,7 @@ class SubscriberCertificatesContainerTest {
 
     @Test
     void initWithEmptyProps() {
-        SignatureSubscriberProperties signatureSubscriberProperties = new SignatureSubscriberProperties(false, null, null, null, null);
+        SignatureSubscriberProperties signatureSubscriberProperties = new SignatureSubscriberProperties(false, null, null, null, null, false);
         SubscriberCertificatesContainer subscriberCertificatesContainer = new SubscriberCertificatesContainer(signatureSubscriberProperties);
 
         assertDoesNotThrow(() -> subscriberCertificatesContainer.init());
@@ -181,7 +181,7 @@ class SubscriberCertificatesContainerTest {
             certificateChains.put(certificateServiceEntry.serviceName(), certificateChainsByName);
 
         }
-        return new SignatureSubscriberProperties(false, null, null, null, certificateChains);
+        return new SignatureSubscriberProperties(false, null, null, null, certificateChains, false);
     }
 
     private record CertificateServiceEntry(String serviceName, CertificateChainEntry... certificateChainEntries) {

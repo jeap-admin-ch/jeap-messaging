@@ -61,7 +61,11 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
                 throw exception;
             }
         } else {
-            throw MessageSignatureValidationException.notAllowedMessageType(deserialized);
+            if (validationPropertiesContainer.allowNonJeapMessages()) {
+                log.debug("Message is not of type Message, but non-Jeap messages are allowed, skipping authenticity check: {}", deserialized == null ? "null" : deserialized.getClass().getName());
+                return;
+            }
+            throw MessageSignatureValidationException.notAllowedNonJeapMessageType(deserialized);
         }
     }
 
