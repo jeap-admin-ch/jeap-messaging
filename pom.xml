@@ -66,12 +66,12 @@
         <avro.version>1.12.0</avro.version>
         <jeap-crypto.version>4.2.0</jeap-crypto.version>
         <jeap-spring-boot-roles-anywhere-starter.version>1.5.0</jeap-spring-boot-roles-anywhere-starter.version>
-        <maven.api.version>3.9.10</maven.api.version>
+        <maven.api.version>3.9.11</maven.api.version>
         <maven.plugin.version>3.15.1</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <aws-msk-iam-auth.version>2.3.2</aws-msk-iam-auth.version>
-        <schema-registry-serde.version>1.1.24</schema-registry-serde.version>
-        <protobuf-java.version>4.31.1</protobuf-java.version>
+        <schema-registry-serde.version>1.1.25</schema-registry-serde.version>
+        <protobuf-java.version>4.32.1</protobuf-java.version>
         <org.eclipse.jgit.version>7.3.0.202506031305-r</org.eclipse.jgit.version>
         <file-management.version>3.2.0</file-management.version>
         <maven-invoker.version>3.3.0</maven-invoker.version>
