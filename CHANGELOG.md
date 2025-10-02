@@ -11,6 +11,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Update parent from 5.14.0 to 5.15.0
   
 - update jeap-spring-boot-roles-anywhere-starter from 1.4.0 to 1.5.0
+- updated springdoc-openapi from 2.8.9 to 2.8.13
+- updated java-cfenv from 3.4.0 to 3.5.0
+- update jeap-crypto from 4.1.0 to 4.2.0
+- update jeap-spring-boot-vault-starter from 18.1.0 to 18.2.0
 
 ## [9.2.0] - 2025-09-26
 
