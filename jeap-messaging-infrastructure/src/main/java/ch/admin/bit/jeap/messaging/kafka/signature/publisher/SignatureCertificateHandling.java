@@ -50,23 +50,25 @@ class SignatureCertificateHandling {
         }
     }
 
-    private void init() {
-        initMetrics();
-        initTaskScheduler();
+    void init() {
+        if (signatureMetricsService != null) {
+            initMetrics();
+            initMetricsTaskScheduler();
+        }
+        initCertificateCheckTaskScheduler();
     }
 
     private void initMetrics() {
-        if (signatureMetricsService != null) {
-            validityDaysRemaining = new AtomicLong(certificate.getValidityRemainingDays());
-            signatureMetricsService.initCertificateValidityRemainingDays(() -> validityDaysRemaining.get());
-        }
+        validityDaysRemaining = new AtomicLong(certificate.getValidityRemainingDays());
+        signatureMetricsService.initCertificateValidityRemainingDays(() -> validityDaysRemaining.get());
     }
 
-    private void initTaskScheduler() {
-        taskScheduler.scheduleAtFixedRate(() -> {
-            checkCertificateValidity();
-            setMetrics();
-        }, TASK_INTERVAL);
+    private void initMetricsTaskScheduler() {
+        taskScheduler.scheduleAtFixedRate(this::setMetrics, TASK_INTERVAL);
+    }
+
+    private void initCertificateCheckTaskScheduler() {
+        taskScheduler.scheduleAtFixedRate(this::checkCertificateValidity, TASK_INTERVAL);
     }
 
     private void setMetrics() {
