@@ -30,6 +30,9 @@ public class LegacyMessageDecryptor {
     private final Cipher cipher;
 
     public LegacyMessageDecryptor(String passphrase) {
+        if (passphrase == null || passphrase.isEmpty()) {
+            throw new ConfigException("passphrase for Nifi-compatible decryption must be provided, set decrypt.passphrase");
+        }
         if (Security.getProvider(PROVIDER) == null) {
             Security.addProvider(new BouncyCastleProvider());
         }

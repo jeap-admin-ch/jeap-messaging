@@ -73,8 +73,8 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
 
         CustomKafkaAvroDeserializerConfig customConfig = new CustomKafkaAvroDeserializerConfig(props);
         if (customConfig.getBoolean(CustomKafkaAvroDeserializerConfig.DECRYPT_MESSAGES_CONFIG)) {
-            String encryptPassphrase = customConfig.getString(CustomKafkaAvroDeserializerConfig.DECRYPT_PASSPHRASE_CONFIG);
-            legacyMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
+            String passphrase = customConfig.getString(CustomKafkaAvroDeserializerConfig.DECRYPT_PASSPHRASE_CONFIG);
+            legacyMessageDecryptor = new LegacyMessageDecryptor(passphrase);
         }
         if (props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE) != null) {
             this.signatureAuthenticityService = (SignatureAuthenticityService) props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE);

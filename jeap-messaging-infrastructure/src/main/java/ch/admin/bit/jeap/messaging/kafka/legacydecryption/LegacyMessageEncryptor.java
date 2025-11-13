@@ -19,6 +19,12 @@ public class LegacyMessageEncryptor {
     private LegacyMessageEncryptor() {
     }
 
+    /**
+     * The encryption method here is compatible with LegacyMessageDecryptor, which in turn is compatible with
+     * the method used by Apache NiFi. This encryption method is not used by jeap-messaging, as it provides message
+     * encryption support using jeap-crypto. This class is provided solely to allow encrypting messages
+     * that can be decrypted by LegacyMessageDecryptor, e.g. for testing purposes.
+     */
     public static byte[] encryptMessage(byte[] payload, String passphrase) throws GeneralSecurityException {
         // generate salt
         byte[] salt = new byte[LegacyMessageDecryptor.DEFAULT_SALT_LENGTH];
