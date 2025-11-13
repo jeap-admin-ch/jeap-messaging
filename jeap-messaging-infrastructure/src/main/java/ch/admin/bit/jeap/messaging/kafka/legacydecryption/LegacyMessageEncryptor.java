@@ -16,6 +16,9 @@ public class LegacyMessageEncryptor {
     private static final Cipher CIPHER = createCipher();
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
+    private LegacyMessageEncryptor() {
+    }
+
     public static byte[] encryptMessage(byte[] payload, String passphrase) throws GeneralSecurityException {
         // generate salt
         byte[] salt = new byte[LegacyMessageDecryptor.DEFAULT_SALT_LENGTH];

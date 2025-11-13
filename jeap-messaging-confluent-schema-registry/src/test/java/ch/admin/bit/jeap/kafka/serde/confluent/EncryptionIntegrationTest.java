@@ -51,10 +51,10 @@ class EncryptionIntegrationTest {
         kafkaAvroSerializer.configure(serProps, false);
         byte[] paymentBytes = kafkaAvroSerializer.serialize(TOPIC, payment);
         byte[] encryptedPaymentBytes = LegacyMessageEncryptor.encryptMessage(paymentBytes, "testPW");
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(TOPIC,
+        ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(TOPIC,
                 payment.getId().toString(), encryptedPaymentBytes);
 
-        producer.send(record);
+        producer.send(producerRecord);
         producer.flush();
 
         // Read it without decryption, must not work

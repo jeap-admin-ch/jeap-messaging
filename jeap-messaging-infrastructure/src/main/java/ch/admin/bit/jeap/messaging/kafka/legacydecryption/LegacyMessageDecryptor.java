@@ -18,7 +18,7 @@ import java.util.Arrays;
 @SuppressWarnings("WeakerAccess")
 public class LegacyMessageDecryptor {
     private static final String OPENSSL_EVP_HEADER_MARKER = "Salted__";
-    public static final byte[] OPENSSL_EVP_HEADER_MARKER_BYTES = OPENSSL_EVP_HEADER_MARKER.getBytes(StandardCharsets.US_ASCII);
+    static final byte[] OPENSSL_EVP_HEADER_MARKER_BYTES = OPENSSL_EVP_HEADER_MARKER.getBytes(StandardCharsets.US_ASCII);
     public static final int DEFAULT_SALT_LENGTH = 8;
     public static final int ITERATION_COUNT = 0;
     public static final String ALGORITHM = "PBEWITHMD5AND128BITAES-CBC-OPENSSL";

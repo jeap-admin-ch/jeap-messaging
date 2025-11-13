@@ -7,12 +7,12 @@ import java.security.GeneralSecurityException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LegacyMessageDecryptorTest {
+class LegacyMessageDecryptorTest {
 
     private static final String PASSPHRASE = "testpw";
 
     @Test
-    public void ok() throws GeneralSecurityException {
+    void ok() throws GeneralSecurityException {
         String originalMessage = "testMessage";
         LegacyMessageDecryptor decryptor = new LegacyMessageDecryptor(PASSPHRASE);
 
@@ -22,18 +22,18 @@ public class LegacyMessageDecryptorTest {
     }
 
     @Test
-    public void wrongPassphrase() {
+    void wrongPassphrase() throws GeneralSecurityException {
         String originalMessage = "testMessage";
         LegacyMessageDecryptor decryptor = new LegacyMessageDecryptor("wrongPw");
+        byte[] encryptedMessage = LegacyMessageEncryptor.encryptMessage(originalMessage.getBytes(), PASSPHRASE);
 
         assertThrows(SerializationException.class, () ->
-                decryptor.decryptMessage(LegacyMessageEncryptor.encryptMessage(originalMessage.getBytes(), PASSPHRASE)));
+                decryptor.decryptMessage(encryptedMessage));
     }
 
     @Test
-    public void notTransparent() throws GeneralSecurityException {
+    void notTransparent() throws GeneralSecurityException {
         String originalMessage = "testMessage";
-        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor(PASSPHRASE);
 
         byte[] decrypted = LegacyMessageEncryptor.encryptMessage(originalMessage.getBytes(), PASSPHRASE);
 

@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.messaging.kafka.serde.glue;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
-import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageDecryptor;
 import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageEncryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.properties.GlueKafkaAvroSerdeProperties;
 import org.apache.avro.generic.GenericData;
@@ -96,7 +95,6 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
         String passphrase = "test-passphrase";
-        LegacyMessageDecryptor legacyMessageDecryptor = new LegacyMessageDecryptor(passphrase);
         JeapGlueAvroDeserializer deserializer = createDeserializerWithNifiCompatibleDecyption(passphrase);
         AvroMessage testEvent = createTestEvent();
 

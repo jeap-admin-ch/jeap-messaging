@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
     // configurable properties
-    protected LegacyMessageDecryptor nifiCompatibleLegacyMessageDecryptor;
+    protected LegacyMessageDecryptor legacyMessageDecryptor;
 
     protected JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
     private SignatureAuthenticityService signatureAuthenticityService;
@@ -74,7 +74,7 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
         CustomKafkaAvroDeserializerConfig customConfig = new CustomKafkaAvroDeserializerConfig(props);
         if (customConfig.getBoolean(CustomKafkaAvroDeserializerConfig.DECRYPT_MESSAGES_CONFIG)) {
             String encryptPassphrase = customConfig.getString(CustomKafkaAvroDeserializerConfig.DECRYPT_PASSPHRASE_CONFIG);
-            nifiCompatibleLegacyMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
+            legacyMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
         }
         if (props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE) != null) {
             this.signatureAuthenticityService = (SignatureAuthenticityService) props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE);
@@ -96,7 +96,7 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
         if (messageEncryptedWithJeapCrypto) {
             possiblyDecryptedBytes = SerdeUtils.decryptWithJeapCrypto(cryptoConfig, topic, originalBytes);
         } else if (nifiCompatibleDecryptionEnabledForDeserializer) {
-            possiblyDecryptedBytes = nifiCompatibleLegacyMessageDecryptor.decryptMessage(originalBytes);
+            possiblyDecryptedBytes = legacyMessageDecryptor.decryptMessage(originalBytes);
         } else {
             possiblyDecryptedBytes = originalBytes;
         }
@@ -127,7 +127,7 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
     }
 
     private boolean isNifiCompatibleDecryptionEnabledForDeserializer() {
-        return nifiCompatibleLegacyMessageDecryptor != null;
+        return legacyMessageDecryptor != null;
     }
 
 }
