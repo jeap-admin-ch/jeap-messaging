@@ -1,12 +1,12 @@
-package ch.admin.bit.jeap.kafka.serde.confluent;
+package ch.admin.bit.jeap.messaging.kafka.legacydecryption;
 
-import ch.admin.bit.jeap.messaging.kafka.serde.confluent.MessageEncryptor;
 import org.apache.kafka.common.errors.SerializationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MessageEncryptorTest {
+
     @Test
     public void ok() {
         String originalMessage = "testMessage";
@@ -17,7 +17,6 @@ public class MessageEncryptorTest {
 
         assertEquals(originalMessage, new String(result));
     }
-
 
     @Test
     public void wrongPassphrase() {

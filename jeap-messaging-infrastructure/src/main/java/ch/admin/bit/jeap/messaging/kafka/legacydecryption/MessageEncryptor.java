@@ -1,4 +1,4 @@
-package ch.admin.bit.jeap.messaging.kafka.serde.confluent;
+package ch.admin.bit.jeap.messaging.kafka.legacydecryption;
 
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.errors.SerializationException;
@@ -24,12 +24,15 @@ public class MessageEncryptor {
     private static final int DEFAULT_SALT_LENGTH = 8;
     private static final int ITERATION_COUNT = 0;
     private static final String ALGORITHM = "PBEWITHMD5AND128BITAES-CBC-OPENSSL";
-    private static final String PROVIDER = "BC";
+    private static final String PROVIDER = BouncyCastleProvider.PROVIDER_NAME;
+
     private final SecretKey secret;
     private final Cipher cipher;
 
     public MessageEncryptor(String passphrase) {
-        Security.addProvider(new BouncyCastleProvider());
+        if (Security.getProvider(PROVIDER) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
         try {
             final PBEKeySpec pbeKeySpec = new PBEKeySpec(passphrase.toCharArray());
             SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM, PROVIDER);

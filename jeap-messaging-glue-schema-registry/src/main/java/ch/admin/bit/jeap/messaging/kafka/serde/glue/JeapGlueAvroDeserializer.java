@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.glue;
 
 import ch.admin.bit.jeap.kafka.SerializedMessageReceiver;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
+import ch.admin.bit.jeap.messaging.kafka.legacydecryption.MessageEncryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.SerdeUtils;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.properties.GlueKafkaAvroSerdeProperties;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
@@ -23,9 +24,13 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
     public static final String SPECIFIC_AVRO_KEY_TYPE = "specific.avro.key.type";
     public static final String SPECIFIC_AVRO_VALUE_TYPE = "specific.avro.value.type";
 
+    public static final String DECRYPT_MESSAGES_CONFIG = "decrypt.messages";
+    public static final String DECRYPT_PASSPHRASE_CONFIG = "decrypt.passphrase";
+
     private GlueSchemaRegistryKafkaDeserializer delegate;
     private SignatureAuthenticityService signatureAuthenticityService;
     private JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
+    private MessageEncryptor nifiCompatibleMessageDecryptor;
     private boolean isKey;
 
     public JeapGlueAvroDeserializer() {
@@ -41,12 +46,18 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
     public void configure(Map<String, ?> configs, boolean isKey) {
         addCredentialsProviderIfMissing(configs);
         addCryptoConfig(configs);
+
+        Boolean decryptMessages = (Boolean) configs.get(DECRYPT_MESSAGES_CONFIG);
+        if (decryptMessages != null && decryptMessages.booleanValue()) {
+            String encryptPassphrase = (String) configs.get(DECRYPT_PASSPHRASE_CONFIG);
+            nifiCompatibleMessageDecryptor = new MessageEncryptor(encryptPassphrase);
+        }
+
         setSignatureAuthenticityService(configs);
         defineSpecificDeserializerIfSpecificClassIsConfigured(configs, isKey);
         this.delegate.configure(configs, isKey);
         this.isKey = isKey;
     }
-
 
     private void addCredentialsProviderIfMissing(Map<String, ?> configs) {
         if (this.delegate.getCredentialProvider() == null) {
@@ -103,7 +114,14 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
 
     @Override
     public Object deserialize(String topic, Headers headers, byte[] originalBytes) {
-        byte[] possiblyDecryptedBytes = SerdeUtils.decryptIfEncrypted(isKey, cryptoConfig, topic, originalBytes, headers);
+        byte[] possiblyDecryptedBytes;
+        if (nifiCompatibleMessageDecryptor != null) {
+            log.debug("Decrypting message from topic '{}' with nifi compatible message decryptor", topic);
+            possiblyDecryptedBytes = nifiCompatibleMessageDecryptor.decryptMessage(originalBytes);
+        } else {
+            possiblyDecryptedBytes = SerdeUtils.decryptIfEncrypted(isKey, cryptoConfig, topic, originalBytes, headers);
+        }
+
         Object result = delegate.deserialize(topic, headers, possiblyDecryptedBytes);
         if (result instanceof SerializedMessageReceiver smr) {
             // Note: The original message bytes must be in the original wire format, i.e. encrypted if applicable

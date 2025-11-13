@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.confluent;
 
 import ch.admin.bit.jeap.kafka.SerializedMessageReceiver;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
+import ch.admin.bit.jeap.messaging.kafka.legacydecryption.MessageEncryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.SerdeUtils;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroDeserializerConfig;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;

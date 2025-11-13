@@ -24,6 +24,7 @@ public class CustomKafkaAvroDeserializerConfig extends AbstractKafkaSchemaSerDeC
     public static final String DECRYPT_PASSPHRASE_CONFIG = "decrypt.passphrase";
     public static final String DECRYPT_PASSPHRASE_DEFAULT = "";
     public static final String DECRYPT_PASSPHRASE_DOC = "Passphrase used for decrypting Kafka messages";
+
     public static final String SCHEMA_REGISTRY_CLIENT = "jeap.schema.registry.client";
     public static final String JEAP_SERDE_CRYPTO_CONFIG = "jeap.serde.crypto.config";
     public static final String SPECIFIC_AVRO_KEY_TYPE = "specific.avro.key.type";

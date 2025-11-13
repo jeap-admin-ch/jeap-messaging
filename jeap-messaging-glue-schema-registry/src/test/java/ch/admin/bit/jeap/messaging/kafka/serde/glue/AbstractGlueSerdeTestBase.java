@@ -26,10 +26,7 @@ import software.amazon.awssdk.services.glue.model.SchemaVersionStatus;
 import java.time.Instant;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.containing;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 
@@ -69,6 +66,9 @@ public abstract class AbstractGlueSerdeTestBase {
 
     @Autowired
     KafkaAvroSerdeProvider kafkaAvroSerdeProvider;
+
+    @Autowired
+    AwsCredentialsProvider awsCredentialsProvider;
 
     static void stubGetSchemaVersionResponse(UUID versionId, String avroSchema) {
         String getSchemaVersionResponse = """
