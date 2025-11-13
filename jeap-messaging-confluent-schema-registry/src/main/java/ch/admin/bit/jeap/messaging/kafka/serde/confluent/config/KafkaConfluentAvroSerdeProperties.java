@@ -10,6 +10,7 @@ import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
@@ -85,7 +86,7 @@ public class KafkaConfluentAvroSerdeProperties implements KafkaAvroSerdeProperti
 
     private void addSchemaRegistryClient(Map<String, Object> props) {
         if (this.schemaRegistryClient == null) {
-            CustomKafkaAvroSerializerConfig serializerConfig = new CustomKafkaAvroSerializerConfig(props);
+            KafkaAvroSerializerConfig serializerConfig = new KafkaAvroSerializerConfig(props);
             this.schemaRegistryClient = SchemaRegistryClientUtil.createSchemaRegistryClient(serializerConfig);
         }
         props.put(CustomKafkaAvroDeserializerConfig.SCHEMA_REGISTRY_CLIENT, this.schemaRegistryClient);

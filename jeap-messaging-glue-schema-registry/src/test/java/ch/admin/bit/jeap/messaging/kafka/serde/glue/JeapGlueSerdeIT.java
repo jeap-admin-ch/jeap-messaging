@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.glue;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageDecryptor;
+import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageEncryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.properties.GlueKafkaAvroSerdeProperties;
 import org.apache.avro.generic.GenericData;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -10,6 +11,7 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -88,7 +90,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
     }
 
     @Test
-    void testMessageDeserialization_nifiDecryption() {
+    void testMessageDeserialization_nifiDecryption() throws GeneralSecurityException {
         UUID versionId = UUID.randomUUID();
         stubGetSchemaByDefinitionResponse(versionId, "test-topic2-TestEvent");
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
@@ -98,7 +100,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
         JeapGlueAvroDeserializer deserializer = createDeserializerWithNifiCompatibleDecyption(passphrase);
         AvroMessage testEvent = createTestEvent();
 
-        byte[] serializedEncryptedRecord = legacyMessageDecryptor.encryptMessage(serializer.serialize("test-topic2", testEvent));
+        byte[] serializedEncryptedRecord = LegacyMessageEncryptor.encryptMessage(serializer.serialize("test-topic2", testEvent), passphrase);
         AvroMessage deserializedMessage = (AvroMessage) deserializer.deserialize("test-topic2", serializedEncryptedRecord);
 
         assertThat(deserializedMessage)

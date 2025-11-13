@@ -12,6 +12,7 @@ import ch.admin.bit.jeap.messaging.kafka.spring.AbstractSchemaRegistryBeanRegist
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.avro.generic.GenericData;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.beans.factory.ObjectProvider;
@@ -39,7 +40,7 @@ class ConfluentSchemaRegistryBeanRegistrar extends AbstractSchemaRegistryBeanReg
         SignatureAuthenticityService signatureAuthenticityService = signatureAuthenticityServiceObjectProvider.getIfAvailable();
 
         KafkaConfluentAvroSerdeProperties serdeProperties = createKafkaConfluentAvroSerdeProperties(kafkaProperties, cryptoConfig, signatureAuthenticityService);
-        CustomKafkaAvroSerializerConfig serializerConfig = new CustomKafkaAvroSerializerConfig(serdeProperties.avroSerializerProperties(clusterName));
+        KafkaAvroSerializerConfig serializerConfig = new KafkaAvroSerializerConfig(serdeProperties.avroSerializerProperties(clusterName));
         SchemaRegistryClient registryClient = SchemaRegistryClientUtil.createSchemaRegistryClient(serializerConfig);
         ObjectProvider<SignatureService> signatureServiceObjectProvider = beanFactory.getBeanProvider(SignatureService.class);
         SignatureService signatureService = signatureServiceObjectProvider.getIfAvailable();

@@ -2,8 +2,6 @@ package ch.admin.bit.jeap.messaging.kafka.serde.confluent;
 
 import ch.admin.bit.jeap.crypto.api.KeyId;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
-import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageDecryptor;
-import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroSerializerConfig;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureService;
 import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import io.confluent.kafka.schemaregistry.avro.AvroSchemaUtils;
@@ -25,14 +23,9 @@ import java.util.Optional;
  * compatibility mode to NONE. Compatibility in jeap-messaging can be changed
  * between versions to allow for expand/migrate/contract style evolution. Compatibility
  * is validated in the message type registry at development time.
- * This serializer can also be used to produce encrypted Kafka messages.
- * You can configure this class by the additional attributes in
- * {@link CustomKafkaAvroSerializerConfig}
  */
 @SuppressWarnings("unused")
 public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
-
-    protected LegacyMessageDecryptor legacyMessageDecryptor;
 
     protected JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
 
@@ -52,21 +45,6 @@ public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
         super(schemaRegistryClient, props);
         this.cryptoConfig = cryptoConfig;
         this.signatureService = signatureService;
-        configureFromPropertyMap(props);
-    }
-
-    @Override
-    public void configure(Map<String, ?> props, boolean isKey) {
-        super.configure(props, isKey);
-        configureFromPropertyMap(props);
-    }
-
-    private void configureFromPropertyMap(Map<String, ?> props) {
-        CustomKafkaAvroSerializerConfig customConfig = new CustomKafkaAvroSerializerConfig(props);
-        if (customConfig.getBoolean(CustomKafkaAvroSerializerConfig.ENCRYPT_MESSAGES_CONFIG)) {
-            String encryptPassphrase = customConfig.getString(CustomKafkaAvroSerializerConfig.ENCRYPT_PASSPHRASE_CONFIG);
-            legacyMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
-        }
     }
 
     @Override
@@ -111,11 +89,7 @@ public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
         if (autoRegisterSchema) {
             registerNewObjectSchemaWithModeNone(subject, object);
         }
-        byte[] payload = super.serializeImpl(subject, object, schema);
-        if (legacyMessageDecryptor != null)
-            return legacyMessageDecryptor.encryptMessage(payload);
-        else
-            return payload;
+        return super.serializeImpl(subject, object, schema);
     }
 
     private void registerNewObjectSchemaWithModeNone(String subject, Object object) {

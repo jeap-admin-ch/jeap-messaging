@@ -3,17 +3,20 @@ package ch.admin.bit.jeap.messaging.kafka.legacydecryption;
 import org.apache.kafka.common.errors.SerializationException;
 import org.junit.jupiter.api.Test;
 
+import java.security.GeneralSecurityException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LegacyMessageDecryptorTest {
 
-    @Test
-    public void ok() {
-        String originalMessage = "testMessage";
-        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor("testpw");
-        LegacyMessageDecryptor decryptor = new LegacyMessageDecryptor("testpw");
+    private static final String PASSPHRASE = "testpw";
 
-        byte[] result = decryptor.decryptMessage(encryptor.encryptMessage(originalMessage.getBytes()));
+    @Test
+    public void ok() throws GeneralSecurityException {
+        String originalMessage = "testMessage";
+        LegacyMessageDecryptor decryptor = new LegacyMessageDecryptor(PASSPHRASE);
+
+        byte[] result = decryptor.decryptMessage(LegacyMessageEncryptor.encryptMessage(originalMessage.getBytes(), PASSPHRASE));
 
         assertEquals(originalMessage, new String(result));
     }
@@ -21,19 +24,18 @@ public class LegacyMessageDecryptorTest {
     @Test
     public void wrongPassphrase() {
         String originalMessage = "testMessage";
-        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor("testpw");
         LegacyMessageDecryptor decryptor = new LegacyMessageDecryptor("wrongPw");
 
         assertThrows(SerializationException.class, () ->
-                decryptor.decryptMessage(encryptor.encryptMessage(originalMessage.getBytes())));
+                decryptor.decryptMessage(LegacyMessageEncryptor.encryptMessage(originalMessage.getBytes(), PASSPHRASE)));
     }
 
     @Test
-    public void notTransparent() {
+    public void notTransparent() throws GeneralSecurityException {
         String originalMessage = "testMessage";
-        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor("testpw");
+        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor(PASSPHRASE);
 
-        byte[] decrypted = encryptor.encryptMessage(originalMessage.getBytes());
+        byte[] decrypted = LegacyMessageEncryptor.encryptMessage(originalMessage.getBytes(), PASSPHRASE);
 
         assertNotEquals(originalMessage.getBytes(), decrypted);
     }

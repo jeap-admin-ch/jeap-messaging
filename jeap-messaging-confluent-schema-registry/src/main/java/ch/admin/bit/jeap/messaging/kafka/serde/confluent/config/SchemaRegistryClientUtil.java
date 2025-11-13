@@ -5,11 +5,12 @@ import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
 import java.util.List;
 
 public class SchemaRegistryClientUtil {
-    public static SchemaRegistryClient createSchemaRegistryClient(CustomKafkaAvroSerializerConfig serializerConfig) {
+    public static SchemaRegistryClient createSchemaRegistryClient(KafkaAvroSerializerConfig serializerConfig) {
         SchemaProvider provider = new AvroSchemaProvider();
         String mockScope = MockSchemaRegistry.validateAndMaybeGetMockScope(serializerConfig.getSchemaRegistryUrls());
         if (mockScope != null) {
@@ -19,7 +20,7 @@ public class SchemaRegistryClientUtil {
         }
     }
 
-    private static SchemaRegistryClient createSchemaRegistry(CustomKafkaAvroSerializerConfig serializerConfig, SchemaProvider provider) {
+    private static SchemaRegistryClient createSchemaRegistry(KafkaAvroSerializerConfig serializerConfig, SchemaProvider provider) {
         return new CachedSchemaRegistryClient(
                 serializerConfig.getSchemaRegistryUrls(),
                 serializerConfig.getMaxSchemasPerSubject(),
