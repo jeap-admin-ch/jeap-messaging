@@ -18,7 +18,7 @@ import java.util.Arrays;
  * An Nifi compatible message encryptors using a symmetric key.
  */
 @SuppressWarnings("WeakerAccess")
-public class MessageEncryptor {
+public class LegacyMessageDecryptor {
     private static final String OPENSSL_EVP_HEADER_MARKER = "Salted__";
     private static final int OPENSSL_EVP_HEADER_SIZE = 8;
     private static final int DEFAULT_SALT_LENGTH = 8;
@@ -29,7 +29,7 @@ public class MessageEncryptor {
     private final SecretKey secret;
     private final Cipher cipher;
 
-    public MessageEncryptor(String passphrase) {
+    public LegacyMessageDecryptor(String passphrase) {
         if (Security.getProvider(PROVIDER) == null) {
             Security.addProvider(new BouncyCastleProvider());
         }

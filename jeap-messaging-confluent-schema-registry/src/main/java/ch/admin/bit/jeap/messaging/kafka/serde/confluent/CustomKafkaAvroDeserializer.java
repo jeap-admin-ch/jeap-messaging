@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.confluent;
 
 import ch.admin.bit.jeap.kafka.SerializedMessageReceiver;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
-import ch.admin.bit.jeap.messaging.kafka.legacydecryption.MessageEncryptor;
+import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageDecryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.SerdeUtils;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroDeserializerConfig;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
     // configurable properties
-    protected MessageEncryptor nifiCompatibleMessageEncryptor;
+    protected LegacyMessageDecryptor nifiCompatibleLegacyMessageDecryptor;
 
     protected JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
     private SignatureAuthenticityService signatureAuthenticityService;
@@ -74,7 +74,7 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
         CustomKafkaAvroDeserializerConfig customConfig = new CustomKafkaAvroDeserializerConfig(props);
         if (customConfig.getBoolean(CustomKafkaAvroDeserializerConfig.DECRYPT_MESSAGES_CONFIG)) {
             String encryptPassphrase = customConfig.getString(CustomKafkaAvroDeserializerConfig.DECRYPT_PASSPHRASE_CONFIG);
-            nifiCompatibleMessageEncryptor = new MessageEncryptor(encryptPassphrase);
+            nifiCompatibleLegacyMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
         }
         if (props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE) != null) {
             this.signatureAuthenticityService = (SignatureAuthenticityService) props.get(CustomKafkaAvroDeserializerConfig.JEAP_SIGNATURE_AUTHENTICITY_SERVICE);
@@ -96,7 +96,7 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
         if (messageEncryptedWithJeapCrypto) {
             possiblyDecryptedBytes = SerdeUtils.decryptWithJeapCrypto(cryptoConfig, topic, originalBytes);
         } else if (nifiCompatibleDecryptionEnabledForDeserializer) {
-            possiblyDecryptedBytes = nifiCompatibleMessageEncryptor.decryptMessage(originalBytes);
+            possiblyDecryptedBytes = nifiCompatibleLegacyMessageDecryptor.decryptMessage(originalBytes);
         } else {
             possiblyDecryptedBytes = originalBytes;
         }
@@ -127,7 +127,7 @@ public class CustomKafkaAvroDeserializer extends KafkaAvroDeserializer {
     }
 
     private boolean isNifiCompatibleDecryptionEnabledForDeserializer() {
-        return nifiCompatibleMessageEncryptor != null;
+        return nifiCompatibleLegacyMessageDecryptor != null;
     }
 
 }

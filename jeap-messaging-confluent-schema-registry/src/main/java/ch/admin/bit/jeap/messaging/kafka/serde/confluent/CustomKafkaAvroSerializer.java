@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.confluent;
 
 import ch.admin.bit.jeap.crypto.api.KeyId;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
-import ch.admin.bit.jeap.messaging.kafka.legacydecryption.MessageEncryptor;
+import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageDecryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroSerializerConfig;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureService;
 import io.confluent.kafka.schemaregistry.avro.AvroSchema;
@@ -32,7 +32,7 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
 
-    protected MessageEncryptor messageEncryptor;
+    protected LegacyMessageDecryptor legacyMessageDecryptor;
 
     protected JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
 
@@ -65,7 +65,7 @@ public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
         CustomKafkaAvroSerializerConfig customConfig = new CustomKafkaAvroSerializerConfig(props);
         if (customConfig.getBoolean(CustomKafkaAvroSerializerConfig.ENCRYPT_MESSAGES_CONFIG)) {
             String encryptPassphrase = customConfig.getString(CustomKafkaAvroSerializerConfig.ENCRYPT_PASSPHRASE_CONFIG);
-            messageEncryptor = new MessageEncryptor(encryptPassphrase);
+            legacyMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
         }
     }
 
@@ -112,8 +112,8 @@ public class CustomKafkaAvroSerializer extends KafkaAvroSerializer {
             registerNewObjectSchemaWithModeNone(subject, object);
         }
         byte[] payload = super.serializeImpl(subject, object, schema);
-        if (messageEncryptor != null)
-            return messageEncryptor.encryptMessage(payload);
+        if (legacyMessageDecryptor != null)
+            return legacyMessageDecryptor.encryptMessage(payload);
         else
             return payload;
     }

@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.glue;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
-import ch.admin.bit.jeap.messaging.kafka.legacydecryption.MessageEncryptor;
+import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageDecryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.properties.GlueKafkaAvroSerdeProperties;
 import org.apache.avro.generic.GenericData;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -94,11 +94,11 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
         String passphrase = "test-passphrase";
-        MessageEncryptor messageEncryptor = new MessageEncryptor(passphrase);
+        LegacyMessageDecryptor legacyMessageDecryptor = new LegacyMessageDecryptor(passphrase);
         JeapGlueAvroDeserializer deserializer = createDeserializerWithNifiCompatibleDecyption(passphrase);
         AvroMessage testEvent = createTestEvent();
 
-        byte[] serializedEncryptedRecord = messageEncryptor.encryptMessage(serializer.serialize("test-topic2", testEvent));
+        byte[] serializedEncryptedRecord = legacyMessageDecryptor.encryptMessage(serializer.serialize("test-topic2", testEvent));
         AvroMessage deserializedMessage = (AvroMessage) deserializer.deserialize("test-topic2", serializedEncryptedRecord);
 
         assertThat(deserializedMessage)

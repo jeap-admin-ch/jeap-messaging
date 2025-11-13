@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.serde.glue;
 
 import ch.admin.bit.jeap.kafka.SerializedMessageReceiver;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
-import ch.admin.bit.jeap.messaging.kafka.legacydecryption.MessageEncryptor;
+import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageDecryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.SerdeUtils;
 import ch.admin.bit.jeap.messaging.kafka.serde.glue.config.properties.GlueKafkaAvroSerdeProperties;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
@@ -30,7 +30,7 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
     private GlueSchemaRegistryKafkaDeserializer delegate;
     private SignatureAuthenticityService signatureAuthenticityService;
     private JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
-    private MessageEncryptor nifiCompatibleMessageDecryptor;
+    private LegacyMessageDecryptor nifiCompatibleMessageDecryptor;
     private boolean isKey;
 
     public JeapGlueAvroDeserializer() {
@@ -50,7 +50,7 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
         Boolean decryptMessages = (Boolean) configs.get(DECRYPT_MESSAGES_CONFIG);
         if (decryptMessages != null && decryptMessages.booleanValue()) {
             String encryptPassphrase = (String) configs.get(DECRYPT_PASSPHRASE_CONFIG);
-            nifiCompatibleMessageDecryptor = new MessageEncryptor(encryptPassphrase);
+            nifiCompatibleMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
         }
 
         setSignatureAuthenticityService(configs);

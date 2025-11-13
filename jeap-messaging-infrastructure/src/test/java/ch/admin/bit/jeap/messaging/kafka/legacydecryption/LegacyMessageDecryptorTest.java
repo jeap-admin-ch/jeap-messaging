@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MessageEncryptorTest {
+public class LegacyMessageDecryptorTest {
 
     @Test
     public void ok() {
         String originalMessage = "testMessage";
-        MessageEncryptor encryptor = new MessageEncryptor("testpw");
-        MessageEncryptor decryptor = new MessageEncryptor("testpw");
+        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor("testpw");
+        LegacyMessageDecryptor decryptor = new LegacyMessageDecryptor("testpw");
 
         byte[] result = decryptor.decryptMessage(encryptor.encryptMessage(originalMessage.getBytes()));
 
@@ -21,8 +21,8 @@ public class MessageEncryptorTest {
     @Test
     public void wrongPassphrase() {
         String originalMessage = "testMessage";
-        MessageEncryptor encryptor = new MessageEncryptor("testpw");
-        MessageEncryptor decryptor = new MessageEncryptor("wrongPw");
+        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor("testpw");
+        LegacyMessageDecryptor decryptor = new LegacyMessageDecryptor("wrongPw");
 
         assertThrows(SerializationException.class, () ->
                 decryptor.decryptMessage(encryptor.encryptMessage(originalMessage.getBytes())));
@@ -31,7 +31,7 @@ public class MessageEncryptorTest {
     @Test
     public void notTransparent() {
         String originalMessage = "testMessage";
-        MessageEncryptor encryptor = new MessageEncryptor("testpw");
+        LegacyMessageDecryptor encryptor = new LegacyMessageDecryptor("testpw");
 
         byte[] decrypted = encryptor.encryptMessage(originalMessage.getBytes());
 
