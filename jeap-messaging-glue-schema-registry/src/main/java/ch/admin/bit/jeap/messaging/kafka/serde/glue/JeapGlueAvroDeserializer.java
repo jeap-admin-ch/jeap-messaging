@@ -30,7 +30,7 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
     private GlueSchemaRegistryKafkaDeserializer delegate;
     private SignatureAuthenticityService signatureAuthenticityService;
     private JeapKafkaAvroSerdeCryptoConfig cryptoConfig;
-    private LegacyMessageDecryptor nifiCompatibleMessageDecryptor;
+    private LegacyMessageDecryptor legacyMessageDecryptor;
     private boolean isKey;
 
     public JeapGlueAvroDeserializer() {
@@ -47,16 +47,24 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
         addCredentialsProviderIfMissing(configs);
         addCryptoConfig(configs);
 
-        Boolean decryptMessages = (Boolean) configs.get(DECRYPT_MESSAGES_CONFIG);
-        if (decryptMessages != null && decryptMessages.booleanValue()) {
+        boolean decryptMessages = isLegacyDecryptionActive(configs);
+        if (decryptMessages) {
             String encryptPassphrase = (String) configs.get(DECRYPT_PASSPHRASE_CONFIG);
-            nifiCompatibleMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
+            legacyMessageDecryptor = new LegacyMessageDecryptor(encryptPassphrase);
         }
 
         setSignatureAuthenticityService(configs);
         defineSpecificDeserializerIfSpecificClassIsConfigured(configs, isKey);
         this.delegate.configure(configs, isKey);
         this.isKey = isKey;
+    }
+
+    static boolean isLegacyDecryptionActive(Map<String, ?> configs) {
+        Object value = configs.get(DECRYPT_MESSAGES_CONFIG);
+        if (value != null) {
+            return Boolean.parseBoolean(value.toString());
+        }
+        return false;
     }
 
     private void addCredentialsProviderIfMissing(Map<String, ?> configs) {
@@ -115,9 +123,9 @@ public class JeapGlueAvroDeserializer implements Deserializer<Object> {
     @Override
     public Object deserialize(String topic, Headers headers, byte[] originalBytes) {
         byte[] possiblyDecryptedBytes;
-        if (nifiCompatibleMessageDecryptor != null) {
+        if (legacyMessageDecryptor != null) {
             log.debug("Decrypting message from topic '{}' with nifi compatible message decryptor", topic);
-            possiblyDecryptedBytes = nifiCompatibleMessageDecryptor.decryptMessage(originalBytes);
+            possiblyDecryptedBytes = legacyMessageDecryptor.decryptMessage(originalBytes);
         } else {
             possiblyDecryptedBytes = SerdeUtils.decryptIfEncrypted(isKey, cryptoConfig, topic, originalBytes, headers);
         }

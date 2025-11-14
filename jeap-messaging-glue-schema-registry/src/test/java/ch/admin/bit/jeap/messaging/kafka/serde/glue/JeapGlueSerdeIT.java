@@ -110,7 +110,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
     private JeapGlueAvroDeserializer createDeserializerWithNifiCompatibleDecyption(String passphrase) {
         Map<String, Object> props = new HashMap<>(kafkaAvroSerdeProvider.getSerdeProperties().avroDeserializerProperties("default"));
         props.remove(GlueKafkaAvroSerdeProperties.JEAP_SIGNATURE_AUTHENTICITY_SERVICE);
-        props.put(JeapGlueAvroDeserializer.DECRYPT_MESSAGES_CONFIG, true);
+        props.put(JeapGlueAvroDeserializer.DECRYPT_MESSAGES_CONFIG, "true");
         props.put(JeapGlueAvroDeserializer.DECRYPT_PASSPHRASE_CONFIG, passphrase);
         JeapGlueAvroDeserializer deserializer = new JeapGlueAvroDeserializer(awsCredentialsProvider, null);
         deserializer.configure(props, false);
