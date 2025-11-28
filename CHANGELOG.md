@@ -11,6 +11,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Update parent from 5.15.1 to 5.16.0
   
 - update jeap-spring-boot-roles-anywhere-starter from 1.6.0 to 1.7.0
+- update jeap-spring-boot-vault-starter from 18.4.0 to 18.5.0
+- update jeap-crypto from 4.4.0 to 4.5.0
 
 ## [10.1.0] - 2025-11-14
 ### Changed
