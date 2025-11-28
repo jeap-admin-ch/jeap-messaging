@@ -67,7 +67,7 @@
         <jeap-crypto.version>4.4.0</jeap-crypto.version>
         <jeap-spring-boot-roles-anywhere-starter.version>1.6.0</jeap-spring-boot-roles-anywhere-starter.version>
         <maven.api.version>3.9.11</maven.api.version>
-        <maven.plugin.version>3.15.1</maven.plugin.version>
+        <maven.plugin.version>3.15.2</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <aws-msk-iam-auth.version>2.3.2</aws-msk-iam-auth.version>
         <schema-registry-serde.version>1.1.25</schema-registry-serde.version>
