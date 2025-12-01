@@ -55,11 +55,11 @@ class KafkaSerdeGlueIT extends KafkaGlueIntegrationTestBase {
     @Test
     void testConsumeMessage() {
         UUID createDeclarationCommandVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(createDeclarationCommandVersionId, "jme-messaging-create-declaration-JmeCreateDeclarationCommand");
+        stubGetSchemaByDefinitionResponse(createDeclarationCommandVersionId, "jme-messaging-create-declaration-ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand");
         stubGetSchemaVersionResponse(createDeclarationCommandVersionId, CREATE_DECLARATION_COMMAND_AVRO_SCHEMA);
 
         UUID declarationCreatedEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(declarationCreatedEventVersionId, "jme-messaging-declaration-created-JmeDeclarationCreatedEvent");
+        stubGetSchemaByDefinitionResponse(declarationCreatedEventVersionId, "jme-messaging-declaration-created-ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent");
         stubGetSchemaVersionResponse(declarationCreatedEventVersionId, DECLARATION_CREATED_EVENT_AVRO_SCHEMA);
 
         JmeCreateDeclarationCommand createDeclarationCommand = JmeCreateDeclarationCommandBuilder.create()
@@ -81,7 +81,7 @@ class KafkaSerdeGlueIT extends KafkaGlueIntegrationTestBase {
     @Test
     void testConsumeMessageWithCustomDeserializationForValue() {
         UUID simpleTestEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-topic-JmeSimpleTestEvent");
+        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-topic-ch.admin.bit.jme.test.JmeSimpleTestEvent");
         stubGetSchemaVersionResponse(simpleTestEventVersionId, JME_SIMPLE_TEST_EVENT_AVRO_SCHEMA);
 
         JmeSimpleTestEvent message = JmeSimpleTestEventBuilder.create()
@@ -98,11 +98,11 @@ class KafkaSerdeGlueIT extends KafkaGlueIntegrationTestBase {
     void testConsumeMessageWithCustomDeserializationForValueAndKey() {
 
         UUID simpleTestEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-other-topic-JmeSimpleTestEvent");
+        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-other-topic-ch.admin.bit.jme.test.JmeSimpleTestEvent");
         stubGetSchemaVersionResponse(simpleTestEventVersionId, JME_SIMPLE_TEST_EVENT_AVRO_SCHEMA);
 
         UUID beanReferenceMessageKeyVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(beanReferenceMessageKeyVersionId, "some-other-topic-BeanReferenceMessageKey-key");
+        stubGetSchemaByDefinitionResponse(beanReferenceMessageKeyVersionId, "some-other-topic-ch.admin.bit.jme.test.BeanReferenceMessageKey-key");
         stubGetSchemaVersionResponse(beanReferenceMessageKeyVersionId, JME_BEAN_REFERENCE_MESSAGE_KEY_AVRO_SCHEMA);
 
         BeanReferenceMessageKey messageKey = new BeanReferenceMessageKey("myKey", "myNamespace", "myId");

@@ -72,11 +72,11 @@ class KafkaSerdeSigningSendAndReceiveNoKeyExposureGlueIT extends KafkaGlueIntegr
     @Test
     void testSignHeaders_sendWithKey_noKeyExposure() {
         UUID simpleTestEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-other-topic-JmeSimpleTestEvent");
+        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-other-topic-ch.admin.bit.jme.test.JmeSimpleTestEvent");
         stubGetSchemaVersionResponse(simpleTestEventVersionId, JME_SIMPLE_TEST_EVENT_AVRO_SCHEMA);
 
         UUID beanReferenceMessageKeyVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(beanReferenceMessageKeyVersionId, "some-other-topic-BeanReferenceMessageKey-key");
+        stubGetSchemaByDefinitionResponse(beanReferenceMessageKeyVersionId, "some-other-topic-ch.admin.bit.jme.test.BeanReferenceMessageKey-key");
         stubGetSchemaVersionResponse(beanReferenceMessageKeyVersionId, JME_BEAN_REFERENCE_MESSAGE_KEY_AVRO_SCHEMA);
 
         BeanReferenceMessageKey messageKey = new BeanReferenceMessageKey("myKey", "myNamespace", UUID.randomUUID().toString());

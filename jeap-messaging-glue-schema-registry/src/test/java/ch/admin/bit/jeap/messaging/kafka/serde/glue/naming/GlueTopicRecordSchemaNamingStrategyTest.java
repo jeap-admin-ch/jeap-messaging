@@ -31,7 +31,7 @@ class GlueTopicRecordSchemaNamingStrategyTest {
         String schemaName = strategy.getSchemaName("my-topic", createGenericRecord());
 
         assertThat(schemaName)
-                .isEqualTo("my-topic-TestEmptyMessageKey");
+                .isEqualTo("my-topic-ch.admin.bit.jeap.messaging.test.glue.avro.TestEmptyMessageKey");
     }
 
     @Test
@@ -40,9 +40,9 @@ class GlueTopicRecordSchemaNamingStrategyTest {
         String schemaName2 = strategy.getSchemaName("my-topic", createGenericRecord(), true);
 
         assertThat(schemaName1)
-                .isEqualTo("my-topic-TestEmptyMessageKey");
+                .isEqualTo("my-topic-ch.admin.bit.jeap.messaging.test.glue.avro.TestEmptyMessageKey");
         assertThat(schemaName2)
-                .isEqualTo("my-topic-TestEmptyMessageKey-key");
+                .isEqualTo("my-topic-ch.admin.bit.jeap.messaging.test.glue.avro.TestEmptyMessageKey-key");
     }
 
     private GenericRecord createGenericRecord() {

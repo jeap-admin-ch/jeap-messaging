@@ -16,7 +16,7 @@ class JeapGlueEmptyKeySerdeIT extends AbstractGlueSerdeTestBase {
     @Test
     void testEmptyKeySerdeRoundtrip() {
         UUID versionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(versionId, "test-topic-TestEmptyMessageKey-key");
+        stubGetSchemaByDefinitionResponse(versionId, "test-topic-ch.admin.bit.jeap.messaging.test.glue.avro.TestEmptyMessageKey-key");
         stubGetSchemaVersionResponse(versionId, TestEmptyMessageKey.SCHEMA$.toString());
 
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getKeySerializer();

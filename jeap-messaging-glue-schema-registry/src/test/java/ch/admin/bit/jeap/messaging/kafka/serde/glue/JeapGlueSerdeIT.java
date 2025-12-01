@@ -24,7 +24,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
     @Test
     void testMessageSerialization() {
         UUID versionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(versionId, "test-topic-TestEvent");
+        stubGetSchemaByDefinitionResponse(versionId, "test-topic-ch.admin.bit.jeap.messaging.test.glue.avro.TestEvent");
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
 
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
@@ -38,7 +38,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
     @Test
     void testMessageSerDeToGenericRecordRoundtrip() {
         UUID versionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(versionId, "test-topic2-TestEvent");
+        stubGetSchemaByDefinitionResponse(versionId, "test-topic2-ch.admin.bit.jeap.messaging.test.glue.avro.TestEvent");
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
 
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
@@ -55,7 +55,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
     @Test
     void testKeySerialization() {
         UUID versionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(versionId, "test-topic-TestMessageKey-key");
+        stubGetSchemaByDefinitionResponse(versionId, "test-topic-ch.admin.bit.jeap.messaging.test.glue.avro.TestMessageKey-key");
         stubGetSchemaVersionResponse(versionId, TEST_KEY_AVRO_SCHEMA);
 
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getKeySerializer();
@@ -69,7 +69,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
     @Test
     void testMessageSerDeRoundtrip() {
         UUID versionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(versionId, "test-topic2-TestEvent");
+        stubGetSchemaByDefinitionResponse(versionId, "test-topic2-ch.admin.bit.jeap.messaging.test.glue.avro.TestEvent");
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
 
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
@@ -91,7 +91,7 @@ class JeapGlueSerdeIT extends AbstractGlueSerdeTestBase {
     @Test
     void testMessageDeserialization_nifiDecryption() throws GeneralSecurityException {
         UUID versionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(versionId, "test-topic2-TestEvent");
+        stubGetSchemaByDefinitionResponse(versionId, "test-topic2-ch.admin.bit.jeap.messaging.test.glue.avro.TestEvent");
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();
         String passphrase = "test-passphrase";

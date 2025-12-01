@@ -38,7 +38,7 @@ class JeapGlueSerdeAssumeRoleIT extends AbstractGlueSerdeTestBase {
     void testMessageSerialization() throws IOException {
         UUID versionId = UUID.randomUUID();
         stubAssumeRoleResponse();
-        stubGetSchemaByDefinitionResponse(versionId, "test-topic-TestEvent");
+        stubGetSchemaByDefinitionResponse(versionId, "test-topic-ch.admin.bit.jeap.messaging.test.glue.avro.TestEvent");
         stubGetSchemaVersionResponse(versionId, TEST_EVENT_AVRO_SCHEMA);
 
         Serializer<Object> serializer = kafkaAvroSerdeProvider.getValueSerializer();

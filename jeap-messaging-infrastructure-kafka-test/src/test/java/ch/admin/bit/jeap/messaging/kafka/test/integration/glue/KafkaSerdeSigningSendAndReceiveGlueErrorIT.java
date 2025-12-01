@@ -31,9 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -89,19 +87,19 @@ class KafkaSerdeSigningSendAndReceiveGlueErrorIT extends KafkaGlueIntegrationTes
     @Test
     void testSignHeaders_sendWithKey() {
         UUID simpleTestEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-other-topic-JmeSimpleTestEvent");
+        stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-other-topic-ch.admin.bit.jme.test.JmeSimpleTestEvent");
         stubGetSchemaVersionResponse(simpleTestEventVersionId, JME_SIMPLE_TEST_EVENT_AVRO_SCHEMA);
 
         UUID beanReferenceMessageKeyVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(beanReferenceMessageKeyVersionId, "some-other-topic-BeanReferenceMessageKey-key");
+        stubGetSchemaByDefinitionResponse(beanReferenceMessageKeyVersionId, "some-other-topic-ch.admin.bit.jme.test.BeanReferenceMessageKey-key");
         stubGetSchemaVersionResponse(beanReferenceMessageKeyVersionId, JME_BEAN_REFERENCE_MESSAGE_KEY_AVRO_SCHEMA);
 
         UUID messageProcessingFailedEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(messageProcessingFailedEventVersionId, "errorTopic-MessageProcessingFailedEvent");
+        stubGetSchemaByDefinitionResponse(messageProcessingFailedEventVersionId, "errorTopic-ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent");
         stubGetSchemaVersionResponse(messageProcessingFailedEventVersionId, MESSAGE_PROCESSING_FAILED_EVENT_AVRO_SCHEMA);
 
         UUID messageProcessingFailedMessageKeyVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(messageProcessingFailedMessageKeyVersionId, "errorTopic-MessageProcessingFailedMessageKey-key");
+        stubGetSchemaByDefinitionResponse(messageProcessingFailedMessageKeyVersionId, "errorTopic-ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedMessageKey-key");
         stubGetSchemaVersionResponse(messageProcessingFailedMessageKeyVersionId, MESSAGE_PROCESSING_FAILED_MESSAGE_KEY_AVRO_SCHEMA);
 
         BeanReferenceMessageKey messageKey = new BeanReferenceMessageKey("myKey", "myNamespace", UUID.randomUUID().toString());
@@ -130,15 +128,15 @@ class KafkaSerdeSigningSendAndReceiveGlueErrorIT extends KafkaGlueIntegrationTes
     @Test
     void testSignHeaders_sendWithoutKey() {
         UUID declarationCreatedEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(declarationCreatedEventVersionId, "jme-messaging-declaration-created-JmeDeclarationCreatedEvent");
+        stubGetSchemaByDefinitionResponse(declarationCreatedEventVersionId, "jme-messaging-declaration-created-ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent");
         stubGetSchemaVersionResponse(declarationCreatedEventVersionId, DECLARATION_CREATED_EVENT_AVRO_SCHEMA);
 
         UUID messageProcessingFailedEventVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(messageProcessingFailedEventVersionId, "errorTopic-MessageProcessingFailedEvent");
+        stubGetSchemaByDefinitionResponse(messageProcessingFailedEventVersionId, "errorTopic-ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent");
         stubGetSchemaVersionResponse(messageProcessingFailedEventVersionId, MESSAGE_PROCESSING_FAILED_EVENT_AVRO_SCHEMA);
 
         UUID messageProcessingFailedMessageKeyVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(messageProcessingFailedMessageKeyVersionId, "errorTopic-MessageProcessingFailedMessageKey-key");
+        stubGetSchemaByDefinitionResponse(messageProcessingFailedMessageKeyVersionId, "errorTopic-ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedMessageKey-key");
         stubGetSchemaVersionResponse(messageProcessingFailedMessageKeyVersionId, MESSAGE_PROCESSING_FAILED_MESSAGE_KEY_AVRO_SCHEMA);
 
         JmeDeclarationCreatedEvent declarationCreatedEvent = JmeDeclarationCreatedEventBuilder.create()

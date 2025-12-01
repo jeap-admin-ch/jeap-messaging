@@ -23,7 +23,7 @@ public class GlueTopicRecordSchemaNamingStrategy implements AWSSchemaNamingStrat
     }
 
     private String getRecordName(GenericContainer gc) {
-        return gc.getSchema().getName();
+        return gc.getSchema().getFullName();
     }
 
     private String getSuffix(Object data, boolean isKey) {

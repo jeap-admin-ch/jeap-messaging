@@ -73,7 +73,7 @@ class KafkaSerdeCryptoGlueIT extends KafkaGlueIntegrationTestBase {
         final KeyId testKeyId = KeyId.of("testKey");
 
         UUID createDeclarationCommandVersionId = UUID.randomUUID();
-        stubGetSchemaByDefinitionResponse(createDeclarationCommandVersionId, "jme-messaging-create-declaration-JmeCreateDeclarationCommand");
+        stubGetSchemaByDefinitionResponse(createDeclarationCommandVersionId, "jme-messaging-create-declaration-ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand");
         stubGetSchemaVersionResponse(createDeclarationCommandVersionId, CREATE_DECLARATION_COMMAND_AVRO_SCHEMA);
         JmeCreateDeclarationCommand createDeclarationCommand = JmeCreateDeclarationCommandBuilder.create()
                 .idempotenceId(UUID.randomUUID().toString())
