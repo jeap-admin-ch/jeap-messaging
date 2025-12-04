@@ -8,6 +8,7 @@ Third-party dependencies grouped by their license type (see [pom.xml](/pom.xml) 
 Apache License Version 2.0
 -------------------------------
 
+ * LZ4 Java Compression - [at.yawk.lz4:lz4-java](https://github.com/lz4/lz4-java)
  * ch.admin.bit.jeap:jeap-crypto-core - [ch.admin.bit.jeap:jeap-crypto-core](https://github.com/jeap-admin-ch/jeap-crypto/tree/main/jeap-crypto-core)
  * ch.admin.bit.jeap:jeap-messaging-api - [ch.admin.bit.jeap:jeap-messaging-api](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-api)
  * ch.admin.bit.jeap:jeap-messaging-avro - [ch.admin.bit.jeap:jeap-messaging-avro](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-avro)
@@ -255,7 +256,6 @@ Apache License Version 2.0
  * kotlinx-datetime - [org.jetbrains.kotlinx:kotlinx-datetime-jvm](https://github.com/Kotlin/kotlinx-datetime)
  * kotlinx-serialization-core - [org.jetbrains.kotlinx:kotlinx-serialization-core-jvm](https://github.com/Kotlin/kotlinx.serialization)
  * JSpecify annotations - [org.jspecify:jspecify](http://jspecify.org/)
- * LZ4 and xxHash - [org.lz4:lz4-java](https://github.com/lz4/lz4-java)
  * Objenesis - [org.objenesis:objenesis](http://objenesis.org/objenesis)
  * org.opentest4j:opentest4j - [org.opentest4j:opentest4j](https://github.com/ota4j-team/opentest4j)
  * Reflections - [org.reflections:reflections](http://github.com/ronmamo/reflections)
