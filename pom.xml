@@ -65,7 +65,7 @@
         <avro-serializer.version>7.9.2</avro-serializer.version>
         <avro.version>1.12.0</avro.version>
         <jeap-crypto.version>5.1.0</jeap-crypto.version>
-        <jeap-spring-boot-roles-anywhere-starter.version>1.8.0</jeap-spring-boot-roles-anywhere-starter.version>
+        <jeap-spring-boot-roles-anywhere-starter.version>1.10.0</jeap-spring-boot-roles-anywhere-starter.version>
         <maven.api.version>3.9.11</maven.api.version>
         <maven.plugin.version>3.15.2</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
