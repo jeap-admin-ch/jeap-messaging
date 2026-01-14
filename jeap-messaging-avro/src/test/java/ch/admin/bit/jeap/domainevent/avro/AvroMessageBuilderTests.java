@@ -3,10 +3,7 @@ package ch.admin.bit.jeap.domainevent.avro;
 import ch.admin.bit.jeap.command.avro.AvroCommand;
 import ch.admin.bit.jeap.command.avro.AvroCommandBuilder;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
-import ch.admin.bit.jeap.messaging.avro.AvroMessage;
-import ch.admin.bit.jeap.messaging.avro.AvroMessageIdentity;
-import ch.admin.bit.jeap.messaging.avro.AvroMessagePublisher;
-import ch.admin.bit.jeap.messaging.avro.AvroMessageType;
+import ch.admin.bit.jeap.messaging.avro.*;
 import ch.admin.bit.jeap.messaging.model.MessageReferences;
 import lombok.Data;
 import lombok.Getter;
@@ -104,11 +101,11 @@ class AvroMessageBuilderTests {
     }
 
     @Test
-    void eventTypeWithVariant() {
-        DomainEvent target = SimpleBuilderWithVariant.create().idempotenceId("idempotenceId").variant("variant1").build();
-        assertNotNull(target.getType());
-        assertEquals("SimpleEventWithVariant", target.getType().getName());
-        assertEquals("variant1", target.getType().getVariant());
+    void eventTypeWithVariant_noSchemaFieldInMessageType_throwsException() {
+        SimpleBuilderWithVariant simpleBuilderWithVariant = SimpleBuilderWithVariant.create().idempotenceId("idempotenceId");
+        String expectedErrorMessage = "The generated class for 'ch.admin.bit.jeap.domainevent.avro.AvroMessageBuilderTests.SimpleEventWithVariant' does not have a 'SCHEMA$' field.";
+        AvroMessageBuilderException avroMessageBuilderException = assertThrows(AvroMessageBuilderException.class, () -> simpleBuilderWithVariant.variant("variant1"));
+        assertEquals(expectedErrorMessage, avroMessageBuilderException.getMessage());
     }
 
     @Test

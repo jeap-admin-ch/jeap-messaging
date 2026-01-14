@@ -44,4 +44,14 @@ public class AvroMessageBuilderException extends RuntimeException {
         String message = String.format("The message class '%s' does not have a user field.", klass.getCanonicalName());
         return new AvroMessageBuilderException(message);
     }
+
+    public static AvroMessageBuilderException variantNotAvailableInSchema(Class<?> klass) {
+        String message = String.format("The schema of the message type '%s' does not have a 'variant' field. In order to use the 'variant' field in this message type, a new version of the message must be defined in order to generate the schema again.", klass.getCanonicalName());
+        return new AvroMessageBuilderException(message);
+    }
+
+    public static AvroMessageBuilderException schemaNotAvailable(Class<?> klass) {
+        String message = String.format("The generated class for '%s' does not have a 'SCHEMA$' field.", klass.getCanonicalName());
+        return new AvroMessageBuilderException(message);
+    }
 }

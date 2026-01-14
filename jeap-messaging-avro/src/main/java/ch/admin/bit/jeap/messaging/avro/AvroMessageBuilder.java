@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.messaging.model.MessageReferences;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import java.lang.reflect.Field;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -59,8 +60,23 @@ public abstract class AvroMessageBuilder<BuilderType extends AvroMessageBuilder,
         if (isBlank(variant)) {
             throw AvroMessageBuilderException.propertyValue("type.variant", variant);
         }
+
+        org.apache.avro.Schema schema = retrieveSchema();
+        if (schema.getField("type").schema().getField("variant") == null) {
+            throw AvroMessageBuilderException.variantNotAvailableInSchema(constructor.get().getClass());
+        }
+
         this.variant = variant;
         return self();
+    }
+
+    private org.apache.avro.Schema retrieveSchema() {
+        try {
+            Field schemaField = constructor.get().getClass().getDeclaredField("SCHEMA$");
+            return (org.apache.avro.Schema) schemaField.get(constructor.get());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw AvroMessageBuilderException.schemaNotAvailable(constructor.get().getClass());
+        }
     }
 
     protected void checkMandatoryFields() {
