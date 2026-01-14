@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.List;
 
+@SuppressWarnings("java:S1874")
 public class SchemaMojoTest extends AbstractAvroMojoTest {
 
     @Rule

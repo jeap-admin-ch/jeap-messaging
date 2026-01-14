@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("java:S1874")
 public class MessageTypesCompilerGitDiffMojoTest extends AbstractAvroMojoTest {
 
     private TestRegistryRepo testRepo;

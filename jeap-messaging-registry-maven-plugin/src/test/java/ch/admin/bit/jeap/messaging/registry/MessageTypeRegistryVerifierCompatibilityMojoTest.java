@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+@SuppressWarnings("java:S1874")
 @ExtendWith(SystemStubsExtension.class)
 class MessageTypeRegistryVerifierCompatibilityMojoTest extends AbstractMojoTestCase {
     private final static File RESOURCES_DIR = new File("src/test/resources/");

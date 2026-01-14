@@ -11,6 +11,7 @@ import org.junit.rules.ExpectedException;
 import java.io.File;
 import java.util.List;
 
+@SuppressWarnings("java:S1874")
 public class CommandIdlMojoTest extends AbstractAvroMojoTest {
     @Rule
     public MojoRule mojoRule = new MojoRule();

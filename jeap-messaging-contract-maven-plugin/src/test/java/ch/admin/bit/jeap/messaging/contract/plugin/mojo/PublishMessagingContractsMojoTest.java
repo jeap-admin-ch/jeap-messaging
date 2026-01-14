@@ -11,6 +11,7 @@ import java.io.File;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
+@SuppressWarnings("java:S1874")
 public class PublishMessagingContractsMojoTest {
 
     @Rule
