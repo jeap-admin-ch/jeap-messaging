@@ -44,6 +44,20 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>ch.admin.bit.jeap.messaging.test.messagetype.jme</groupId>
+            <artifactId>jme-declaration-created-event</artifactId>
+            <version>1.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.admin.bit.jeap.jme.messagetype.jme</groupId>
+            <artifactId>jme-test-created-event</artifactId>
+            <version>0.0.4</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- build plugin first -->
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>

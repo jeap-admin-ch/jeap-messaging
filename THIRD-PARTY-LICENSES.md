@@ -28,8 +28,6 @@ Apache License Version 2.0
  * ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka-test - [ch.admin.bit.jeap:jeap-messaging-infrastructure-kafka-test](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-infrastructure-kafka-test)
  * ch.admin.bit.jeap:jeap-messaging-model - [ch.admin.bit.jeap:jeap-messaging-model](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-model)
  * ch.admin.bit.jeap:jeap-spring-boot-roles-anywhere-starter - [ch.admin.bit.jeap:jeap-spring-boot-roles-anywhere-starter](https://github.com/jeap-admin-ch/jeap-spring-boot-roles-anywhere-starter/tree/main/jeap-spring-boot-roles-anywhere-starter)
- * ch.admin.bit.jeap.jme.messagetype.jme:jme-messaging-common - [ch.admin.bit.jeap.jme.messagetype.jme:jme-messaging-common](https://github.com/jme-admin-ch/jme-message-type-registry/tree/main)
- * ch.admin.bit.jeap.jme.messagetype.jme:jme-test-created-event - [ch.admin.bit.jeap.jme.messagetype.jme:jme-test-created-event](https://github.com/jme-admin-ch/jme-message-type-registry/tree/main)
  * jeap-initializer-simple-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jeap:jeap-initializer-simple-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * jme-backward-schema-evolution-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * jme-backward-schema-evolution-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-backward-schema-evolution-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
