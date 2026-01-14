@@ -12,7 +12,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - update jeap-spring-boot-roles-anywhere-starter from 1.15.0 to 1.16.0
 - update jeap-spring-boot-vault-starter from 19.8.0 to 19.9.0
 - update jeap-crypto from 5.8.0 to 5.9.0
-- update testcontainers from 1.21.3 to 1.21.4
+- update avro-serializer from 7.9.2 to 8.1.1
+- update avro from 1.12.0 to 1.12.1
+- update maven.api from 3.9.11 to 3.9.12
+- update aws-msk-iam-auth from 2.3.2 to 2.3.5
+- update protobuf-java from 4.32.1 to 4.33.4
+- update org.eclipse.jgit from 7.3.0.202506031305-r to 7.5.0.202512021534-r
+- update commons-io from 2.19.0 to 2.21.0
 
 ## [11.7.0] - 2026-01-07
 
