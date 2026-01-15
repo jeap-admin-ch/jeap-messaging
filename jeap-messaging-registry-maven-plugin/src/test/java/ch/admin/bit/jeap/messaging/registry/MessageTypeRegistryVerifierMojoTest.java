@@ -20,6 +20,7 @@ import java.io.File;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+@SuppressWarnings("java:S1874")
 class MessageTypeRegistryVerifierMojoTest extends AbstractMojoTestCase {
     private final static File RESOURCES_DIR = new File("src/test/resources/");
 

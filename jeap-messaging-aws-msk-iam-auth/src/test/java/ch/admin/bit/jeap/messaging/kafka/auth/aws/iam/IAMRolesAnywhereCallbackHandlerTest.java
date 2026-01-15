@@ -4,7 +4,6 @@ import ch.admin.bit.jeap.messaging.auth.aws.iam.util.IAMRolesAnywhereCredentials
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.msk.auth.iam.internals.AWSCredentialsCallback;
@@ -14,8 +13,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class IAMRolesAnywhereCallbackHandlerTest {
 
@@ -29,6 +33,7 @@ class IAMRolesAnywhereCallbackHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("java:S2699")
     void testConfigureWithValidMechanism() {
         try (MockedStatic<IAMRolesAnywhereCredentialsProviderHolder> mockedStatic = mockStatic(IAMRolesAnywhereCredentialsProviderHolder.class)) {
             mockedStatic.when(IAMRolesAnywhereCredentialsProviderHolder::getProvider).thenReturn(mockProvider);

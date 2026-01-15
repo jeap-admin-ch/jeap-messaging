@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("java:S1874")
 public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
 
     private static final String EXPECTED_EVENT_TYPE_REF = "public static class TypeRef implements ch.admin.bit.jeap.messaging.avro.MessageTypeMetadata {\n" +

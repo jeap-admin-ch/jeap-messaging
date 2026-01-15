@@ -21,6 +21,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import java.io.File;
 import java.util.Objects;
 
+@SuppressWarnings("java:S1874")
 class MessageTypeRegistryExporterMojoTest extends AbstractMojoTestCase {
     private final static File RESOURCES_DIR = new File("src/test/resources/");
 

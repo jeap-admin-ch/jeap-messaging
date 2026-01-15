@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@SuppressWarnings("java:S1874")
 public class MessageTypeArtifactsDeployerMojoTest extends AbstractAvroMojoTest {
 
     @Rule
