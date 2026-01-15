@@ -73,7 +73,7 @@ public abstract class AvroMessageBuilder<BuilderType extends AvroMessageBuilder,
     private org.apache.avro.Schema retrieveSchema() {
         try {
             Field schemaField = constructor.get().getClass().getDeclaredField("SCHEMA$");
-            return (org.apache.avro.Schema) schemaField.get(constructor.get());
+            return (org.apache.avro.Schema) schemaField.get(null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw AvroMessageBuilderException.schemaNotAvailable(constructor.get().getClass());
         }
