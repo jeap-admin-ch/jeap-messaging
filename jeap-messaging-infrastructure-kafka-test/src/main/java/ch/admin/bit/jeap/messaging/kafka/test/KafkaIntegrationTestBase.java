@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.test;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
+import org.apache.kafka.common.header.Header;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
@@ -44,4 +45,8 @@ abstract public class KafkaIntegrationTestBase {
     protected void sendSyncEnsuringProducerContract(String topic, AvroMessage message) {
         TestMessageSender.sendSyncEnsuringProducerContract(kafkaTemplate, topic, message);
     }
+    protected void sendSyncWithHeaders(String topic, AvroMessage message, Header... headers) {
+        TestMessageSender.sendSyncWithHeaders(kafkaTemplate, topic, null, message, headers);
+    }
+
 }

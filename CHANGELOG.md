@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [11.14.0] - 2026-01-23
+### Changed
+- added ErrorHandlingTargetFilter to filter out messages not intended for the consuming service (Header: jeap_eh_target_service)
+
 ## [11.13.0] - 2026-01-23
 ### Changed
 - remove v from tag version in comparison of jeap-messaging-avro-maven-plugin GitClient

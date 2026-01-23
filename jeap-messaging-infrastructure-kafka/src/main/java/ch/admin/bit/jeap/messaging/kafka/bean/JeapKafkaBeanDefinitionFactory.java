@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.messaging.kafka.bean;
 
 import ch.admin.bit.jeap.messaging.kafka.KafkaConfiguration;
+import ch.admin.bit.jeap.messaging.kafka.filter.ErrorHandlingTargetFilter;
 import ch.admin.bit.jeap.messaging.kafka.interceptor.CallbackRecordInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
@@ -24,14 +25,22 @@ import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerConta
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.ContainerCustomizer;
-import org.springframework.kafka.core.*;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.CompositeRecordInterceptor;
 import org.springframework.kafka.listener.RecordInterceptor;
 import org.springframework.kafka.support.ProducerListener;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.transaction.KafkaTransactionManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -77,6 +86,11 @@ class JeapKafkaBeanDefinitionFactory {
                 factory.getContainerProperties().setObservationEnabled(true);
                 kafkaTemplate.setObservationEnabled(true);
             });
+
+            ErrorHandlingTargetFilter errorHandlingTargetFilter = beanFactory.getBean(ErrorHandlingTargetFilter.class);
+            factory.setRecordFilterStrategy(errorHandlingTargetFilter);
+            factory.setAckDiscarded(true);
+            log.debug("Configured ErrorHandlingTargetFilter for cluster '{}'", clusterName);
 
             return factory;
         });

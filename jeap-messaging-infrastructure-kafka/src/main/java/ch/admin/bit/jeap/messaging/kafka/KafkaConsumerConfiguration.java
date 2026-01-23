@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.kafka;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.ErrorServiceFailedHandler;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.ErrorServiceSender;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.StackTraceHasher;
+import ch.admin.bit.jeap.messaging.kafka.filter.ErrorHandlingTargetFilter;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TracerBridge;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +38,10 @@ public class KafkaConsumerConfiguration {
     CommonErrorHandler errorHandler(ErrorServiceSender errorServiceSender) {
         BackOff noRetry = new FixedBackOff(0, 0);
         return new DefaultErrorHandler(errorServiceSender, noRetry);
+    }
+
+    @Bean
+    ErrorHandlingTargetFilter wrongTargetMessageFilter(){
+        return new ErrorHandlingTargetFilter(properties.getServiceName());
     }
 }
