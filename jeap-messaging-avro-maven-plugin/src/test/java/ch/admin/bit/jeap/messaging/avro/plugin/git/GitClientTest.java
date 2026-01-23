@@ -36,20 +36,20 @@ class GitClientTest {
     @Test
     void findMostRecentTag_semantic() throws MojoExecutionException {
         doFindMostRecentTag(List.of(
-                createMockRef("1.0.0"),
-                createMockRef("1.2.3"),
-                createMockRef("1.15.3"),
-                createMockRef("1.1.1")),
+                        createMockRef("1.0.0"),
+                        createMockRef("1.2.3"),
+                        createMockRef("1.15.3"),
+                        createMockRef("1.1.1")),
                 "1.15.3");
     }
 
     @Test
     void findMostRecentTag_buildTimestamp() throws MojoExecutionException {
         doFindMostRecentTag(List.of(
-                createMockRef("1.0.0-20240208133822"),
-                createMockRef("1.0.0-20240208133823"),
-                createMockRef("1.0.0-20240208133826"),
-                createMockRef("1.0.0-20240108133826")),
+                        createMockRef("1.0.0-20240208133822"),
+                        createMockRef("1.0.0-20240208133823"),
+                        createMockRef("1.0.0-20240208133826"),
+                        createMockRef("1.0.0-20240108133826")),
                 "1.0.0-20240208133826");
     }
 
@@ -110,6 +110,40 @@ class GitClientTest {
     }
 
     @Test
+    void findMostRecentTag_doRemoveV_vIsNew() throws MojoExecutionException {
+        doFindMostRecentTag(List.of(
+                        createMockRef("v4.93.4"),
+                        createMockRef("v4.93.3"),
+                        createMockRef("4.93.2"),
+                        createMockRef("4.93.1"),
+                        createMockRef("4.93.0")),
+                "v4.93.4");
+    }
+
+    @Test
+    void findMostRecentTag_doRemoveV_vIsNew_NotSorted() throws MojoExecutionException {
+        doFindMostRecentTag(List.of(
+                        createMockRef("v4.93.3"),
+                        createMockRef("4.93.2"),
+                        createMockRef("v4.93.4"),
+                        createMockRef("4.93.0"),
+                        createMockRef("4.93.1")
+                ),
+                "v4.93.4");
+    }
+
+    @Test
+    void findMostRecentTag_doRemoveV_vIsNotNew() throws MojoExecutionException {
+        doFindMostRecentTag(List.of(
+                        createMockRef("4.93.4"),
+                        createMockRef("4.93.3"),
+                        createMockRef("v4.93.2"),
+                        createMockRef("v4.93.1"),
+                        createMockRef("v4.93.0")),
+                "4.93.4");
+    }
+
+    @Test
     @SneakyThrows
     void fetchTags_WhenUsingSystemAndGitProcessThrowsIOException_thenThrowsMojoExecutionException() {
         final String remoteUrl = "some-remote-url";
@@ -164,9 +198,7 @@ class GitClientTest {
                 .hasMessageStartingWith("The Git fetch process failed to fetch the tags from the remote repository");
     }
 
-    private
-
-    void doFindMostRecentTag(List<Ref> tags, String expectedResult) throws MojoExecutionException {
+    private void doFindMostRecentTag(List<Ref> tags, String expectedResult) throws MojoExecutionException {
         Ref mostRecentTag = GitClient.findMostRecentTag(tags);
         assertThat(mostRecentTag.getName()).isEqualTo(expectedResult);
     }
