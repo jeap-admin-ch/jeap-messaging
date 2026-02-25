@@ -33,9 +33,7 @@ public class TemplatePathResolver {
             String className = ((TypeElement) annotatedElement).getQualifiedName().toString();
             FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", className.replace('.', '/') + ".java");
 
-            String path = fileObject.toUri().getPath();
-
-            Path sourcePath = Paths.get(path);
+            Path sourcePath = Paths.get(fileObject.toUri());
 
             while (sourcePath != null && !sourcePath.endsWith("src/main/java") && !sourcePath.endsWith("src/test/java")) {
                 sourcePath = sourcePath.getParent();
