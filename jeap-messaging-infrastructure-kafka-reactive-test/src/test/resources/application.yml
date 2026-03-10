@@ -1,5 +1,0 @@
-logging:
-  level:
-    org.apache.kafka: WARN
-    org.apache.zookeeper: WARN
-    kafka: WARN
