@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 -  Breaking Change
 - **Removed**
     - Support for reactive
+- update jeap-crypto from 5.16.0 to 6.0.0
 
 ## [11.18.0] - 2026-03-10
 
