@@ -28,8 +28,7 @@ public class MessageSignatureValidationException extends RuntimeException implem
     }
 
     public static MessageSignatureValidationException invalidSignatureKey() {
-        String message = String.format("Key signature is invalid");
-        return new MessageSignatureValidationException(message);
+        return new MessageSignatureValidationException("Key signature is invalid");
     }
 
     public static MessageSignatureValidationException invalidSignatureValue(String messageTypeName, String service) {

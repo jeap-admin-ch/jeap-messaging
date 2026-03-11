@@ -24,8 +24,10 @@ public class CertificateValidationException extends RuntimeException implements 
         this.temporality = temporality;
     }
 
-    public static CertificateValidationException certificateNotFound(byte[] certificateSerialNumber) {
-        String message = String.format("Could not find certificate with serial number %s", CertificateHelper.serialNumberHexString(certificateSerialNumber));
+    public static CertificateValidationException certificateNotFound(String service, byte[] certificateSerialNumber) {
+        String message = String.format("Could not find certificate for %s with serial number %s",
+                service == null ? "key" : service,
+                CertificateHelper.serialNumberHexString(certificateSerialNumber));
         return new CertificateValidationException(message);
     }
 
