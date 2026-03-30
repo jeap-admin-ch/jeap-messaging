@@ -207,6 +207,12 @@
                 <artifactId>commons-beanutils</artifactId>
                 <version>${commons-beanutils.version}</version>
             </dependency>
+            <!-- Pin to 4.0.3 due to CVE-2025-67030 -->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>4.0.3</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

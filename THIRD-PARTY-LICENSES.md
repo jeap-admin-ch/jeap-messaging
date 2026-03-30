@@ -240,7 +240,6 @@ Apache License Version 2.0
  * Plexus Security Dispatcher Component - [org.codehaus.plexus:plexus-sec-dispatcher](https://codehaus-plexus.github.io/plexus-sec-dispatcher/)
  * Plexus Testing - [org.codehaus.plexus:plexus-testing](https://codehaus-plexus.github.io/plexus-testing/)
  * Plexus Common Utilities - [org.codehaus.plexus:plexus-utils](https://codehaus-plexus.github.io/plexus-utils/)
- * Plexus Common Utilities - [org.codehaus.plexus:plexus-utils](https://codehaus-plexus.github.io/plexus-utils/)
  * flyway-core - [org.flywaydb:flyway-core](https://flywaydb.org/flyway-core)
  * Hibernate Commons Annotations - [org.hibernate.common:hibernate-commons-annotations](http://hibernate.org)
  * Javassist - [org.javassist:javassist](http://www.javassist.org/)
