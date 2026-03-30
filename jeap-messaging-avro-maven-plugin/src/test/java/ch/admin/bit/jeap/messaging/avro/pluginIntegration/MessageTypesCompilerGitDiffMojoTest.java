@@ -40,11 +40,6 @@ class MessageTypesCompilerGitDiffMojoTest extends AbstractAvroMojoTest {
         Files.createDirectories(targetClasses);
         Files.copy(testDirectory.resolve("MessagingBaseTypes.avdl"), targetClasses.resolve("MessagingBaseTypes.avdl"));
         Files.copy(testDirectory.resolve("DomainEventBaseTypes.avdl"), targetClasses.resolve("DomainEventBaseTypes.avdl"));
-
-        // Point the MavenProject at the test repo directory
-        setVariableValueToObject(project, "basedir", testDirectory.toFile());
-        project.getBuild().setDirectory(testDirectory.resolve("target").toString());
-        project.getBuild().setOutputDirectory(testDirectory.resolve("target/classes").toString());
     }
 
     @AfterEach
@@ -52,17 +47,25 @@ class MessageTypesCompilerGitDiffMojoTest extends AbstractAvroMojoTest {
         testRepo.delete();
     }
 
-    private void configureMojo(MessageTypesCompilerMojo myMojo) throws Exception {
+    /**
+     * Point the project and mojo at the test repo directory so paths resolve correctly.
+     * The project is already the same instance injected into the mojo by @InjectMojo,
+     * so updating its basedir also affects the mojo's runtime behavior.
+     */
+    private void configureMojo(MessageTypesCompilerMojo myMojo) throws IllegalAccessException {
+        File testDir = testRepo.repoDir().toFile();
+        setVariableValueToObject(project, "basedir", testDir);
+        project.getBuild().setDirectory(new File(testDir, "target").getAbsolutePath());
+        project.getBuild().setOutputDirectory(new File(testDir, "target/classes").getAbsolutePath());
+        setVariableValueToObject(myMojo, "sourceDirectory", new File(testDir, "descriptor"));
+        setVariableValueToObject(myMojo, "outputDirectory", new File(testDir, "target/generated-sources"));
+
         myMojo.setGenerateAllMessageTypes(false);
         myMojo.setCurrentBranch("master");
         myMojo.setTrunkBranchName("master");
         myMojo.setCommitId(testRepo.commits().get(testRepo.commits().size() - 1).name());
         myMojo.setGitUrl(testRepo.url());
         myMojo.setGroupIdPrefix("ch.bit.admin.test");
-        // Override sourceDirectory, outputDirectory and project to point to the test repo directory
-        setVariableValueToObject(myMojo, "sourceDirectory", new File(testRepo.repoDir().toFile(), "descriptor"));
-        setVariableValueToObject(myMojo, "outputDirectory", new File(testRepo.repoDir().toFile(), "target/generated-sources"));
-        setVariableValueToObject(myMojo, "project", project);
     }
 
     @Test

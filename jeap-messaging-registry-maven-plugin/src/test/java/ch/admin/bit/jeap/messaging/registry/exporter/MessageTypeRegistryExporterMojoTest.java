@@ -24,20 +24,19 @@ class MessageTypeRegistryExporterMojoTest {
     @Inject
     private MavenProject project;
 
-    private void configureMojo(Mojo mojo, File tmpDir) throws Exception {
+    private void pointToTempDir(Mojo mojo, File tmpDir) throws IllegalAccessException {
         setVariableValueToObject(project, "basedir", tmpDir);
         project.getBuild().setDirectory(new File(tmpDir, "target").getAbsolutePath());
         project.getBuild().setOutputDirectory(new File(tmpDir, "target/classes").getAbsolutePath());
         setVariableValueToObject(mojo, "descriptorDirectory", new File(tmpDir, "descriptor"));
         setVariableValueToObject(mojo, "targetDir", new File(tmpDir, "target/avro"));
-        setVariableValueToObject(mojo, "project", project);
     }
 
     @Test
     @InjectMojo(goal = "generateAvdl", pom = "src/test/resources/valid/pom.xml")
     void valid(Mojo target, @TempDir File tmpDir) throws Exception {
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "valid"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         target.execute();
 
         assertEquals(new File(tmpDir, "expectedResults"), new File(tmpDir, "target/avro"));
@@ -47,7 +46,7 @@ class MessageTypeRegistryExporterMojoTest {
     @InjectMojo(goal = "generateAvdl", pom = "src/test/resources/valid/pom.xml")
     void commonData(Mojo target, @TempDir File tmpDir) throws Exception {
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "commonData"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         target.execute();
 
         assertEquals(new File(tmpDir, "expectedResults"), new File(tmpDir, "target/avro"));
@@ -80,5 +79,4 @@ class MessageTypeRegistryExporterMojoTest {
             }
         }
     }
-
 }

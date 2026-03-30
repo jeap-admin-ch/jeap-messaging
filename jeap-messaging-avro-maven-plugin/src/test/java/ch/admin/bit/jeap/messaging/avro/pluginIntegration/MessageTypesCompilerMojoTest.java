@@ -61,32 +61,34 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
 
         FileUtils.copyDirectory(Paths.get(Paths.get("").toAbsolutePath().getParent().toString(), ".git").toFile(), Paths.get(testDirectory.getAbsolutePath(), ".git").toFile());
 
-        // Point the MavenProject at the temp directory so ${basedir} and ${project.build.directory} resolve there
-        setVariableValueToObject(project, "basedir", testDirectory);
-        project.getBuild().setDirectory(new File(testDirectory, "target").getAbsolutePath());
-        project.getBuild().setOutputDirectory(new File(testDirectory, "target/classes").getAbsolutePath());
-
         return testDirectory;
     }
 
-    private void configureMojo(MessageTypesCompilerMojo myMojo, File testDirectory) throws Exception {
-        myMojo.setGenerateAllMessageTypes(true);
-        myMojo.setCurrentBranch("my-branch");
-        myMojo.setCommitId("cafebabe");
-        myMojo.setGitUrl("gitUrl");
-        myMojo.setFetchTags(false);
-        myMojo.setGroupIdPrefix("ch.bit.admin.test");
-        // Override sourceDirectory and outputDirectory to point to the temp directory
+    /**
+     * Point the project and mojo at the temp directory so paths resolve correctly.
+     * The project is already the same instance injected into the mojo by @InjectMojo,
+     * so updating its basedir also affects the mojo's runtime behavior.
+     */
+    private void pointToTempDir(MessageTypesCompilerMojo myMojo, File testDirectory) throws IllegalAccessException {
+        setVariableValueToObject(project, "basedir", testDirectory);
+        project.getBuild().setDirectory(new File(testDirectory, "target").getAbsolutePath());
+        project.getBuild().setOutputDirectory(new File(testDirectory, "target/classes").getAbsolutePath());
         setVariableValueToObject(myMojo, "sourceDirectory", new File(testDirectory, "descriptor"));
         setVariableValueToObject(myMojo, "outputDirectory", new File(testDirectory, "target/generated-sources"));
-        setVariableValueToObject(myMojo, "project", project);
     }
 
     @Test
     @InjectMojo(goal = "compile-message-types", pom = "src/test/resources/sample-message-type-registry/pom.xml")
     void execute_generateAllMessageTypes_allMessageTypesGenerated(MessageTypesCompilerMojo myMojo, @TempDir Path tempDir) throws Exception {
         final File testDirectory = setupTestDirectory(tempDir, "src/test/resources/sample-message-type-registry");
-        configureMojo(myMojo, testDirectory);
+        pointToTempDir(myMojo, testDirectory);
+
+        myMojo.setGenerateAllMessageTypes(true);
+        myMojo.setCurrentBranch("my-branch");
+        myMojo.setCommitId("cafebabe");
+        myMojo.setGitUrl("gitUrl");
+        myMojo.setFetchTags(false);
+        myMojo.setGroupIdPrefix("ch.bit.admin.test");
 
         myMojo.execute();
 
@@ -98,21 +100,16 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
         assertEquals(8, filenames.stream().filter(f -> f.endsWith("/pom.xml")).count());
 
         assertContentOfCreatedSourceDirectory(testDirectory, "target/generated-sources/jme/_common/src/main/java/ch/admin/bit/jme/declaration", 4);
-
         assertContentOfCreatedSourceDirectory(testDirectory, "target/generated-sources/jme/JmeCreateDeclarationCommand/1.0.0/src/main/java/ch/admin/bit/jme/declaration", 4);
         assertContentOfCreatedSourceDirectory(testDirectory, "target/generated-sources/jme/JmeCreateDeclarationCommand/1.1.0/src/main/java/ch/admin/bit/jme/declaration", 6);
-
         assertContentOfCreatedSourceDirectory(testDirectory, "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.1.0/src/main/java/ch/admin/bit/jme/declaration", 5);
         assertContentOfCreatedSourceDirectory(testDirectory, "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.4.0/src/main/java/ch/admin/bit/jme/declaration", 4);
-
         assertContentOfCreatedSourceDirectory(testDirectory, "target/generated-sources/wvs/WvsCreateDeclarationCommand/1.0.0/src/main/java/ch/admin/bit/wvs/declaration", 4);
 
         String commandContent = Files.readString(new File(testDirectory, "target/generated-sources/jme/JmeCreateDeclarationCommand/1.0.0/src/main/java/ch/admin/bit/jme/declaration/JmeCreateDeclarationCommand.java").toPath());
         String eventContent = Files.readString(new File(testDirectory, "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.1.0/src/main/java/ch/admin/bit/jme/declaration/JmeDeclarationCreatedEvent.java").toPath());
-        assertThat(commandContent)
-                .containsIgnoringWhitespaces(EXPECTED_COMMAND_TYPE_REF);
-        assertThat(eventContent)
-                .containsIgnoringWhitespaces(EXPECTED_EVENT_TYPE_REF);
+        assertThat(commandContent).containsIgnoringWhitespaces(EXPECTED_COMMAND_TYPE_REF);
+        assertThat(eventContent).containsIgnoringWhitespaces(EXPECTED_EVENT_TYPE_REF);
 
         assertFileContains(testDirectory, "target/generated-sources/jme/JmeCreateDeclarationCommand/1.0.0/pom.xml", "<classifier>1.0.0-my-branch-SNAPSHOT</classifier>");
         assertFileContains(testDirectory, "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.4.0/pom.xml", "<classifier>1.4.0-my-branch-SNAPSHOT</classifier>");
@@ -122,7 +119,14 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
     @InjectMojo(goal = "compile-message-types", pom = "src/test/resources/sample-message-type-registry-custom-pom/pom.xml")
     void execute_generateAllMessageTypes_customPomTemplate(MessageTypesCompilerMojo myMojo, @TempDir Path tempDir) throws Exception {
         final File testDirectory = setupTestDirectory(tempDir, "src/test/resources/sample-message-type-registry-custom-pom");
-        configureMojo(myMojo, testDirectory);
+        pointToTempDir(myMojo, testDirectory);
+
+        myMojo.setGenerateAllMessageTypes(true);
+        myMojo.setCurrentBranch("my-branch");
+        myMojo.setCommitId("cafebabe");
+        myMojo.setGitUrl("gitUrl");
+        myMojo.setFetchTags(false);
+        myMojo.setGroupIdPrefix("ch.bit.admin.test");
         myMojo.setPomTemplateFile(new File(testDirectory, "messagetype-template.pom.xml"));
 
         myMojo.execute();
@@ -146,8 +150,14 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
     @InjectMojo(goal = "compile-message-types", pom = "src/test/resources/sample-message-type-registry/pom.xml")
     void execute_generateAllMessageTypes_correctClassifierForMasterBranch(MessageTypesCompilerMojo myMojo, @TempDir Path tempDir) throws Exception {
         final File testDirectory = setupTestDirectory(tempDir, "src/test/resources/sample-message-type-registry");
-        configureMojo(myMojo, testDirectory);
+        pointToTempDir(myMojo, testDirectory);
+
+        myMojo.setGenerateAllMessageTypes(true);
         myMojo.setCurrentBranch("master");
+        myMojo.setCommitId("cafebabe");
+        myMojo.setGitUrl("gitUrl");
+        myMojo.setFetchTags(false);
+        myMojo.setGroupIdPrefix("ch.bit.admin.test");
 
         myMojo.execute();
 
@@ -176,7 +186,6 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
 
     private void assertFileContains(File baseDirectory, String filename, String text) throws IOException {
         String fileContent = Files.readString(new File(baseDirectory, filename).toPath());
-        assertThat(fileContent)
-                .contains(text);
+        assertThat(fileContent).contains(text);
     }
 }

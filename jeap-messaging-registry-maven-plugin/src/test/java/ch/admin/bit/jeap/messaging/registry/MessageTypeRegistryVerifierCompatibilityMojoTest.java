@@ -32,12 +32,11 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
     @Inject
     private MavenProject project;
 
-    private void configureMojo(Mojo mojo, File tmpDir) throws Exception {
+    private void pointToTempDir(Mojo mojo, File tmpDir) throws IllegalAccessException {
         setVariableValueToObject(project, "basedir", tmpDir);
         project.getBuild().setDirectory(new File(tmpDir, "target").getAbsolutePath());
         project.getBuild().setOutputDirectory(new File(tmpDir, "target/classes").getAbsolutePath());
         setVariableValueToObject(mojo, "descriptorDirectory", new File(tmpDir, "descriptor"));
-        setVariableValueToObject(mojo, "project", project);
     }
 
     @Test
@@ -46,7 +45,7 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
         String gitUrl = createTestRepoFrom(Path.of("src/test/resources/validateNewTypesOnly_oldRepo"));
 
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "validateNewTypesOnly"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         ((MessageTypeRegistryVerifierMojo) target).setGitUrl(gitUrl);
         assertThatThrownBy(target::execute)
                 .hasMessageContaining("(1 errors)")
@@ -57,7 +56,7 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
     @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
     void compatibleChange_WithoutGitTokenConfigured(Mojo target, @TempDir File tmpDir) throws Exception {
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "compatibleChange"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         ((MessageTypeRegistryVerifierMojo) target).setGitUrl(createEmptyTestRepo());
         assertDoesNotThrow(target::execute);
     }
@@ -67,7 +66,7 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
     void compatibleChange_WithGitTokenConfigured(Mojo target, @TempDir File tmpDir, EnvironmentVariables env) throws Exception {
         env.set("MESSAGE_TYPE_REPO_GIT_TOKEN", "test-token-value");
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "compatibleChange"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         ((MessageTypeRegistryVerifierMojo) target).setGitUrl(createEmptyTestRepo());
         assertDoesNotThrow(target::execute);
     }
@@ -76,7 +75,7 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
     @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
     void incompatibleChange(Mojo target, @TempDir File tmpDir) throws Exception {
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "changeCompatibilityCheck"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         ((MessageTypeRegistryVerifierMojo) target).setGitUrl(createEmptyTestRepo());
 
         assertThatThrownBy(target::execute)
@@ -89,7 +88,7 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
     @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
     void missingCompatibilityMode(Mojo target, @TempDir File tmpDir) throws Exception {
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "missingCompatibilityMode"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         ((MessageTypeRegistryVerifierMojo) target).setGitUrl(createEmptyTestRepo());
 
         assertThatThrownBy(target::execute)
@@ -134,5 +133,4 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
     private static void copyTestRegistryFilesToRepositoryDir(Path from, Path repoDir) throws IOException {
         FileUtils.copyDirectory(from.toFile(), repoDir.toFile());
     }
-
 }

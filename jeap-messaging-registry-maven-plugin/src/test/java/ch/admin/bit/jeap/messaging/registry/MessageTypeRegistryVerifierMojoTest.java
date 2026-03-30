@@ -7,12 +7,16 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.stream.Stream;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -23,54 +27,52 @@ class MessageTypeRegistryVerifierMojoTest {
     @Inject
     private MavenProject project;
 
-    private void configureMojo(Mojo mojo, File tmpDir) throws Exception {
+    private void pointToTempDir(Mojo mojo, File tmpDir) throws IllegalAccessException {
         setVariableValueToObject(project, "basedir", tmpDir);
         project.getBuild().setDirectory(new File(tmpDir, "target").getAbsolutePath());
         project.getBuild().setOutputDirectory(new File(tmpDir, "target/classes").getAbsolutePath());
         setVariableValueToObject(mojo, "descriptorDirectory", new File(tmpDir, "descriptor"));
-        setVariableValueToObject(mojo, "project", project);
     }
 
-    @Test
+    static Stream<Arguments> failingCases() {
+        return Stream.of(
+                Arguments.of("dirMissing", "descriptor' does not exist"),
+                Arguments.of("contracts", "object instance has properties which are not allowed by the schema: [\"contracts\"]"),
+                Arguments.of("messageTypeNameMissingInSchema", "Message type AutorisaziunPermitValidationDeclinedEvent not found in any schema for version 2.0.0")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("failingCases")
     @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void invalid(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "dirMissing"), tmpDir);
-        configureMojo(target, tmpDir);
+    void shouldFailWithExpectedMessage(String resourceDir, String expectedMessage, Mojo target, @TempDir File tmpDir) throws Exception {
+        FileUtils.copyDirectory(new File(RESOURCES_DIR, resourceDir), tmpDir);
+        pointToTempDir(target, tmpDir);
         assertThatThrownBy(target::execute)
-                .hasMessageContaining("descriptor' does not exist");
+                .hasMessageContaining(expectedMessage);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "valid",
+            "validMultipleTopics",
+            "validSystemDefinedGlobally",
+            "commonData",
+            "validCommandMinorVersionUpdate",
+            "publishingSystem"
+    })
     @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void contracts(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "contracts"), tmpDir);
-        configureMojo(target, tmpDir);
-        assertThatThrownBy(target::execute)
-                .hasMessageContaining("object instance has properties which are not allowed by the schema: [\"contracts\"]");
-    }
-
-    @Test
-    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void valid(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "valid"), tmpDir);
-        configureMojo(target, tmpDir);
+    void shouldExecuteSuccessfully(String resourceDir, Mojo target, @TempDir File tmpDir) throws Exception {
+        FileUtils.copyDirectory(new File(RESOURCES_DIR, resourceDir), tmpDir);
+        pointToTempDir(target, tmpDir);
         assertDoesNotThrow(target::execute);
-    }
-
-    @Test
-    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void messageTypeNameMissingInSchema(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "messageTypeNameMissingInSchema"), tmpDir);
-        configureMojo(target, tmpDir);
-        assertThatThrownBy(target::execute)
-                .hasMessageContaining("Message type AutorisaziunPermitValidationDeclinedEvent not found in any schema for version 2.0.0");
     }
 
     @Test
     @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
     void danglingFile(Mojo target, @TempDir File tmpDir) throws Exception {
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "danglingFile"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         assertThatThrownBy(target::execute)
                 .hasMessageContaining("Schema file TestTestEvent_v999.avdl is not referenced")
                 .hasMessageContaining("Schema file TestTestCommand_v999.avdl is not referenced");
@@ -78,52 +80,11 @@ class MessageTypeRegistryVerifierMojoTest {
 
     @Test
     @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void validMultipleTopics(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "validMultipleTopics"), tmpDir);
-        configureMojo(target, tmpDir);
-        assertDoesNotThrow(target::execute);
-    }
-
-    @Test
-    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void validSystemDefinedGlobally(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "validSystemDefinedGlobally"), tmpDir);
-        configureMojo(target, tmpDir);
-        assertDoesNotThrow(target::execute);
-    }
-
-    @Test
-    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void commonData(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "commonData"), tmpDir);
-        configureMojo(target, tmpDir);
-        assertDoesNotThrow(target::execute);
-    }
-
-    @Test
-    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void validCommandMinorVersionUpdate(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "validCommandMinorVersionUpdate"), tmpDir);
-        configureMojo(target, tmpDir);
-        assertDoesNotThrow(target::execute);
-    }
-
-    @Test
-    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
-    void publishingSystem(Mojo target, @TempDir File tmpDir) throws Exception {
-        FileUtils.copyDirectory(new File(RESOURCES_DIR, "publishingSystem"), tmpDir);
-        configureMojo(target, tmpDir);
-        assertDoesNotThrow(target::execute);
-    }
-
-    @Test
-    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
     void unusedImport(Mojo target, @TempDir File tmpDir) throws Exception {
         FileUtils.copyDirectory(new File(RESOURCES_DIR, "unusedImport"), tmpDir);
-        configureMojo(target, tmpDir);
+        pointToTempDir(target, tmpDir);
         assertThatThrownBy(target::execute)
                 .hasMessageContaining("Unused imports")
                 .hasMessageContaining("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestEnum.avdl");
     }
-
 }
