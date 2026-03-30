@@ -2,49 +2,52 @@ package ch.admin.bit.jeap.messaging.registry.exporter;
 
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenSession;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.plugin.Mojo;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.util.Objects;
 
-@SuppressWarnings("java:S1874")
-class MessageTypeRegistryExporterMojoTest extends AbstractMojoTestCase {
-    private final static File RESOURCES_DIR = new File("src/test/resources/");
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 
-    @BeforeEach
-    void setupTestDir() throws Exception {
-        setUp();
+@MojoTest
+class MessageTypeRegistryExporterMojoTest {
+    private static final File RESOURCES_DIR = new File("src/test/resources/");
+
+    @Inject
+    private MavenProject project;
+
+    private void configureMojo(Mojo mojo, File tmpDir) throws Exception {
+        setVariableValueToObject(project, "basedir", tmpDir);
+        project.getBuild().setDirectory(new File(tmpDir, "target").getAbsolutePath());
+        project.getBuild().setOutputDirectory(new File(tmpDir, "target/classes").getAbsolutePath());
+        setVariableValueToObject(mojo, "descriptorDirectory", new File(tmpDir, "descriptor"));
+        setVariableValueToObject(mojo, "targetDir", new File(tmpDir, "target/avro"));
+        setVariableValueToObject(mojo, "project", project);
     }
 
     @Test
-    void valid(@TempDir File tmpDir) throws Exception {
-        File testDir = new File(RESOURCES_DIR, "valid");
-        FileUtils.copyDirectory(testDir, tmpDir);
-        Mojo target = open(tmpDir);
+    @InjectMojo(goal = "generateAvdl", pom = "src/test/resources/valid/pom.xml")
+    void valid(Mojo target, @TempDir File tmpDir) throws Exception {
+        FileUtils.copyDirectory(new File(RESOURCES_DIR, "valid"), tmpDir);
+        configureMojo(target, tmpDir);
         target.execute();
 
         assertEquals(new File(tmpDir, "expectedResults"), new File(tmpDir, "target/avro"));
     }
 
     @Test
-    void commonData(@TempDir File tmpDir) throws Exception {
-        File testDir = new File(RESOURCES_DIR, "commonData");
-        FileUtils.copyDirectory(testDir, tmpDir);
-        Mojo target = open(tmpDir);
+    @InjectMojo(goal = "generateAvdl", pom = "src/test/resources/valid/pom.xml")
+    void commonData(Mojo target, @TempDir File tmpDir) throws Exception {
+        FileUtils.copyDirectory(new File(RESOURCES_DIR, "commonData"), tmpDir);
+        configureMojo(target, tmpDir);
         target.execute();
 
         assertEquals(new File(tmpDir, "expectedResults"), new File(tmpDir, "target/avro"));
@@ -78,16 +81,4 @@ class MessageTypeRegistryExporterMojoTest extends AbstractMojoTestCase {
         }
     }
 
-    private Mojo open(File basedir) throws Exception {
-        MavenExecutionRequest request = new DefaultMavenExecutionRequest();
-        request.setBaseDirectory(basedir);
-        ProjectBuildingRequest configuration = request.getProjectBuildingRequest();
-        configuration.setRepositorySession(new DefaultRepositorySystemSession());
-
-        File pom = new File(basedir, "pom.xml");
-        MavenProject project = getContainer().lookup(ProjectBuilder.class).build(pom, configuration).getProject();
-        MavenSession session = newMavenSession(project);
-        MojoExecution execution = newMojoExecution("generateAvdl");
-        return lookupConfiguredMojo(session, execution);
-    }
 }

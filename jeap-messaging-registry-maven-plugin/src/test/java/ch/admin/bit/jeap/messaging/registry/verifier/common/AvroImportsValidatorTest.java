@@ -7,10 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AvroImportsValidatorTest {
 
@@ -46,8 +45,8 @@ class AvroImportsValidatorTest {
 
         ValidationResult result = validator.validate(file, new ImportClassLoader(new File("src/test/resources/unittest/")));
         assertFalse(result.isValid());
-        assertThat(result.getErrors().toString(), containsString("Unused import"));
-        assertThat(result.getErrors().toString(), containsString("UnusedImportTestUsedInUnion.avdl"));
+        assertThat(result.getErrors().toString()).contains("Unused import");
+        assertThat(result.getErrors().toString()).contains("UnusedImportTestUsedInUnion.avdl");
     }
 
     @Test

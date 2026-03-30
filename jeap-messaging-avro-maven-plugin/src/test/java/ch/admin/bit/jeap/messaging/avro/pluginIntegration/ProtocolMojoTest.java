@@ -1,31 +1,34 @@
 package ch.admin.bit.jeap.messaging.avro.pluginIntegration;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.mojo.ProtocolMojo;
-import org.apache.maven.plugin.testing.MojoRule;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.List;
 
-@SuppressWarnings("java:S1874")
-public class ProtocolMojoTest extends AbstractAvroMojoTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-    @Rule
-    public MojoRule mojoRule = new MojoRule();
+@MojoTest
+class ProtocolMojoTest extends AbstractAvroMojoTest {
 
-    @Test
-    public void execute() throws Exception {
-        // arrange
-        final File testDirectory = syncWithNewTempDirectory("src/test/resources/sample-protocol-event");
-        final ProtocolMojo myMojo = (ProtocolMojo) mojoRule.lookupConfiguredMojo(testDirectory, "protocol");
-        // act
-        myMojo.execute();
-        // assert
-        final List<String> filenames = readAllFiles(new File(testDirectory, "target/generated-sources"));
-        Assert.assertFalse(filenames.isEmpty());
-        assertAllCommonEventFilesRemoved(filenames);
+    private static final String BASEDIR = "src/test/resources/sample-protocol-event";
+
+    @AfterEach
+    void cleanup() {
+        deleteTargetDir(BASEDIR);
     }
 
+    @Test
+    @Basedir(BASEDIR)
+    @InjectMojo(goal = "protocol")
+    void execute(ProtocolMojo myMojo) throws Exception {
+        myMojo.execute();
+        final List<String> filenames = readAllFiles(new File(BASEDIR, "target/generated-sources"));
+        assertFalse(filenames.isEmpty());
+        assertAllCommonEventFilesRemoved(filenames);
+    }
 }

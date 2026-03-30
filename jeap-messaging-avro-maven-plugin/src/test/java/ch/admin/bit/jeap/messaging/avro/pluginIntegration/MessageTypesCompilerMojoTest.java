@@ -2,24 +2,27 @@ package ch.admin.bit.jeap.messaging.avro.pluginIntegration;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.mojo.MessageTypesCompilerMojo;
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.testing.MojoRule;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("java:S1874")
-public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
+@MojoTest
+class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
 
     private static final String EXPECTED_EVENT_TYPE_REF = "public static class TypeRef implements ch.admin.bit.jeap.messaging.avro.MessageTypeMetadata {\n" +
                                                           "    public static final String REGISTRY_URL = \"gitUrl\";\n" +
@@ -46,35 +49,49 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
                                                             "    public static final String DEFAULT_TOPIC = \"jme-messaging-create-declaration\";\n" +
                                                             "}";
 
-    @Rule
-    public MojoRule mojoRule = new MojoRule();
+    @Inject
+    private MavenProject project;
 
-    @Test
-    public void execute_generateAllMessageTypes_allMessageTypesGenerated() throws Exception {
-        // arrange
-        final File testDirectory = syncWithNewTempDirectory("src/test/resources/sample-message-type-registry");
-        //with the real plugin these 2 definitions are available in the classpath
+    private File setupTestDirectory(Path tempDir, String resourcePath) throws Exception {
+        File testDirectory = syncToTempDirectory(resourcePath, tempDir);
+
         Files.createDirectories(Paths.get(testDirectory.getAbsolutePath(), "target", "classes"));
         Files.copy(Paths.get(testDirectory.getAbsolutePath(), "MessagingBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "MessagingBaseTypes.avdl"));
         Files.copy(Paths.get(testDirectory.getAbsolutePath(), "DomainEventBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "DomainEventBaseTypes.avdl"));
 
         FileUtils.copyDirectory(Paths.get(Paths.get("").toAbsolutePath().getParent().toString(), ".git").toFile(), Paths.get(testDirectory.getAbsolutePath(), ".git").toFile());
 
-        final MessageTypesCompilerMojo myMojo = (MessageTypesCompilerMojo) mojoRule.lookupConfiguredMojo(testDirectory, "compile-message-types");
+        // Point the MavenProject at the temp directory so ${basedir} and ${project.build.directory} resolve there
+        setVariableValueToObject(project, "basedir", testDirectory);
+        project.getBuild().setDirectory(new File(testDirectory, "target").getAbsolutePath());
+        project.getBuild().setOutputDirectory(new File(testDirectory, "target/classes").getAbsolutePath());
 
+        return testDirectory;
+    }
+
+    private void configureMojo(MessageTypesCompilerMojo myMojo, File testDirectory) throws Exception {
         myMojo.setGenerateAllMessageTypes(true);
         myMojo.setCurrentBranch("my-branch");
         myMojo.setCommitId("cafebabe");
         myMojo.setGitUrl("gitUrl");
-        myMojo.setFetchTags(false); // not a valid git url provided, so we cannot fetch tags
+        myMojo.setFetchTags(false);
         myMojo.setGroupIdPrefix("ch.bit.admin.test");
+        // Override sourceDirectory and outputDirectory to point to the temp directory
+        setVariableValueToObject(myMojo, "sourceDirectory", new File(testDirectory, "descriptor"));
+        setVariableValueToObject(myMojo, "outputDirectory", new File(testDirectory, "target/generated-sources"));
+        setVariableValueToObject(myMojo, "project", project);
+    }
 
-        // act
+    @Test
+    @InjectMojo(goal = "compile-message-types", pom = "src/test/resources/sample-message-type-registry/pom.xml")
+    void execute_generateAllMessageTypes_allMessageTypesGenerated(MessageTypesCompilerMojo myMojo, @TempDir Path tempDir) throws Exception {
+        final File testDirectory = setupTestDirectory(tempDir, "src/test/resources/sample-message-type-registry");
+        configureMojo(myMojo, testDirectory);
+
         myMojo.execute();
 
-        // assert
         final List<String> filenames = readAllFiles(new File(testDirectory, "target/generated-sources"));
-        Assert.assertFalse(filenames.isEmpty());
+        assertFalse(filenames.isEmpty());
         assertAllCommonEventFilesRemoved(filenames);
         assertSystemCommonFilesRemoved(filenames);
 
@@ -92,8 +109,6 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
 
         String commandContent = Files.readString(new File(testDirectory, "target/generated-sources/jme/JmeCreateDeclarationCommand/1.0.0/src/main/java/ch/admin/bit/jme/declaration/JmeCreateDeclarationCommand.java").toPath());
         String eventContent = Files.readString(new File(testDirectory, "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.1.0/src/main/java/ch/admin/bit/jme/declaration/JmeDeclarationCreatedEvent.java").toPath());
-        System.out.println(commandContent);
-        System.out.println(eventContent);
         assertThat(commandContent)
                 .containsIgnoringWhitespaces(EXPECTED_COMMAND_TYPE_REF);
         assertThat(eventContent)
@@ -104,32 +119,16 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
     }
 
     @Test
-    public void execute_generateAllMessageTypes_customPomTemplate() throws Exception {
-        // arrange
-        final File testDirectory = syncWithNewTempDirectory("src/test/resources/sample-message-type-registry-custom-pom");
-        //with the real plugin these 2 definitions are available in the classpath
-        Files.createDirectories(Paths.get(testDirectory.getAbsolutePath(), "target", "classes"));
-        Files.copy(Paths.get(testDirectory.getAbsolutePath(), "MessagingBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "MessagingBaseTypes.avdl"));
-        Files.copy(Paths.get(testDirectory.getAbsolutePath(), "DomainEventBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "DomainEventBaseTypes.avdl"));
-
-        FileUtils.copyDirectory(Paths.get(Paths.get("").toAbsolutePath().getParent().toString(), ".git").toFile(), Paths.get(testDirectory.getAbsolutePath(), ".git").toFile());
-
-        MessageTypesCompilerMojo myMojo = (MessageTypesCompilerMojo) mojoRule.lookupConfiguredMojo(testDirectory, "compile-message-types");
-
-        myMojo.setGenerateAllMessageTypes(true);
-        myMojo.setCurrentBranch("my-branch");
-        myMojo.setCommitId("cafebabe");
-        myMojo.setGitUrl("gitUrl");
-        myMojo.setFetchTags(false); // not a valid git url provided, so we cannot fetch tags
-        myMojo.setGroupIdPrefix("ch.bit.admin.test");
+    @InjectMojo(goal = "compile-message-types", pom = "src/test/resources/sample-message-type-registry-custom-pom/pom.xml")
+    void execute_generateAllMessageTypes_customPomTemplate(MessageTypesCompilerMojo myMojo, @TempDir Path tempDir) throws Exception {
+        final File testDirectory = setupTestDirectory(tempDir, "src/test/resources/sample-message-type-registry-custom-pom");
+        configureMojo(myMojo, testDirectory);
         myMojo.setPomTemplateFile(new File(testDirectory, "messagetype-template.pom.xml"));
 
-        // act
         myMojo.execute();
 
-        // assert
         final List<String> filenames = readAllFiles(new File(testDirectory, "target/generated-sources"));
-        Assert.assertFalse(filenames.isEmpty());
+        assertFalse(filenames.isEmpty());
         assertAllCommonEventFilesRemoved(filenames);
 
         assertEquals(1, filenames.stream().filter(f -> f.endsWith("/pom.xml")).count());
@@ -144,31 +143,16 @@ public class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
     }
 
     @Test
-    public void execute_generateAllMessageTypes_correctClassifierForMasterBranch() throws Exception {
-        // arrange
-        final File testDirectory = syncWithNewTempDirectory("src/test/resources/sample-message-type-registry");
-        //with the real plugin these 2 definitions are available in the classpath
-        Files.createDirectories(Paths.get(testDirectory.getAbsolutePath(), "target", "classes"));
-        Files.copy(Paths.get(testDirectory.getAbsolutePath(), "MessagingBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "MessagingBaseTypes.avdl"));
-        Files.copy(Paths.get(testDirectory.getAbsolutePath(), "DomainEventBaseTypes.avdl"), Paths.get(testDirectory.getAbsolutePath(), "target", "classes", "DomainEventBaseTypes.avdl"));
-
-        FileUtils.copyDirectory(Paths.get(Paths.get("").toAbsolutePath().getParent().toString(), ".git").toFile(), Paths.get(testDirectory.getAbsolutePath(), ".git").toFile());
-
-        final MessageTypesCompilerMojo myMojo = (MessageTypesCompilerMojo) mojoRule.lookupConfiguredMojo(testDirectory, "compile-message-types");
-
-        myMojo.setGenerateAllMessageTypes(true);
+    @InjectMojo(goal = "compile-message-types", pom = "src/test/resources/sample-message-type-registry/pom.xml")
+    void execute_generateAllMessageTypes_correctClassifierForMasterBranch(MessageTypesCompilerMojo myMojo, @TempDir Path tempDir) throws Exception {
+        final File testDirectory = setupTestDirectory(tempDir, "src/test/resources/sample-message-type-registry");
+        configureMojo(myMojo, testDirectory);
         myMojo.setCurrentBranch("master");
-        myMojo.setCommitId("cafebabe");
-        myMojo.setGitUrl("gitUrl");
-        myMojo.setFetchTags(false); // not a valid git url provided, so we cannot fetch tags
-        myMojo.setGroupIdPrefix("ch.bit.admin.test");
 
-        // act
         myMojo.execute();
 
-        // assert
         final List<String> filenames = readAllFiles(new File(testDirectory, "target/generated-sources"));
-        Assert.assertFalse(filenames.isEmpty());
+        assertFalse(filenames.isEmpty());
         assertFileContains(testDirectory, "target/generated-sources/jme/JmeCreateDeclarationCommand/1.0.0/pom.xml", "<classifier>1.0.0</classifier>");
         assertFileContains(testDirectory, "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.4.0/pom.xml", "<classifier>1.4.0</classifier>");
     }

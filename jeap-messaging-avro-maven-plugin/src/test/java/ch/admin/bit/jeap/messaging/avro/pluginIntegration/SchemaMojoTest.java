@@ -1,30 +1,34 @@
 package ch.admin.bit.jeap.messaging.avro.pluginIntegration;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.mojo.SchemaMojo;
-import org.apache.maven.plugin.testing.MojoRule;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.List;
 
-@SuppressWarnings("java:S1874")
-public class SchemaMojoTest extends AbstractAvroMojoTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-    @Rule
-    public MojoRule mojoRule = new MojoRule();
+@MojoTest
+class SchemaMojoTest extends AbstractAvroMojoTest {
+
+    private static final String BASEDIR = "src/test/resources/sample-avro-event";
+
+    @AfterEach
+    void cleanup() {
+        deleteTargetDir(BASEDIR);
+    }
 
     @Test
-    public void execute() throws Exception {
-        // arrange
-        final File testDirectory = syncWithNewTempDirectory("src/test/resources/sample-avro-event");
-        final SchemaMojo myMojo = (SchemaMojo) mojoRule.lookupConfiguredMojo(testDirectory, "schema");
-        // act
+    @Basedir(BASEDIR)
+    @InjectMojo(goal = "schema")
+    void execute(SchemaMojo myMojo) throws Exception {
         myMojo.execute();
-        // assert
-        final List<String> filenames = readAllFiles(new File(testDirectory, "target/generated-sources"));
-        Assert.assertFalse(filenames.isEmpty());
+        final List<String> filenames = readAllFiles(new File(BASEDIR, "target/generated-sources"));
+        assertFalse(filenames.isEmpty());
         assertAllCommonEventFilesRemoved(filenames);
     }
 }

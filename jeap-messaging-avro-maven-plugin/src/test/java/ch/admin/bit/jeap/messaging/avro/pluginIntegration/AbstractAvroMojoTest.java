@@ -1,8 +1,6 @@
 package ch.admin.bit.jeap.messaging.avro.pluginIntegration;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,11 +11,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public abstract class AbstractAvroMojoTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+abstract class AbstractAvroMojoTest {
 
     void assertAllCommonEventFilesRemoved(List<String> filenames) {
         List<String> errorNames = filenames.stream()
@@ -26,10 +22,21 @@ public abstract class AbstractAvroMojoTest {
         assertEquals(emptyList(), errorNames);
     }
 
-    File syncWithNewTempDirectory(final String srcTestDirectory) throws IOException {
-        File tmpTestDir = temporaryFolder.newFolder("test");
-        final File testPomDir = new File(srcTestDirectory);
-        FileUtils.copyDirectory(testPomDir, tmpTestDir);
+    void deleteTargetDir(String basedir) {
+        try {
+            File targetDir = new File(basedir, "target");
+            if (targetDir.exists()) {
+                FileUtils.deleteDirectory(targetDir);
+            }
+        } catch (IOException e) {
+            // best effort cleanup
+        }
+    }
+
+    File syncToTempDirectory(String srcTestDirectory, Path tempDir) throws IOException {
+        File tmpTestDir = tempDir.resolve("test").toFile();
+        Files.createDirectories(tmpTestDir.toPath());
+        FileUtils.copyDirectory(new File(srcTestDirectory), tmpTestDir);
         return tmpTestDir;
     }
 

@@ -64,7 +64,7 @@
         <avro.version>1.12.1</avro.version>
         <jeap-crypto.version>7.0.0</jeap-crypto.version>
         <jeap-spring-boot-roles-anywhere-starter.version>1.23.0</jeap-spring-boot-roles-anywhere-starter.version>
-        <maven.api.version>3.9.12</maven.api.version>
+        <maven.api.version>3.9.14</maven.api.version>
         <maven.plugin.version>3.15.2</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <aws-msk-iam-auth.version>2.3.5</aws-msk-iam-auth.version>
