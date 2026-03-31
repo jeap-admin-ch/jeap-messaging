@@ -51,7 +51,7 @@ Apache License Version 2.0
  * Jackson datatype: JSR310 - [com.fasterxml.jackson.datatype:jackson-datatype-jsr310](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310)
  * Jackson-module-parameter-names - [com.fasterxml.jackson.module:jackson-module-parameter-names](https://github.com/FasterXML/jackson-modules-java8/jackson-module-parameter-names)
  * jackson-module-scala - [com.fasterxml.jackson.module:jackson-module-scala_2.13](https://github.com/FasterXML/jackson-module-scala)
-* Woodstox - [com.fasterxml.woodstox:woodstox-core](https://github.com/FasterXML/woodstox)
+ * Woodstox - [com.fasterxml.woodstox:woodstox-core](https://github.com/FasterXML/woodstox)
  * Caffeine cache - [com.github.ben-manes.caffeine:caffeine](https://github.com/ben-manes/caffeine)
  * btf - [com.github.java-json-tools:btf](https://github.com/java-json-tools/btf)
  * jackson-coreutils - [com.github.java-json-tools:jackson-coreutils](https://github.com/java-json-tools/jackson-coreutils)
@@ -200,26 +200,20 @@ Apache License Version 2.0
  * Apache Kafka - [org.apache.kafka:kafka_2.13](https://kafka.apache.org)
  * Apache Log4j API - [org.apache.logging.log4j:log4j-api](https://logging.apache.org/log4j/2.x/log4j/log4j-api/)
  * Log4j API to SLF4J Adapter - [org.apache.logging.log4j:log4j-to-slf4j](https://logging.apache.org/log4j/2.x/log4j/log4j-to-slf4j/)
-* Maven 4 API :: Meta
-  annotations - [org.apache.maven:maven-api-annotations](https://maven.apache.org/ref/4.0.0-rc-5/api/maven-api-annotations/)
-* Maven 4 API :: XML - [org.apache.maven:maven-api-xml](https://maven.apache.org/ref/4.0.0-rc-5/api/maven-api-xml/)
-* Maven Artifact - [org.apache.maven:maven-artifact](https://maven.apache.org/ref/3.9.14/maven-artifact/)
-* Maven Builder
-  Support - [org.apache.maven:maven-builder-support](https://maven.apache.org/ref/3.9.14/maven-builder-support/)
-* Maven Compat - [org.apache.maven:maven-compat](https://maven.apache.org/ref/3.9.14/maven-compat/)
-* Maven Core - [org.apache.maven:maven-core](https://maven.apache.org/ref/3.9.14/maven-core/)
-* Maven Model - [org.apache.maven:maven-model](https://maven.apache.org/ref/3.9.14/maven-model/)
-* Maven Model Builder - [org.apache.maven:maven-model-builder](https://maven.apache.org/ref/3.9.14/maven-model-builder/)
-* Maven Plugin API - [org.apache.maven:maven-plugin-api](https://maven.apache.org/ref/3.9.14/maven-plugin-api/)
-* Maven Repository Metadata
-  Model - [org.apache.maven:maven-repository-metadata](https://maven.apache.org/ref/3.9.14/maven-repository-metadata/)
-* Maven Artifact Resolver
-  Provider - [org.apache.maven:maven-resolver-provider](https://maven.apache.org/ref/3.9.14/maven-resolver-provider/)
-* Maven Settings - [org.apache.maven:maven-settings](https://maven.apache.org/ref/3.9.14/maven-settings/)
-* Maven Settings
-  Builder - [org.apache.maven:maven-settings-builder](https://maven.apache.org/ref/3.9.14/maven-settings-builder/)
-* Maven 4 XML
-  Implementation - [org.apache.maven:maven-xml](https://maven.apache.org/ref/4.0.0-rc-5/maven-impl-modules/maven-xml/)
+ * Maven 4 API :: Meta annotations - [org.apache.maven:maven-api-annotations](https://maven.apache.org/ref/4.0.0-rc-5/api/maven-api-annotations/)
+ * Maven 4 API :: XML - [org.apache.maven:maven-api-xml](https://maven.apache.org/ref/4.0.0-rc-5/api/maven-api-xml/)
+ * Maven Artifact - [org.apache.maven:maven-artifact](https://maven.apache.org/ref/3.9.14/maven-artifact/)
+ * Maven Builder Support - [org.apache.maven:maven-builder-support](https://maven.apache.org/ref/3.9.14/maven-builder-support/)
+ * Maven Compat - [org.apache.maven:maven-compat](https://maven.apache.org/ref/3.9.14/maven-compat/)
+ * Maven Core - [org.apache.maven:maven-core](https://maven.apache.org/ref/3.9.14/maven-core/)
+ * Maven Model - [org.apache.maven:maven-model](https://maven.apache.org/ref/3.9.14/maven-model/)
+ * Maven Model Builder - [org.apache.maven:maven-model-builder](https://maven.apache.org/ref/3.9.14/maven-model-builder/)
+ * Maven Plugin API - [org.apache.maven:maven-plugin-api](https://maven.apache.org/ref/3.9.14/maven-plugin-api/)
+ * Maven Repository Metadata Model - [org.apache.maven:maven-repository-metadata](https://maven.apache.org/ref/3.9.14/maven-repository-metadata/)
+ * Maven Artifact Resolver Provider - [org.apache.maven:maven-resolver-provider](https://maven.apache.org/ref/3.9.14/maven-resolver-provider/)
+ * Maven Settings - [org.apache.maven:maven-settings](https://maven.apache.org/ref/3.9.14/maven-settings/)
+ * Maven Settings Builder - [org.apache.maven:maven-settings-builder](https://maven.apache.org/ref/3.9.14/maven-settings-builder/)
+ * Maven 4 XML Implementation - [org.apache.maven:maven-xml](https://maven.apache.org/ref/4.0.0-rc-5/maven-impl-modules/maven-xml/)
  * Maven Plugin Testing Mechanism - [org.apache.maven.plugin-testing:maven-plugin-testing-harness](https://maven.apache.org/plugin-testing/maven-plugin-testing-harness/)
  * Maven Plugin Tools Java Annotations - [org.apache.maven.plugin-tools:maven-plugin-annotations](https://maven.apache.org/plugin-tools/maven-plugin-annotations)
  * Maven Artifact Resolver API - [org.apache.maven.resolver:maven-resolver-api](https://maven.apache.org/resolver/maven-resolver-api/)
@@ -250,7 +244,7 @@ Apache License Version 2.0
  * Plexus Security Dispatcher Component - [org.codehaus.plexus:plexus-sec-dispatcher](https://codehaus-plexus.github.io/plexus-sec-dispatcher/)
  * Plexus Testing - [org.codehaus.plexus:plexus-testing](https://codehaus-plexus.github.io/plexus-testing/)
  * Plexus Common Utilities - [org.codehaus.plexus:plexus-utils](https://codehaus-plexus.github.io/plexus-utils/)
-* Plexus XML Utilities - [org.codehaus.plexus:plexus-xml](https://codehaus-plexus.github.io/plexus-xml/)
+ * Plexus XML Utilities - [org.codehaus.plexus:plexus-xml](https://codehaus-plexus.github.io/plexus-xml/)
  * flyway-core - [org.flywaydb:flyway-core](https://flywaydb.org/flyway-core)
  * Hibernate Commons Annotations - [org.hibernate.common:hibernate-commons-annotations](http://hibernate.org)
  * Javassist - [org.javassist:javassist](http://www.javassist.org/)
@@ -420,13 +414,11 @@ Eclipse Public License v2.0
  * JUnit Platform Commons - [org.junit.platform:junit-platform-commons](https://junit.org/junit5/)
  * JUnit Platform Engine API - [org.junit.platform:junit-platform-engine](https://junit.org/junit5/)
  * JUnit Platform Launcher - [org.junit.platform:junit-platform-launcher](https://junit.org/junit5/)
- * JUnit Vintage Engine - [org.junit.vintage:junit-vintage-engine](https://junit.org/junit5/)
 
 Eclipse Public License, Version 1.0
 -------------------------------
 
  * H2 Database Engine - [com.h2database:h2](https://h2database.com)
- * JUnit - [junit:junit](http://junit.org)
 
 Eclipse Public License, Version 2.0
 -------------------------------
@@ -515,7 +507,7 @@ Public Domain
 The BSD 2-Clause License
 -------------------------------
 
-* Stax2 API - [org.codehaus.woodstox:stax2-api](http://github.com/FasterXML/stax2-api)
+ * Stax2 API - [org.codehaus.woodstox:stax2-api](http://github.com/FasterXML/stax2-api)
 
 WTFPL
 -------------------------------
