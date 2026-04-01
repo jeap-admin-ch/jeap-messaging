@@ -85,7 +85,7 @@ public class SubscriberCertificatesContainer {
                 CertificateHelper.validateCertificateChain(x509Certificates);
                 certificateChain.updateValidity(true);
             } catch (CertificateException e) {
-                log.error(String.format("Certificate chain validation failed for service %s and chain %s", certificateChainEntry.service(), certificateChain.getName()), e);
+                log.warn(String.format("Certificate chain validation failed for service %s and chain %s", certificateChainEntry.service(), certificateChain.getName()), e);
                 certificateChain.updateValidity(false);
             }
         }
