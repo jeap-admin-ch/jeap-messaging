@@ -10,6 +10,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Update parent from 5.20.0 to 6.0.0
 - update jeap-spring-boot-roles-anywhere-starter from 1.23.0 to 1.24.0
+- update jeap-spring-boot-vault-starter from 21.0.0 to 21.1.0
+- update jeap-crypto from 7.0.0 to 7.1.0
 
 ## [13.0.1] - 2026-04-01
 
