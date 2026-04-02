@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.2.0] - 2026-04-08
+
+### Added
+- Multi-cluster Kafka broker health indicator (`jeapKafka`) exposed via Spring Boot Actuator. 
+- Configured `spring.kafka.listener.auth-exception-retry-interval=10s` by default so listener containers
+  retry auth failures instead of stopping, allowing recovery without a restart.
+
 ## [13.1.0] - 2026-04-02
 
 ### Changed

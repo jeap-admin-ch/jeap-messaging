@@ -1,2 +1,3 @@
 ch.admin.bit.jeap.messaging.kafka.KafkaConfiguration
 ch.admin.bit.jeap.messaging.kafka.KafkaConsumerConfiguration
+ch.admin.bit.jeap.messaging.kafka.health.KafkaHealthConfiguration
