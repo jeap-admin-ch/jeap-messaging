@@ -27,13 +27,13 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>13.0.1-SNAPSHOT</version>
+    <version>13.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>5.20.0</version>
+        <version>6.0.0</version>
     </parent>
 
     <modules>
@@ -63,7 +63,7 @@
         <avro-serializer.version>8.1.1</avro-serializer.version>
         <avro.version>1.12.1</avro.version>
         <jeap-crypto.version>7.0.0</jeap-crypto.version>
-        <jeap-spring-boot-roles-anywhere-starter.version>1.23.0</jeap-spring-boot-roles-anywhere-starter.version>
+        <jeap-spring-boot-roles-anywhere-starter.version>1.24.0</jeap-spring-boot-roles-anywhere-starter.version>
         <maven.api.version>3.9.14</maven.api.version>
         <maven.plugin.version>3.15.2</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
