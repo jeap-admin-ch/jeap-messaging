@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
@@ -61,7 +60,7 @@ class MessagingSigningSendAndReceiveSignatureNotRequiredIT extends KafkaIntegrat
     private CertificateAndSignatureVerifier certificateAndSignatureVerifier;
 
     @Test
-    void testSignHeaders_sendWithKey() {
+    void testSignHeaders_sendWithKey_expectNoChecksOnValueWhenSignatureNotRequired() {
         JmeDeclarationCreatedEvent message = JmeDeclarationCreatedEventBuilder.create()
                 .idempotenceId("idempotenceId")
                 .serviceName("jme-messaging-receiverpublisher-service")
@@ -89,14 +88,12 @@ class MessagingSigningSendAndReceiveSignatureNotRequiredIT extends KafkaIntegrat
 
         Mockito.verify(jmeEventProcessor, Mockito.timeout(TEST_TIMEOUT)).receive(Mockito.any());
 
-        assertEquals(1, authenticityCheckResults.size());
-        authenticityCheckResults.forEach(value -> assertTrue((Boolean) value));
+        assertEquals(0, authenticityCheckResults.size());
         assertEquals(1, authenticityKeyCheckResults.size());
-        authenticityKeyCheckResults.forEach(value -> assertTrue((Boolean) value));
     }
 
     @Test
-    void testSignHeaders_sendWithoutKey() {
+    void testSignHeaders_sendWithoutKey_expectNoChecksWhenSignatureNotRequired() {
         JmeDeclarationCreatedEvent message = JmeDeclarationCreatedEventBuilder.create()
                 .idempotenceId("idempotenceId")
                 .serviceName("jme-messaging-receiverpublisher-service")
@@ -116,8 +113,7 @@ class MessagingSigningSendAndReceiveSignatureNotRequiredIT extends KafkaIntegrat
 
         Mockito.verify(jmeEventProcessor, Mockito.timeout(TEST_TIMEOUT)).receive(Mockito.any());
 
-        assertEquals(1, authenticityCheckResults.size());
-        authenticityCheckResults.forEach(value -> assertTrue((Boolean) value));
+        assertEquals(0, authenticityCheckResults.size());
     }
 
 }

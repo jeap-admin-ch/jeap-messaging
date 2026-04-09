@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.messaging.kafka.signature.subscriber;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureMetricsService;
 import ch.admin.bit.jeap.messaging.kafka.signature.common.SignatureCertificate;
-import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.CertificateValidationException;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.MessageSignatureValidationException;
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.SignatureAuthenticityMessageException;
 import ch.admin.bit.jeap.messaging.model.Message;
@@ -17,6 +16,7 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -42,6 +42,8 @@ class DefaultSignatureAuthenticityServiceTest {
         SignatureCertificate signatureCertificate = Mockito.mock(SignatureCertificate.class);
         when(certificateWithChainValidity.certificate()).thenReturn(signatureCertificate);
         when(certificateWithChainValidity.commonName()).thenReturn(SERVICE_NAME);
+        when(certificateWithChainValidity.isChainValid()).thenReturn(true);
+        when(certificateWithChainValidity.isExpired()).thenReturn(false);
 
         signatureAuthenticityService = new DefaultSignatureAuthenticityService(validationPropertiesContainer, certificateAndSignatureVerifier,
                 subscriberCertificatesContainer, signatureMetricsServiceOptional);
@@ -208,14 +210,14 @@ class DefaultSignatureAuthenticityServiceTest {
     @Test
     void checkAuthenticityValue_doFail_whenSignatureRequiredButCertificateNotSet() {
         Message message = createMessage("MyMessage", "my-service");
-        byte[] certificateSerialNumber = null;
+        byte[] certificateSerialNumber = {1};
         byte[] signatureValue = {7, 8, 9};
         byte[] signatureKey = null;
 
         Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
         byte[] bytesToValidate = {1, 1, 1};
 
-        when(subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber)).thenReturn(certificateWithChainValidity);
+        when(subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber)).thenReturn(null);
         when(validationPropertiesContainer.isPublisherAllowedForMessage("MyMessage", "my-service")).thenReturn(true);
         when(validationPropertiesContainer.isSignatureRequired("MyMessage")).thenReturn(true);
 
@@ -413,7 +415,7 @@ class DefaultSignatureAuthenticityServiceTest {
     }
 
     @Test
-    void checkAuthenticityKey_doFail_whenCertificateSetAndSignatureNotSet() {
+    void checkAuthenticityKey_doFail_whenCertificateHeaderSetAndSignatureHeaderNotSet() {
         byte[] certificateSerialNumber = {7, 8, 9};
         byte[] signatureValue = null;
         byte[] signatureKey = null;
@@ -429,7 +431,7 @@ class DefaultSignatureAuthenticityServiceTest {
     }
 
     @Test
-    void checkAuthenticityKey_doFail_whenSetSignatureSetAndCertificateNotSet() {
+    void checkAuthenticityKey_doFail_whenSignatureHeaderSetAndCertificateHeaderNotSet() {
         byte[] certificateSerialNumber = null;
         byte[] signatureValue = null;
         byte[] signatureKey = {7, 8, 9};
@@ -457,7 +459,7 @@ class DefaultSignatureAuthenticityServiceTest {
     }
 
     @Test
-    void checkAuthenticityKey_doNotFail_whenNoCertificateAndNonStrictMode_Key() {
+    void checkAuthenticityKey_doNotFail_whenCertificateNotFound() {
         byte[] certificateSerialNumber = {1, 2, 3};
         byte[] signatureValue = null;
         byte[] signatureKey = {7, 8, 9};
@@ -465,16 +467,13 @@ class DefaultSignatureAuthenticityServiceTest {
         Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
         byte[] bytesToValidate = {1, 1, 1};
 
-        when(validationPropertiesContainer.isSignatureRequired()).thenReturn(false);
         when(subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber)).thenReturn(null);
-        signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate);
 
-        verify(validationPropertiesContainer, atLeast(1)).isSignatureRequired();
-        verifyNoInteractions(certificateAndSignatureVerifier);
+        assertDoesNotThrow(() -> signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate));
     }
 
     @Test
-    void checkAuthenticityKey_doNotFail_whenNoCertificateAndStrictMode_Key() {
+    void checkAuthenticityKey_doNotFail_whenCertificateExpired() {
         byte[] certificateSerialNumber = {1, 2, 3};
         byte[] signatureValue = null;
         byte[] signatureKey = {7, 8, 9};
@@ -482,11 +481,25 @@ class DefaultSignatureAuthenticityServiceTest {
         Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
         byte[] bytesToValidate = {1, 1, 1};
 
-        when(validationPropertiesContainer.isSignatureRequired()).thenReturn(true);
-        when(subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber)).thenReturn(null);
+        when(certificateWithChainValidity.isExpired()).thenReturn(true);
+        when(subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber)).thenReturn(certificateWithChainValidity);
 
+        assertDoesNotThrow(() -> signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate));
+    }
 
-        assertThrows(CertificateValidationException.class,() -> signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate));
+    @Test
+    void checkAuthenticityKey_doNotFail_whenCertificateChainNotValid() {
+        byte[] certificateSerialNumber = {1, 2, 3};
+        byte[] signatureValue = null;
+        byte[] signatureKey = {7, 8, 9};
+
+        Headers headers = createHeaders(certificateSerialNumber, signatureValue, signatureKey);
+        byte[] bytesToValidate = {1, 1, 1};
+
+        when(certificateWithChainValidity.isChainValid()).thenReturn(false);
+        when(subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber)).thenReturn(certificateWithChainValidity);
+
+        assertDoesNotThrow(() -> signatureAuthenticityService.checkAuthenticityKey(headers, bytesToValidate));
     }
 
     @Test

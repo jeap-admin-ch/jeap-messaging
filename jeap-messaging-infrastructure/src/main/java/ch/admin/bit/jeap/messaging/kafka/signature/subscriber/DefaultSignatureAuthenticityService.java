@@ -80,11 +80,13 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, "unknown", "unknown");
 
         if (certificateHeader != null) { // then both headers are set
-            SignatureCertificateWithChainValidity cert = getCertificate(null, certificateHeader.value(), validationPropertiesContainer.isSignatureRequired());
-            if (cert == null) {
+            SignatureCertificateWithChainValidity cert = subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateHeader.value());
+            // signatureRequired is always false for key, so we check whether the cert is valid or not, if not valid we do not check the signature.
+            if (cert == null || cert.isExpired() || !cert.isChainValid()) {
                 log.warn("Message Key has no valid certificate, but signature is not required");
                 return;
             }
+
             boolean result = certificateAndSignatureVerifier.verifyKeySignature(bytesToValidate, signatureHeader.value(), cert);
             if (!result) {
                 throw MessageSignatureValidationException.invalidSignatureKey();
@@ -101,11 +103,10 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         boolean signatureRequired = validationPropertiesContainer.isSignatureRequired(messageTypeName);
         validateHeaders(signatureRequired, signatureHeader, certificateHeader, messageTypeName, service);
 
-        if (certificateHeader != null) { // then both headers are set
-            SignatureCertificateWithChainValidity cert = getCertificate(service, certificateHeader.value(), validationPropertiesContainer.isSignatureRequired());
+        if (certificateHeader != null && signatureRequired) { // when certificateHeader != null then both headers are set (also signatureHeader)
+            SignatureCertificateWithChainValidity cert = subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateHeader.value());
             if (cert == null) {
-                log.warn("Message {} from service {} has no valid certificate, but signature is not required", messageTypeName, service);
-                return;
+                throw CertificateValidationException.certificateNotFound(service, certificateHeader.value());
             }
             validateAllowedPublisher(messageTypeName, service, cert);
             boolean result = certificateAndSignatureVerifier.verifyValueSignature(service, bytesToValidate, signatureHeader.value(), cert);
@@ -120,14 +121,6 @@ public class DefaultSignatureAuthenticityService implements SignatureAuthenticit
         if (!publisherAllowedForMessage && !certificateAndSignatureVerifier.isPrivilegedProducer(cert)) {
             throw MessageSignatureValidationException.publisherNotAllowed(messageTypeName, service);
         }
-    }
-
-    private SignatureCertificateWithChainValidity getCertificate(String service, byte[] certificateSerialNumber, boolean signatureRequired) {
-        SignatureCertificateWithChainValidity certificateWithChainValidity = subscriberCertificatesContainer.getCertificateWithSerialNumber(certificateSerialNumber);
-        if (certificateWithChainValidity == null && signatureRequired) {
-            throw CertificateValidationException.certificateNotFound(service, certificateSerialNumber);
-        }
-        return certificateWithChainValidity;
     }
 
     private void validateHeaders(boolean signatureRequired, Header signatureHeader, Header certificateHeader, String messageTypeName, String service) {
