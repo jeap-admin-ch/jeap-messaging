@@ -45,8 +45,8 @@ abstract public class KafkaIntegrationTestBase {
     protected void sendSyncEnsuringProducerContract(String topic, AvroMessage message) {
         TestMessageSender.sendSyncEnsuringProducerContract(kafkaTemplate, topic, message);
     }
+
     protected void sendSyncWithHeaders(String topic, AvroMessage message, Header... headers) {
         TestMessageSender.sendSyncWithHeaders(kafkaTemplate, topic, null, message, headers);
     }
-
 }

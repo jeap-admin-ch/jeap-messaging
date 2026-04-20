@@ -2,8 +2,8 @@ package ch.admin.bit.jeap.messaging.kafka.signature.publisher;
 
 import ch.admin.bit.jeap.messaging.kafka.signature.exceptions.MessageSignatureConfigurationException;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.lang.Nullable;
 
 import java.nio.charset.StandardCharsets;
 

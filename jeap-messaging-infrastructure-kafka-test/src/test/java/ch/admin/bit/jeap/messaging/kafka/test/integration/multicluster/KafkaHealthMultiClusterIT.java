@@ -2,16 +2,21 @@ package ch.admin.bit.jeap.messaging.kafka.test.integration.multicluster;
 
 import ch.admin.bit.jeap.messaging.kafka.test.EmbeddedKafkaMultiClusterExtension;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestConfig;
-import io.restassured.RestAssured;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
-import static ch.admin.bit.jeap.messaging.kafka.test.integration.multicluster.KafkaHealthMultiClusterIT.PORT_OFFSET;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.URL;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = TestConfig.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.application.name=jme-messaging-receiverpublisher-service",
@@ -21,12 +26,10 @@ import static org.hamcrest.Matchers.notNullValue;
         "jeap.messaging.kafka.systemName=test",
         "jeap.messaging.kafka.errorTopicName=errorTopic",
         "jeap.messaging.kafka.message-type-encryption-disabled=true",
-        "jeap.messaging.kafka.cluster.default.bootstrapServers=localhost:" + (EmbeddedKafkaMultiClusterExtension.BASE_PORT + PORT_OFFSET),
         "jeap.messaging.kafka.cluster.default.securityProtocol=PLAINTEXT",
         "jeap.messaging.kafka.cluster.default.schemaRegistryUrl=mock://health-multi-cluster-registry-1",
         "jeap.messaging.kafka.cluster.default.schemaRegistryUsername=unused",
         "jeap.messaging.kafka.cluster.default.schemaRegistryPassword=unused",
-        "jeap.messaging.kafka.cluster.aws.bootstrapServers=localhost:" + (EmbeddedKafkaMultiClusterExtension.BASE_PORT + PORT_OFFSET + 1),
         "jeap.messaging.kafka.cluster.aws.securityProtocol=PLAINTEXT",
         "jeap.messaging.kafka.cluster.aws.schemaRegistryUrl=mock://health-multi-cluster-registry-2",
         "jeap.messaging.kafka.cluster.aws.schemaRegistryUsername=unused",
@@ -35,37 +38,50 @@ import static org.hamcrest.Matchers.notNullValue;
 @DirtiesContext
 class KafkaHealthMultiClusterIT {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     static final int PORT_OFFSET = 30;
 
     @RegisterExtension
     static EmbeddedKafkaMultiClusterExtension embeddedKafka =
             EmbeddedKafkaMultiClusterExtension.withPortOffset(PORT_OFFSET);
 
-    @LocalServerPort
+    @DynamicPropertySource
+    static void registerBootstrapServers(DynamicPropertyRegistry registry) {
+        registry.add("jeap.messaging.kafka.cluster.default.bootstrapServers", embeddedKafka::getBootstrapServers1);
+        registry.add("jeap.messaging.kafka.cluster.aws.bootstrapServers", embeddedKafka::getBootstrapServers2);
+    }
+
+    @Value("${local.server.port}")
     private int localServerPort;
 
     @Test
-    void jeapKafkaHealthIndicator_multiCluster_reportsAllClustersUp() {
-        RestAssured.given().port(localServerPort)
-                .get("/actuator/health/jeapKafka")
-                .then()
-                .statusCode(200)
-                .body("status", equalTo("UP"))
-                .body("details.default.status", equalTo("UP"))
-                .body("details.default.details.clusterId", notNullValue())
-                .body("details.default.details.nodeCount", equalTo(1))
-                .body("details.aws.status", equalTo("UP"))
-                .body("details.aws.details.clusterId", notNullValue())
-                .body("details.aws.details.nodeCount", equalTo(1));
+    void jeapKafkaHealthIndicator_multiCluster_reportsAllClustersUp() throws Exception {
+        HttpURLConnection conn = openLocalConnection("/actuator/health/jeapKafka");
+        assertThat(conn.getResponseCode()).isEqualTo(200);
+        JsonNode body = OBJECT_MAPPER.readTree(conn.getInputStream().readAllBytes());
+        assertThat(body.path("status").asText()).isEqualTo("UP");
+        assertThat(body.path("details").path("default").path("status").asText()).isEqualTo("UP");
+        assertThat(body.path("details").path("default").path("details").path("clusterId").asText()).isNotBlank();
+        assertThat(body.path("details").path("default").path("details").path("nodeCount").asInt()).isEqualTo(1);
+        assertThat(body.path("details").path("aws").path("status").asText()).isEqualTo("UP");
+        assertThat(body.path("details").path("aws").path("details").path("clusterId").asText()).isNotBlank();
+        assertThat(body.path("details").path("aws").path("details").path("nodeCount").asInt()).isEqualTo(1);
     }
 
     @Test
-    void actuatorHealth_includesJeapKafkaComponent() {
-        RestAssured.given().port(localServerPort)
-                .get("/actuator/health")
-                .then()
-                .statusCode(200)
-                .body("status", equalTo("UP"))
-                .body("components.jeapKafka.status", equalTo("UP"));
+    void actuatorHealth_includesJeapKafkaComponent() throws Exception {
+        HttpURLConnection conn = openLocalConnection("/actuator/health");
+        assertThat(conn.getResponseCode()).isEqualTo(200);
+        JsonNode body = OBJECT_MAPPER.readTree(conn.getInputStream().readAllBytes());
+        assertThat(body.path("status").asText()).isEqualTo("UP");
+        assertThat(body.path("components").path("jeapKafka").path("status").asText()).isEqualTo("UP");
+    }
+
+    private HttpURLConnection openLocalConnection(String path) throws Exception {
+        URL url = new URL("http://127.0.0.1:" + localServerPort + path);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
+        conn.setRequestMethod("GET");
+        return conn;
     }
 }

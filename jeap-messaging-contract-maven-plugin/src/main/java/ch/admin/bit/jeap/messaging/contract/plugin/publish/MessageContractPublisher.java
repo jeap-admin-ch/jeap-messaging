@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.contract.plugin.publish;
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.CreateMessageContractsDto;
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.maven.plugin.logging.Log;
 
 import java.nio.file.Path;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class MessageContractPublisher {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new JsonMapper();
 
     private final MessageContractServiceClient messageContractServiceClient;
     private final Log log;

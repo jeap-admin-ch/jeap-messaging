@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -30,13 +32,11 @@ import static org.awaitility.Awaitility.await;
         "jeap.messaging.kafka.errorTopicName=errorTopic",
         "jeap.messaging.kafka.message-type-encryption-disabled=true",
         "jeap.messaging.kafka.cluster.producer.default-producer-cluster-override=true",
-        "jeap.messaging.kafka.cluster.producer.bootstrapServers=localhost:" + (EmbeddedKafkaMultiClusterExtension.BASE_PORT + PORT_OFFSET),
         "jeap.messaging.kafka.cluster.producer.securityProtocol=PLAINTEXT",
         "jeap.messaging.kafka.cluster.producer.schemaRegistryUrl=mock://" + MULTI_CLUSTER_REGISTRY_PRODUCER,
         "jeap.messaging.kafka.cluster.producer.schemaRegistryUsername=unused",
         "jeap.messaging.kafka.cluster.producer.schemaRegistryPassword=unused",
         "jeap.messaging.kafka.cluster.consumer.default-cluster=true", // Default cluster is the consumer's cluster
-        "jeap.messaging.kafka.cluster.consumer.bootstrapServers=localhost:" + (EmbeddedKafkaMultiClusterExtension.BASE_PORT + PORT_OFFSET + 1),
         "jeap.messaging.kafka.cluster.consumer.securityProtocol=PLAINTEXT",
         "jeap.messaging.kafka.cluster.consumer.schemaRegistryUrl=mock://" + MULTI_CLUSTER_REGISTRY_CONSUMER,
         "jeap.messaging.kafka.cluster.consumer.schemaRegistryUsername=unused",
@@ -50,6 +50,12 @@ class KafkaDifferentConsumerProducerClusterIT extends KafkaMultiClusterIntegrati
     @RegisterExtension
     static EmbeddedKafkaMultiClusterExtension embeddedKafkaMultiClusterExtension =
             EmbeddedKafkaMultiClusterExtension.withPortOffset(PORT_OFFSET);
+
+    @DynamicPropertySource
+    static void registerBootstrapServers(DynamicPropertyRegistry registry) {
+        registry.add("jeap.messaging.kafka.cluster.producer.bootstrapServers", embeddedKafkaMultiClusterExtension::getBootstrapServers1);
+        registry.add("jeap.messaging.kafka.cluster.consumer.bootstrapServers", embeddedKafkaMultiClusterExtension::getBootstrapServers2);
+    }
 
     static final String MULTI_CLUSTER_REGISTRY_PRODUCER = "multi-cluster-registry-producer";
     static final String MULTI_CLUSTER_REGISTRY_CONSUMER = "multi-cluster-registry-consumer";

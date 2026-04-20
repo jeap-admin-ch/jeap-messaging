@@ -7,6 +7,7 @@ import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractRo
 import ch.admin.bit.jeap.messaging.contract.v2.Contract;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,7 +24,7 @@ public class MessageContracts {
 
     private static final String CONTRACT_SUFFIX = "-contract.json";
 
-    private final ObjectMapper objectMapper = new ObjectMapper()
+    private final ObjectMapper objectMapper = new JsonMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     Optional<CreateMessageContractsDto> loadAll(Path contractPath) {

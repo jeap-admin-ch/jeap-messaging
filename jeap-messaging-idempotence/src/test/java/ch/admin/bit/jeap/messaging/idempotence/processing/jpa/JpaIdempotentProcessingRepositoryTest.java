@@ -4,20 +4,21 @@ import ch.admin.bit.jeap.messaging.idempotence.processing.idempotentprocessing.I
 import ch.admin.bit.jeap.messaging.idempotence.processing.idempotentprocessing.IdempotentProcessingIdentity;
 import ch.admin.bit.jeap.messaging.idempotence.processing.idempotentprocessing.IdempotentProcessingRepository;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.time.ZonedDateTime;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@Transactional
 @DataJpaTest
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
 @ContextConfiguration(classes = IdempotentProcessingJpaConfig.class)
 public class JpaIdempotentProcessingRepositoryTest {
 
@@ -26,6 +27,13 @@ public class JpaIdempotentProcessingRepositoryTest {
 
     @Autowired
     private SpringDataJpaIdempotentProcessingRepository springDataRepository;
+
+    @BeforeEach
+    void cleanUp() {
+        // Without @Transactional on the test, rows committed by createIfNotExists persist
+        // across test methods and must be cleaned up explicitly.
+        springDataRepository.deleteAll();
+    }
 
     @Test
     void testCreateIfNotExists() {

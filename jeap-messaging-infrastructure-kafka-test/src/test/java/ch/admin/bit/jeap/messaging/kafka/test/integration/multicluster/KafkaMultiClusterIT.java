@@ -20,6 +20,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -37,12 +39,10 @@ import static org.awaitility.Awaitility.await;
         "jeap.messaging.kafka.systemName=test",
         "jeap.messaging.kafka.errorTopicName=errorTopic",
         "jeap.messaging.kafka.message-type-encryption-disabled=true",
-        "jeap.messaging.kafka.cluster.default.bootstrapServers=localhost:" + (EmbeddedKafkaMultiClusterExtension.BASE_PORT + PORT_OFFSET),
         "jeap.messaging.kafka.cluster.default.securityProtocol=PLAINTEXT",
         "jeap.messaging.kafka.cluster.default.schemaRegistryUrl=mock://" + MULTI_CLUSTER_REGISTRY_1,
         "jeap.messaging.kafka.cluster.default.schemaRegistryUsername=unused",
         "jeap.messaging.kafka.cluster.default.schemaRegistryPassword=unused",
-        "jeap.messaging.kafka.cluster.aws.bootstrapServers=localhost:" + (EmbeddedKafkaMultiClusterExtension.BASE_PORT + PORT_OFFSET + 1),
         "jeap.messaging.kafka.cluster.aws.securityProtocol=PLAINTEXT",
         "jeap.messaging.kafka.cluster.aws.schemaRegistryUrl=mock://" + MULTI_CLUSTER_REGISTRY_2,
         "jeap.messaging.kafka.cluster.aws.schemaRegistryUsername=unused",
@@ -56,6 +56,12 @@ class KafkaMultiClusterIT extends KafkaMultiClusterIntegrationTestBase {
     @RegisterExtension
     static EmbeddedKafkaMultiClusterExtension embeddedKafkaMultiClusterExtension =
             EmbeddedKafkaMultiClusterExtension.withPortOffset(PORT_OFFSET);
+
+    @DynamicPropertySource
+    static void registerBootstrapServers(DynamicPropertyRegistry registry) {
+        registry.add("jeap.messaging.kafka.cluster.default.bootstrapServers", embeddedKafkaMultiClusterExtension::getBootstrapServers1);
+        registry.add("jeap.messaging.kafka.cluster.aws.bootstrapServers", embeddedKafkaMultiClusterExtension::getBootstrapServers2);
+    }
 
     static final String MULTI_CLUSTER_REGISTRY_1 = "multi-cluster-registry-1";
     static final String MULTI_CLUSTER_REGISTRY_2 = "multi-cluster-registry-2";

@@ -16,7 +16,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.EmbeddedKafkaZKBroker;
+import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -58,7 +58,7 @@ class SerializedMessageReceiverIntegrationTest {
     }
 
     private void startEmbeddedKafka() {
-        EmbeddedKafkaBroker broker = new EmbeddedKafkaZKBroker(1, true, 1, TOPIC);
+        EmbeddedKafkaBroker broker = new EmbeddedKafkaKraftBroker(1, 1, TOPIC);
         broker.afterPropertiesSet();
         bootstrapServer = broker.getBrokersAsString();
     }

@@ -1,13 +1,14 @@
 package ch.admin.bit.jeap.messaging.registry.verifier.common;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -49,22 +50,22 @@ class NoDanglingSchemaValidatorTest {
                         "Schema file Dangling_v2.0.0.avdl is not referenced");
     }
 
-    private static JsonNode createDescriptor() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private static JsonNode createDescriptor() throws IOException {
+        ObjectMapper objectMapper = JsonMapper.builder().build();
         return objectMapper.readTree("""
-                {
-                  "versions": [
-                    {
-                      "version": "1.0.0",
-                      "valueSchema": "ActivZoneEnteredEvent_v1.0.0.avdl"
-                    },
-                    {
-                      "version": "2.0.0",
-                      "valueSchema": "ActivZoneEnteredEvent_v2.0.0.avdl",
-                      "keySchema": "Key_v1.0.0.avdl"
-                    }
-                  ]
-                }
-                """);
+                        {
+                          "versions": [
+                            {
+                              "version": "1.0.0",
+                              "valueSchema": "ActivZoneEnteredEvent_v1.0.0.avdl"
+                            },
+                            {
+                              "version": "2.0.0",
+                              "valueSchema": "ActivZoneEnteredEvent_v2.0.0.avdl",
+                              "keySchema": "Key_v1.0.0.avdl"
+                            }
+                          ]
+                        }
+                        """);
     }
 }

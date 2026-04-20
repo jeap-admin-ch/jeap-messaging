@@ -8,7 +8,6 @@ import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,8 +48,6 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
                                                             "    public static final String DEFAULT_TOPIC = \"jme-messaging-create-declaration\";\n" +
                                                             "}";
 
-    @Inject
-    private MavenProject project;
 
     private File setupTestDirectory(Path tempDir, String resourcePath) throws Exception {
         File testDirectory = syncToTempDirectory(resourcePath, tempDir);
@@ -70,9 +67,11 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
      * so updating its basedir also affects the mojo's runtime behavior.
      */
     private void pointToTempDir(MessageTypesCompilerMojo myMojo, File testDirectory) throws IllegalAccessException {
+        MavenProject project = new MavenProject();
         setVariableValueToObject(project, "basedir", testDirectory);
         project.getBuild().setDirectory(new File(testDirectory, "target").getAbsolutePath());
         project.getBuild().setOutputDirectory(new File(testDirectory, "target/classes").getAbsolutePath());
+        setVariableValueToObject(myMojo, "project", project);
         setVariableValueToObject(myMojo, "sourceDirectory", new File(testDirectory, "descriptor"));
         setVariableValueToObject(myMojo, "outputDirectory", new File(testDirectory, "target/generated-sources"));
     }

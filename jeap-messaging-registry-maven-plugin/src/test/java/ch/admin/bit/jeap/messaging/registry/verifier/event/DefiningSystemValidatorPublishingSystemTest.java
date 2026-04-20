@@ -7,9 +7,9 @@ import ch.admin.bit.jeap.messaging.registry.verifier.common.DefiningSystemValida
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import java.io.File;
 import java.util.Map;
@@ -23,7 +23,7 @@ class DefiningSystemValidatorPublishingSystemTest {
 
     @Test
     void invalidPublishingSystem() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("publishingSystem", new TextNode("Something")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("publishingSystem", TextNode.valueOf("Something")));
         ValidationContext validationContext = ValidationContext.builder()
                 .descriptorFile(new File("test"))
                 .systemName("test")
@@ -37,7 +37,7 @@ class DefiningSystemValidatorPublishingSystemTest {
 
     @Test
     void notCapsPublishingSystem() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("publishingSystem", new TextNode("Test")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("publishingSystem", TextNode.valueOf("Test")));
         ValidationContext validationContext = ValidationContext.builder()
                 .descriptorFile(new File("test"))
                 .systemName("test")
@@ -51,7 +51,7 @@ class DefiningSystemValidatorPublishingSystemTest {
 
     @Test
     void validPublishingSystem() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("publishingSystem", new TextNode("TEST")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("publishingSystem", TextNode.valueOf("TEST")));
         ValidationContext validationContext = ValidationContext.builder()
                 .descriptorFile(new File("test"))
                 .systemName("test")

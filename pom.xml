@@ -33,7 +33,7 @@
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>7.0.0-alpha-springboot4</version>
+        <version>7.0.2-alpha-springboot4</version>
     </parent>
 
     <modules>
@@ -60,9 +60,11 @@
     </modules>
 
     <properties>
-        <avro-serializer.version>8.1.1</avro-serializer.version>
+        <avro-serializer.version>8.2.0</avro-serializer.version>
         <avro.version>1.12.1</avro.version>
+        <!-- TODO -->
         <jeap-crypto.version>7.3.0</jeap-crypto.version>
+        <!-- TODO -->
         <jeap-spring-boot-roles-anywhere-starter.version>1.27.0</jeap-spring-boot-roles-anywhere-starter.version>
         <maven.api.version>3.9.14</maven.api.version>
         <maven.plugin.version>3.15.2</maven.plugin.version>
@@ -70,13 +72,11 @@
         <aws-msk-iam-auth.version>2.3.5</aws-msk-iam-auth.version>
         <schema-registry-serde.version>1.1.25</schema-registry-serde.version>
         <protobuf-java.version>4.33.4</protobuf-java.version>
-        <org.eclipse.jgit.version>7.5.0.202512021534-r</org.eclipse.jgit.version>
+        <org.eclipse.jgit.version>7.6.0.202603022253-r</org.eclipse.jgit.version>
         <file-management.version>3.2.0</file-management.version>
         <maven-invoker.version>3.3.0</maven-invoker.version>
         <maven-plugin-testing-harness.version>3.5.0</maven-plugin-testing-harness.version>
-        <commons-compress.version>1.28.0</commons-compress.version>
-        <commons-io.version>2.21.0</commons-io.version>
-        <commons-beanutils.version>1.11.0</commons-beanutils.version>
+        <wiremock.version>3.13.2</wiremock.version>
     </properties>
 
     <dependencyManagement>
@@ -189,23 +189,9 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-compress</artifactId>
-                <version>${commons-compress.version}</version>
-            </dependency>
-            <!-- This is needed because commons-io 2.11.0  (CVE-2024-47554) is coming with spring-kafka-test 3.3.7 -->
-            <!-- this is tracked by the jEAP team -->
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
-            <!-- This is needed because commons-beanutils 1.9.4 (CVE-2025-48734) is coming with spring-kafka-test 3.3.7 -->
-            <!-- this is tracked by the jEAP team -->
-            <dependency>
-                <groupId>commons-beanutils</groupId>
-                <artifactId>commons-beanutils</artifactId>
-                <version>${commons-beanutils.version}</version>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>${wiremock.version}</version>
             </dependency>
             <!-- Pin to 4.0.3 due to CVE-2025-67030 -->
             <dependency>

@@ -9,16 +9,13 @@ import ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand;
 import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
 import ch.admin.bit.jme.test.BeanReferenceMessageKey;
 import ch.admin.bit.jme.test.JmeSimpleTestEvent;
-import io.restassured.RestAssured;
-import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaAdmin;
@@ -27,9 +24,15 @@ import org.springframework.messaging.Message;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import lombok.Getter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -52,13 +55,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
                 "jeap.messaging.kafka.cluster.aws.securityProtocol=PLAINTEXT",
                 "jeap.messaging.kafka.exposeMessageKeyToConsumer=true"
         })
-@AutoConfigureObservability
 @Import({KafkaSerdeGlueIT.TestConsumerConfig.class, KafkaSerdeSigningGlueIT.MessagingMessageListenerConfig.class, MessagingMessageConsumer.class})
 @ActiveProfiles("test-signing-publisher")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class KafkaSerdeSigningGlueIT extends KafkaGlueIntegrationTestBase {
 
-    @LocalServerPort
+    @Value("${local.server.port}")
     private int localServerPort;
 
     @Qualifier("aws")
@@ -146,7 +148,7 @@ class KafkaSerdeSigningGlueIT extends KafkaGlueIntegrationTestBase {
     }
 
     @Test
-    void testMetrics() {
+    void testMetrics() throws Exception {
         UUID simpleTestEventVersionId = UUID.randomUUID();
         stubGetSchemaByDefinitionResponse(simpleTestEventVersionId, "some-other-topic-ch.admin.bit.jme.test.JmeSimpleTestEvent");
         stubGetSchemaVersionResponse(simpleTestEventVersionId, JME_SIMPLE_TEST_EVENT_AVRO_SCHEMA);
@@ -165,7 +167,9 @@ class KafkaSerdeSigningGlueIT extends KafkaGlueIntegrationTestBase {
 
         await().until(() -> messagingMessageListener.messages.size() == 1);
 
-        final String metrics = RestAssured.given().port(localServerPort).get("/actuator/prometheus").getBody().asString();
+        HttpURLConnection conn = (HttpURLConnection) new URL("http://127.0.0.1:" + localServerPort + "/actuator/prometheus").openConnection(Proxy.NO_PROXY);
+        conn.setRequestMethod("GET");
+        final String metrics = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertMessagingMetricsCreated(metrics);
     }
 

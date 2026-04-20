@@ -11,19 +11,22 @@ import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeDeclarationC
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestConfig;
 import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
 import ch.admin.bit.jme.test.BeanReferenceMessageKey;
-import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +38,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
-@AutoConfigureObservability
 @SpringBootTest(classes = {TestConfig.class, SignatureConfiguration.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
@@ -55,7 +57,7 @@ public class MessagingSigningSendAndReceiveIT extends KafkaIntegrationTestBase {
     @SuppressWarnings("unused")
     private ContractsValidator contractsValidator; // Disable contract checking by mocking the contracts validator
 
-    @LocalServerPort
+    @Value("${local.server.port}")
     private int localServerPort;
 
     @MockitoBean
@@ -125,7 +127,7 @@ public class MessagingSigningSendAndReceiveIT extends KafkaIntegrationTestBase {
     }
 
     @Test
-    void testMessagingMetrics() {
+    void testMessagingMetrics() throws Exception {
         JmeDeclarationCreatedEvent message = JmeDeclarationCreatedEventBuilder.create()
                 .idempotenceId("idempotenceId")
                 .serviceName("jme-messaging-receiverpublisher-service")
@@ -135,7 +137,9 @@ public class MessagingSigningSendAndReceiveIT extends KafkaIntegrationTestBase {
 
         Mockito.verify(jmeEventProcessor, Mockito.timeout(TEST_TIMEOUT)).receive(Mockito.any());
 
-        final String metrics = RestAssured.given().port(localServerPort).get("/actuator/prometheus").getBody().asString();
+        HttpURLConnection conn = (HttpURLConnection) new URL("http://127.0.0.1:" + localServerPort + "/actuator/prometheus").openConnection(Proxy.NO_PROXY);
+        conn.setRequestMethod("GET");
+        final String metrics = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertMessagingMetricsCreated(metrics);
     }
 

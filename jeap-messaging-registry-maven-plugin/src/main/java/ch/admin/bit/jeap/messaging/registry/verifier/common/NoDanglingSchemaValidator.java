@@ -63,7 +63,7 @@ public class NoDanglingSchemaValidator {
     private static String getField(JsonNode object, String fieldName) {
         JsonNode field = object.get(fieldName);
         if (field != null) {
-            return field.textValue();
+            return field.asText();
         }
         return null;
     }

@@ -2,9 +2,11 @@ package ch.admin.bit.jeap.messaging.idempotence.processing.idempotentprocessing;
 
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -20,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = {IdempotentProcessingConfig.class},
         properties = {"jeap.messaging.idempotent-processing.idempotent-processing-retention-duration=P14D"})
+@ExtendWith(MockitoExtension.class)
 public class IdempotentProcessingHouseKeepingTest {
 
     @Autowired

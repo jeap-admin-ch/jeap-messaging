@@ -1,9 +1,9 @@
 package ch.admin.bit.jeap.messaging.kafka.test.integration;
 
 import ch.admin.bit.jeap.crypto.api.KeyId;
+import ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -16,15 +16,12 @@ import static org.mockito.ArgumentMatchers.eq;
 @ActiveProfiles({"message-encryption-enabled", "key-id-crypto-service"})
 class SendReceiveEncryptionEnabledIT extends SendReceiveEncryptedITBase {
 
-    @Captor
-    ArgumentCaptor<byte[]> plainMessageCaptor;
-
-    @Captor
-    ArgumentCaptor<byte[]> encryptedMessageCaptor;
-
     @Test
     void testSendAndReceiveEncrypted() {
         final KeyId testKeyId = KeyId.of("testKey");
+        ArgumentCaptor<byte[]> plainMessageCaptor = ArgumentCaptor.forClass(byte[].class);
+        ArgumentCaptor<byte[]> encryptedMessageCaptor = ArgumentCaptor.forClass(byte[].class);
+        ArgumentCaptor<JmeCreateDeclarationCommand> messageCaptor = ArgumentCaptor.forClass(JmeCreateDeclarationCommand.class);
 
         sendMessage();
 

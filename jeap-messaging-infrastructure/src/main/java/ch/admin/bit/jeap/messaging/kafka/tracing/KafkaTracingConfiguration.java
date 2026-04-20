@@ -3,7 +3,7 @@ package ch.admin.bit.jeap.messaging.kafka.tracing;
 import brave.Tracer;
 import brave.Tracing;
 import brave.kafka.clients.KafkaTracing;
-import org.springframework.boot.actuate.autoconfigure.tracing.BraveAutoConfiguration;
+import org.springframework.boot.micrometer.tracing.brave.autoconfigure.BraveAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

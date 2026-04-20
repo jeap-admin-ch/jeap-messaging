@@ -5,9 +5,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.EmbeddedKafkaZKBroker;
-
-import java.util.Map;
+import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
 
 @Slf4j
 public class EmbeddedKafkaMultiClusterExtension implements BeforeAllCallback, AfterAllCallback {
@@ -15,23 +13,11 @@ public class EmbeddedKafkaMultiClusterExtension implements BeforeAllCallback, Af
 
     private final EmbeddedKafkaBroker embeddedKafka1;
     private final EmbeddedKafkaBroker embeddedKafka2;
-
-    private static int brokerIdCounter = 100;
+    private volatile boolean started = false;
 
     public EmbeddedKafkaMultiClusterExtension(int basePort, int portOffset) {
-        embeddedKafka1 = new EmbeddedKafkaZKBroker(1, true, 1, "TOPIC");
-        setNextBrokerId(embeddedKafka1);
-        embeddedKafka1.kafkaPorts(basePort + portOffset);
-
-        embeddedKafka2 = new EmbeddedKafkaZKBroker(1, true, 1, "TOPIC");
-        setNextBrokerId(embeddedKafka2);
-        embeddedKafka2.kafkaPorts(basePort + 1 + portOffset);
-    }
-
-    private static void setNextBrokerId(EmbeddedKafkaBroker embeddedKafka) {
-        embeddedKafka.brokerProperties(Map.of(
-                "broker.id.generation.enable", "false",
-                "broker.id", String.valueOf(brokerIdCounter++)));
+        embeddedKafka1 = new EmbeddedKafkaKraftBroker(1, 1, "TOPIC");
+        embeddedKafka2 = new EmbeddedKafkaKraftBroker(1, 1, "TOPIC");
     }
 
     public static EmbeddedKafkaMultiClusterExtension withBasePortAndOffset(int basePort, int portOffset) {
@@ -42,8 +28,32 @@ public class EmbeddedKafkaMultiClusterExtension implements BeforeAllCallback, Af
         return new EmbeddedKafkaMultiClusterExtension(BASE_PORT, portOffset);
     }
 
+    public synchronized void startClusters() {
+        if (started) {
+            return;
+        }
+        log.info("Starting embedded kafka clusters...");
+        embeddedKafka1.afterPropertiesSet();
+        embeddedKafka2.afterPropertiesSet();
+        started = true;
+        log.info("Embedded kafka clusters started");
+    }
+
+    public String getBootstrapServers1() {
+        startClusters();
+        return embeddedKafka1.getBrokersAsString();
+    }
+
+    public String getBootstrapServers2() {
+        startClusters();
+        return embeddedKafka2.getBrokersAsString();
+    }
+
     @Override
     public void afterAll(ExtensionContext extensionContext) {
+        if (!started) {
+            return;
+        }
         log.info("Stopping embedded kafka clusters...");
         embeddedKafka1.destroy();
         embeddedKafka2.destroy();
@@ -52,9 +62,6 @@ public class EmbeddedKafkaMultiClusterExtension implements BeforeAllCallback, Af
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) {
-        log.info("Starting embedded kafka clusters...");
-        embeddedKafka1.afterPropertiesSet();
-        embeddedKafka2.afterPropertiesSet();
-        log.info("Embedded kafka clusters started");
+        startClusters();
     }
 }

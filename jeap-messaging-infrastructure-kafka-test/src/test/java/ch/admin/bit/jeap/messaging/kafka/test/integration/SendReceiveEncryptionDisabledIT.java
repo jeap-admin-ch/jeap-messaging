@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.messaging.kafka.test.integration;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -13,6 +14,8 @@ class SendReceiveEncryptionDisabledIT extends SendReceiveEncryptedITBase {
 
     @Test
     void testSendAndReceiveUnencrypted() {
+        ArgumentCaptor<ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand> messageCaptor =
+                ArgumentCaptor.forClass(ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand.class);
 
         sendMessage();
 

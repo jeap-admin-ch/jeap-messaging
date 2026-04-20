@@ -7,9 +7,9 @@ import ch.admin.bit.jeap.messaging.registry.verifier.common.DefiningSystemValida
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import java.io.File;
 import java.util.Map;
@@ -19,7 +19,7 @@ class DefiningSystemValidatorTest {
 
     @Test
     void invalidDefiningSystem() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("definingSystem", new TextNode("Something")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("definingSystem", TextNode.valueOf("Something")));
         ValidationContext validationContext = ValidationContext.builder()
                 .descriptorFile(new File("test"))
                 .systemName("test")
@@ -33,7 +33,7 @@ class DefiningSystemValidatorTest {
 
     @Test
     void notCapsDefiningSystem() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("definingSystem", new TextNode("Test")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("definingSystem", TextNode.valueOf("Test")));
         ValidationContext validationContext = ValidationContext.builder()
                 .descriptorFile(new File("test"))
                 .systemName("test")
@@ -47,7 +47,7 @@ class DefiningSystemValidatorTest {
 
     @Test
     void validDefiningSystem() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("definingSystem", new TextNode("TEST")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("definingSystem", TextNode.valueOf("TEST")));
         ValidationContext validationContext = ValidationContext.builder()
                 .descriptorFile(new File("test"))
                 .systemName("test")

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,8 +27,6 @@ class MessageTypesCompilerGitDiffMojoTest extends AbstractAvroMojoTest {
 
     private TestRegistryRepo testRepo;
 
-    @Inject
-    private MavenProject project;
 
     @BeforeEach
     void createTestRepo() throws Exception {
@@ -54,9 +51,11 @@ class MessageTypesCompilerGitDiffMojoTest extends AbstractAvroMojoTest {
      */
     private void configureMojo(MessageTypesCompilerMojo myMojo) throws IllegalAccessException {
         File testDir = testRepo.repoDir().toFile();
+        MavenProject project = new MavenProject();
         setVariableValueToObject(project, "basedir", testDir);
         project.getBuild().setDirectory(new File(testDir, "target").getAbsolutePath());
         project.getBuild().setOutputDirectory(new File(testDir, "target/classes").getAbsolutePath());
+        setVariableValueToObject(myMojo, "project", project);
         setVariableValueToObject(myMojo, "sourceDirectory", new File(testDir, "descriptor"));
         setVariableValueToObject(myMojo, "outputDirectory", new File(testDir, "target/generated-sources"));
 

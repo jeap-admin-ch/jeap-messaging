@@ -12,7 +12,6 @@ import ch.admin.bit.jme.test.JmeSimpleTestEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaAdmin;
@@ -46,7 +45,6 @@ import static org.mockito.Mockito.doAnswer;
                 "jeap.messaging.kafka.cluster.aws.securityProtocol=PLAINTEXT",
                 "jeap.messaging.kafka.exposeMessageKeyToConsumer=false"
         })
-@AutoConfigureObservability
 @Import({KafkaSerdeGlueIT.TestConsumerConfig.class})
 @ActiveProfiles({"test-signing-publisher", "test-signing-subscriber"})
 class KafkaSerdeSigningSendAndReceiveNoKeyExposureGlueIT extends KafkaGlueIntegrationTestBase {

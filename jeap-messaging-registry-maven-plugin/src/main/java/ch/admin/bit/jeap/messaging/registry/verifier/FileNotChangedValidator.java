@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.messaging.registry.dto.DescriptorDto;
 import ch.admin.bit.jeap.messaging.registry.dto.VersionDto;
 import ch.admin.bit.jeap.messaging.registry.helper.MessagingType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -147,7 +148,7 @@ public class FileNotChangedValidator {
     }
 
     private static ValidationResult alreadyDefinedVersionInDescriptorFileNotChanged(File oldFile, File newFile){
-        final var objectMapper = new ObjectMapper();
+        final var objectMapper = new JsonMapper();
 
         try {
             final List<VersionDto> oldVersions = objectMapper.readValue(oldFile, DescriptorDto.class).getVersions();

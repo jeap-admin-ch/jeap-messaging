@@ -10,8 +10,6 @@ import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeCreateDeclar
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeCreateDeclarationCommandConsumer;
 import ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand;
 import lombok.extern.slf4j.Slf4j;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,8 +35,6 @@ class SendReceiveEncryptedITBase extends KafkaIntegrationTestBase {
     @MockitoBean
     protected MessageListener<JmeCreateDeclarationCommand> messageProcessor;
 
-    @Captor
-    protected ArgumentCaptor<JmeCreateDeclarationCommand> messageCaptor;
 
 
     protected void sendMessage() {

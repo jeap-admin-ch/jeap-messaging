@@ -4,8 +4,8 @@ import brave.kafka.clients.KafkaTracing;
 import brave.messaging.MessagingTracing;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.serialization.Serializer;
+import org.jspecify.annotations.Nullable;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.lang.Nullable;
 
 import java.util.Map;
 

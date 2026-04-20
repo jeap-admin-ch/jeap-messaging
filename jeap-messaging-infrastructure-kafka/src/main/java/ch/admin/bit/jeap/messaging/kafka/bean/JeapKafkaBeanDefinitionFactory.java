@@ -21,8 +21,8 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.kafka.autoconfigure.ConcurrentKafkaListenerContainerFactoryConfigurer;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.ContainerCustomizer;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -125,7 +125,7 @@ class JeapKafkaBeanDefinitionFactory {
         GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
         beanDefinition.setBeanClass(KafkaAdmin.class);
         beanDefinition.setInstanceSupplier(() -> {
-            Map<String, Object> configs = new HashMap<>(springKafkaProperties.buildAdminProperties(null));
+            Map<String, Object> configs = new HashMap<>(springKafkaProperties.buildAdminProperties());
             KafkaConfiguration jeapKafkaConfiguration = beanFactory.getBean(KafkaConfiguration.class);
             configs.putAll(jeapKafkaConfiguration.adminConfig(clusterName));
 
@@ -141,7 +141,7 @@ class JeapKafkaBeanDefinitionFactory {
     }
 
     GenericBeanDefinition createKafkaProducerFactory(String clusterName) {
-        Map<String, Object> properties = springKafkaProperties.buildProducerProperties(null);
+        Map<String, Object> properties = springKafkaProperties.buildProducerProperties();
 
         GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
         beanDefinition.setBeanClass(DefaultKafkaProducerFactory.class);
@@ -184,7 +184,7 @@ class JeapKafkaBeanDefinitionFactory {
     }
 
     GenericBeanDefinition createKafkaConsumerFactory(String clusterName) {
-        Map<String, Object> properties = springKafkaProperties.buildConsumerProperties(null);
+        Map<String, Object> properties = springKafkaProperties.buildConsumerProperties();
 
         // Create KafkaConsumerFactory and pass constructor argument
         GenericBeanDefinition beanDefinition = new GenericBeanDefinition();

@@ -11,16 +11,14 @@ import ch.admin.bit.jeap.messaging.kafka.test.integration.common.MessagingMessag
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.TestConfig;
 import ch.admin.bit.jme.declaration.JmeDeclarationCreatedEvent;
 import ch.admin.bit.jme.test.BeanReferenceMessageKey;
-import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -28,12 +26,16 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
-@AutoConfigureObservability
 @SpringBootTest(classes = {TestConfig.class, SignatureConfiguration.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
@@ -53,7 +55,7 @@ public class MessagingSigningIT extends KafkaIntegrationTestBase {
     @SuppressWarnings("unused")
     private ContractsValidator contractsValidator; // Disable contract checking by mocking the contracts validator
 
-    @LocalServerPort
+    @Value("${local.server.port}")
     private int localServerPort;
 
     //Register a Messaging Message listener, we need this to verify the message headers
@@ -98,7 +100,7 @@ public class MessagingSigningIT extends KafkaIntegrationTestBase {
     }
 
     @Test
-    void testMessagingMetrics() {
+    void testMessagingMetrics() throws Exception {
         JmeDeclarationCreatedEvent message = JmeDeclarationCreatedEventBuilder.create()
                 .idempotenceId("idempotenceId").message("gugu3")
                 .build();
@@ -106,7 +108,9 @@ public class MessagingSigningIT extends KafkaIntegrationTestBase {
 
         Mockito.verify(messagingMessageListener, Mockito.timeout(TEST_TIMEOUT)).receive(Mockito.any());
 
-        final String metrics = RestAssured.given().port(localServerPort).get("/actuator/prometheus").getBody().asString();
+        HttpURLConnection conn = (HttpURLConnection) new URL("http://127.0.0.1:" + localServerPort + "/actuator/prometheus").openConnection(Proxy.NO_PROXY);
+        conn.setRequestMethod("GET");
+        final String metrics = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertMessagingMetricsCreated(metrics);
     }
 

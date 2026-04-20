@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.kafka.contract;
 import ch.admin.bit.jeap.messaging.contract.v2.Contract;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -21,7 +22,7 @@ public class DefaultContractsProvider implements ContractsProvider {
     private static final String CONTRACT_RESOURCES_LOCATION = "classpath*:/ch/admin/bit/jeap/messaging/contracts/";
     private static final String CONTRACT_RESOURCES_LOCATION_PATTERN = CONTRACT_RESOURCES_LOCATION + "*-contract.json";
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+    private static final ObjectMapper OBJECT_MAPPER = new JsonMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private final List<Contract> contracts;

@@ -18,7 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(classes = {TestConfig.class}, properties = {
-        "spring.application.name=jme-test-observation-service"})
+        "spring.application.name=jme-test-observation-service",
+        "spring.kafka.listener.observation-enabled=true",
+        "spring.kafka.template.observation-enabled=true"})
 @Slf4j
 @DirtiesContext
 class ObservationConfigurationIT extends KafkaIntegrationTestBase {

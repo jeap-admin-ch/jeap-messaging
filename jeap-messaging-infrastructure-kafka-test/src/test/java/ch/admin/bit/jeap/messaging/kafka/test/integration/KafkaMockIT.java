@@ -3,6 +3,8 @@ package ch.admin.bit.jeap.messaging.kafka.test.integration;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.kafka.crypto.KafkaCryptoConfiguration;
+import ch.admin.bit.jeap.messaging.kafka.KafkaConfiguration;
+import ch.admin.bit.jeap.messaging.kafka.KafkaConsumerConfiguration;
 import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeDeclarationCreatedEventBuilder;
 import ch.admin.bit.jeap.messaging.mockkafka.KafkaMockTestConfig;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = KafkaMockIT.MockItTestComponent.class, properties = {
         "spring.application.name=KafkaMockIT"})
 @Import(KafkaMockTestConfig.class)
-@EnableAutoConfiguration(exclude = {KafkaCryptoConfiguration.class})
+@EnableAutoConfiguration(exclude = {KafkaCryptoConfiguration.class, KafkaConfiguration.class, KafkaConsumerConfiguration.class})
 class KafkaMockIT {
 
     @Autowired

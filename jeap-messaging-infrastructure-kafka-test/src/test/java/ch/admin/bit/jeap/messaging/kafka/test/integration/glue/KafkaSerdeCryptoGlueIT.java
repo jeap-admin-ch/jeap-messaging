@@ -10,7 +10,6 @@ import ch.admin.bit.jeap.messaging.kafka.test.integration.common.JmeCreateDeclar
 import ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -60,17 +59,13 @@ class KafkaSerdeCryptoGlueIT extends KafkaGlueIntegrationTestBase {
     @SuppressWarnings("unused")
     protected KafkaAdmin awsKafkaAdmin;
 
-    @Captor
-    ArgumentCaptor<byte[]> plainMessageCaptor;
-
-    @Captor
-    ArgumentCaptor<byte[]> encryptedMessageCaptor;
-
     static final String CREATE_DECLARATION_COMMAND_AVRO_SCHEMA = JmeCreateDeclarationCommand.SCHEMA$.toString().replace("\"", "\\\"");
 
     @Test
     void testSendAndReceiveEncrypted() {
         final KeyId testKeyId = KeyId.of("testKey");
+        ArgumentCaptor<byte[]> plainMessageCaptor = ArgumentCaptor.forClass(byte[].class);
+        ArgumentCaptor<byte[]> encryptedMessageCaptor = ArgumentCaptor.forClass(byte[].class);
 
         UUID createDeclarationCommandVersionId = UUID.randomUUID();
         stubGetSchemaByDefinitionResponse(createDeclarationCommandVersionId, "jme-messaging-create-declaration-ch.admin.bit.jme.declaration.JmeCreateDeclarationCommand");
