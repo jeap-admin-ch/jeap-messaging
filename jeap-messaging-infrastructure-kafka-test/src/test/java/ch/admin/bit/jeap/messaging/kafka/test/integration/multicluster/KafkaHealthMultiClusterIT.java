@@ -14,7 +14,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 import java.net.HttpURLConnection;
 import java.net.Proxy;
-import java.net.URL;
+import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,8 +79,8 @@ class KafkaHealthMultiClusterIT {
     }
 
     private HttpURLConnection openLocalConnection(String path) throws Exception {
-        URL url = new URL("http://127.0.0.1:" + localServerPort + path);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
+        URI uri = URI.create("http://127.0.0.1:" + localServerPort + path);
+        HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection(Proxy.NO_PROXY);
         conn.setRequestMethod("GET");
         return conn;
     }

@@ -25,7 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.net.HttpURLConnection;
 import java.net.Proxy;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
@@ -137,7 +137,7 @@ public class MessagingSigningSendAndReceiveIT extends KafkaIntegrationTestBase {
 
         Mockito.verify(jmeEventProcessor, Mockito.timeout(TEST_TIMEOUT)).receive(Mockito.any());
 
-        HttpURLConnection conn = (HttpURLConnection) new URL("http://127.0.0.1:" + localServerPort + "/actuator/prometheus").openConnection(Proxy.NO_PROXY);
+        HttpURLConnection conn = (HttpURLConnection) URI.create("http://127.0.0.1:" + localServerPort + "/actuator/prometheus").toURL().openConnection(Proxy.NO_PROXY);
         conn.setRequestMethod("GET");
         final String metrics = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertMessagingMetricsCreated(metrics);

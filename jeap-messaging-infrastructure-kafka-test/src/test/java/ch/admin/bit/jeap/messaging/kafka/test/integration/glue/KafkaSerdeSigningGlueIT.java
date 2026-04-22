@@ -26,7 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.net.HttpURLConnection;
 import java.net.Proxy;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -167,7 +167,7 @@ class KafkaSerdeSigningGlueIT extends KafkaGlueIntegrationTestBase {
 
         await().until(() -> messagingMessageListener.messages.size() == 1);
 
-        HttpURLConnection conn = (HttpURLConnection) new URL("http://127.0.0.1:" + localServerPort + "/actuator/prometheus").openConnection(Proxy.NO_PROXY);
+        HttpURLConnection conn = (HttpURLConnection) URI.create("http://127.0.0.1:" + localServerPort + "/actuator/prometheus").toURL().openConnection(Proxy.NO_PROXY);
         conn.setRequestMethod("GET");
         final String metrics = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertMessagingMetricsCreated(metrics);
