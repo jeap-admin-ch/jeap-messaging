@@ -49,7 +49,7 @@ class KafkaDifferentConsumerProducerClusterIT extends KafkaMultiClusterIntegrati
 
     @RegisterExtension
     static EmbeddedKafkaMultiClusterExtension embeddedKafkaMultiClusterExtension =
-            EmbeddedKafkaMultiClusterExtension.withPortOffset(PORT_OFFSET);
+            new EmbeddedKafkaMultiClusterExtension();
 
     @DynamicPropertySource
     static void registerBootstrapServers(DynamicPropertyRegistry registry) {

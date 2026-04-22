@@ -55,7 +55,7 @@ class KafkaMultiClusterIT extends KafkaMultiClusterIntegrationTestBase {
 
     @RegisterExtension
     static EmbeddedKafkaMultiClusterExtension embeddedKafkaMultiClusterExtension =
-            EmbeddedKafkaMultiClusterExtension.withPortOffset(PORT_OFFSET);
+            new EmbeddedKafkaMultiClusterExtension();
 
     @DynamicPropertySource
     static void registerBootstrapServers(DynamicPropertyRegistry registry) {

@@ -50,7 +50,7 @@ public class ConsumerContractInterceptor implements ConsumerInterceptor<Object, 
 
         Map<TopicPartition, List<ConsumerRecord<Object, Object>>> filtered = records.partitions().stream()
                 .collect(Collectors.toMap(Function.identity(), partition -> onConsumeTopicPartition(records.records(partition))));
-        return new ConsumerRecords<>(filtered);
+        return new ConsumerRecords<>(filtered, Map.of());
     }
 
     private List<ConsumerRecord<Object, Object>> onConsumeTopicPartition(List<ConsumerRecord<Object, Object>> input) {

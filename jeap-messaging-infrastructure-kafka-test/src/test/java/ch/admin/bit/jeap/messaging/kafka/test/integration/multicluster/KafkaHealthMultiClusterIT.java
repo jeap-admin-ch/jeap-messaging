@@ -44,7 +44,7 @@ class KafkaHealthMultiClusterIT {
 
     @RegisterExtension
     static EmbeddedKafkaMultiClusterExtension embeddedKafka =
-            EmbeddedKafkaMultiClusterExtension.withPortOffset(PORT_OFFSET);
+            new EmbeddedKafkaMultiClusterExtension();
 
     @DynamicPropertySource
     static void registerBootstrapServers(DynamicPropertyRegistry registry) {

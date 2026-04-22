@@ -9,23 +9,14 @@ import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
 
 @Slf4j
 public class EmbeddedKafkaMultiClusterExtension implements BeforeAllCallback, AfterAllCallback {
-    public static final int BASE_PORT = 12365; // random number
 
     private final EmbeddedKafkaBroker embeddedKafka1;
     private final EmbeddedKafkaBroker embeddedKafka2;
     private volatile boolean started = false;
 
-    public EmbeddedKafkaMultiClusterExtension(int basePort, int portOffset) {
+    public EmbeddedKafkaMultiClusterExtension() {
         embeddedKafka1 = new EmbeddedKafkaKraftBroker(1, 1, "TOPIC");
         embeddedKafka2 = new EmbeddedKafkaKraftBroker(1, 1, "TOPIC");
-    }
-
-    public static EmbeddedKafkaMultiClusterExtension withBasePortAndOffset(int basePort, int portOffset) {
-        return new EmbeddedKafkaMultiClusterExtension(basePort, portOffset);
-    }
-
-    public static EmbeddedKafkaMultiClusterExtension withPortOffset(int portOffset) {
-        return new EmbeddedKafkaMultiClusterExtension(BASE_PORT, portOffset);
     }
 
     public synchronized void startClusters() {

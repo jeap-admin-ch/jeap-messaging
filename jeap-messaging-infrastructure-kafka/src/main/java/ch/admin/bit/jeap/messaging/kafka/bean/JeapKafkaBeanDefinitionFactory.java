@@ -219,8 +219,14 @@ class JeapKafkaBeanDefinitionFactory {
 
         // Set properties on KafkaTemplate bean (see spring KafkaAutoConfiguration)
         MutablePropertyValues propertyValues = new MutablePropertyValues();
-        propertyValues.addPropertyValue("defaultTopic", springKafkaProperties.getTemplate().getDefaultTopic());
-        propertyValues.addPropertyValue("transactionIdPrefix", springKafkaProperties.getTemplate().getTransactionIdPrefix());
+        String defaultTopic = springKafkaProperties.getTemplate().getDefaultTopic();
+        if (defaultTopic != null) {
+            propertyValues.addPropertyValue("defaultTopic", defaultTopic);
+        }
+        String transactionIdPrefix = springKafkaProperties.getTemplate().getTransactionIdPrefix();
+        if (transactionIdPrefix != null) {
+            propertyValues.addPropertyValue("transactionIdPrefix", transactionIdPrefix);
+        }
         propertyValues.addPropertyValue("producerListener", new RuntimeBeanReference(ProducerListener.class));
         String adminBeanName = jeapKafkaBeanNames.getAdminBeanName(clusterName);
         propertyValues.addPropertyValue("kafkaAdmin", new RuntimeBeanReference(adminBeanName));
