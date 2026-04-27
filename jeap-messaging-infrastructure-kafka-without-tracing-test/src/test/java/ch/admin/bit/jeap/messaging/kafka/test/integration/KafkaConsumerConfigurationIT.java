@@ -22,7 +22,7 @@ class KafkaConsumerConfigurationIT {
             .withConfiguration(AutoConfigurations.of(KafkaConfiguration.class));
 
     @Test
-    void loadContextWithoutBrave() {
+    void loadContextWithoutTracingBridgeSucceeds() {
         this.contextRunner
                 .withPropertyValues(
                         "spring.application.name=jme-messaging-subscriber-service",
@@ -40,14 +40,14 @@ class KafkaConsumerConfigurationIT {
 
     private static void assertObservationDisabledInKafkaTemplate(AssertableApplicationContext context) throws NoSuchFieldException, IllegalAccessException {
         assertThat(context).hasSingleBean(KafkaTemplate.class);
-        KafkaTemplate kafkaTemplate = context.getBean(KafkaTemplate.class);
+        var kafkaTemplate = context.getBean(KafkaTemplate.class);
         Field observationEnabled = kafkaTemplate.getClass().getDeclaredField("observationEnabled");
         observationEnabled.setAccessible(true);
         assertFalse(observationEnabled.getBoolean(kafkaTemplate));
     }
 
     private static void assertObservationDisabledInContainerFactory(AssertableApplicationContext context) {
-        AbstractKafkaListenerContainerFactory kafkaListenerContainerFactory = context.getBean(AbstractKafkaListenerContainerFactory.class);
+        var kafkaListenerContainerFactory = context.getBean(AbstractKafkaListenerContainerFactory.class);
         assertThat(kafkaListenerContainerFactory.getContainerProperties().isObservationEnabled()).isFalse();
     }
 

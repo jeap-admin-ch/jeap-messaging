@@ -6,7 +6,6 @@ import ch.admin.bit.jeap.messaging.kafka.interceptor.CallbackRecordInterceptor;
 import ch.admin.bit.jeap.messaging.kafka.interceptor.JeapKafkaMessageCallback;
 import ch.admin.bit.jeap.messaging.kafka.serde.KafkaAvroSerdeProvider;
 import ch.admin.bit.jeap.messaging.kafka.spring.JeapKafkaBeanNames;
-import ch.admin.bit.jeap.messaging.kafka.tracing.JeapKafkaTracing;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TracerBridge;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -191,9 +190,8 @@ class JeapKafkaBeanDefinitionFactory {
         beanDefinition.setBeanClass(DefaultKafkaConsumerFactory.class);
         beanDefinition.setInstanceSupplier(() -> {
             DefaultKafkaConsumerFactory<Object, Object> factory = new DefaultKafkaConsumerFactory<>(properties);
-            // Only available if jeap-monitoring has been activated
-            ObjectProvider<JeapKafkaTracing> jeapKafkaTracingProvider = beanFactory.getBeanProvider(JeapKafkaTracing.class);
-            jeapKafkaTracingProvider.ifAvailable(jeapKafkaTracing -> factory.addPostProcessor(jeapKafkaTracing::consumer));
+            // Tracing is driven by Spring Kafka's listener-level Micrometer Observation, enabled on the container
+            // factory above when a TracerBridge is present. No per-consumer wrapping needed under the OTel stack.
 
             KafkaConfiguration jeapKafkaConfiguration = beanFactory.getBean(KafkaConfiguration.class);
             factory.updateConfigs(jeapKafkaConfiguration.consumerConfig(clusterName));

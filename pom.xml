@@ -27,7 +27,7 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>14.3.0-alpha-springboot4-SNAPSHOT</version>
+    <version>14.4.0-alpha-springboot4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -51,7 +51,7 @@
         <module>jeap-messaging-infrastructure</module>
         <module>jeap-messaging-infrastructure-kafka</module>
         <module>jeap-messaging-infrastructure-kafka-test</module>
-        <module>jeap-messaging-infrastructure-kafka-without-brave-test</module>
+        <module>jeap-messaging-infrastructure-kafka-without-tracing-test</module>
         <module>jeap-messaging-registry-maven-plugin</module>
         <module>jeap-messaging-idempotence</module>
         <module>jeap-messaging-contract-annotations</module>

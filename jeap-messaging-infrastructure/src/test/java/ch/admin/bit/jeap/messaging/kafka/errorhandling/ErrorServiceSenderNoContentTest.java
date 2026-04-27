@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.avro.SerializedMessageHolder;
 import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
+import ch.admin.bit.jeap.messaging.kafka.tracing.TracerBridge;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,7 @@ class ErrorServiceSenderNoContentTest {
         doReturn(kafkaTemplate).when(beanFactory).getBean("kafkaTemplate");
         ExponentialBackOff retryErrorHandlingService = new ExponentialBackOff();
         StackTraceHasher stackTraceHasher = new StackTraceHasher(kafkaProperties);
-        this.target = new ErrorServiceSender(beanFactory, kafkaProperties, null, retryErrorHandlingService, null, stackTraceHasher);
+        this.target = new ErrorServiceSender(beanFactory, kafkaProperties, null, retryErrorHandlingService, TracerBridge.NOOP, stackTraceHasher);
     }
 
     @Test

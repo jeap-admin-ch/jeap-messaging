@@ -1,22 +1,26 @@
 package ch.admin.bit.jeap.messaging.kafka.tracing;
 
-import brave.messaging.MessagingTracing;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Reads the currently active tracing context and converts it to the jEAP {@link TraceContext} POJO so downstream
+ * libraries (jeap-messaging-outbox, jeap-messaging-sequential-inbox, jeap-error-handling) can persist it alongside
+ * their domain data.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class TraceContextProvider {
 
-    private final MessagingTracing messagingTracing;
+    private final Tracer tracer;
 
-    public TraceContext getTraceContext(){
-        final brave.propagation.TraceContext traceContext = messagingTracing.tracing().currentTraceContext().get();
-        if (traceContext != null) {
-            return new TraceContext(traceContext.traceIdHigh(), traceContext.traceId(), traceContext.spanId(), traceContext.parentId(), traceContext.traceIdString());
-        }
-        else {
+    public TraceContext getTraceContext() {
+        Span currentSpan = tracer.currentSpan();
+        if (currentSpan == null) {
             return null;
         }
+        return TraceContextTranslator.toJeapTraceContext(currentSpan.context());
     }
 }

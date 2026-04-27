@@ -20,7 +20,7 @@ public class ConsumerLoggingInterceptor implements ConsumerInterceptor<Object, O
     public static final String TRACER_BRIDGE = "consumerlogginginterceptor.tracerbridge";
     public static final String CLUSTER_NAME_CONFIG = "consumerlogginginterceptor.clustername";
 
-    private TracerBridge tracerBridge;
+    private TracerBridge tracerBridge = TracerBridge.NOOP;
     private String clusterName;
 
     @Override
@@ -43,34 +43,14 @@ public class ConsumerLoggingInterceptor implements ConsumerInterceptor<Object, O
     }
 
     private void onConsume(ConsumerRecord<Object, Object> record) {
-        // Spring Cloud Sleuth will later remove the tracing headers from the record before the record is handed over for processing.
-        // This results in the tracing headers not being available from the record in the error handling e.g. for relating the logging
-        // of the error event sending to the causing record. That's why we back up the tracing headers for later use here.
-        backupTracingHeaders(record);
-
-        // Spring Cloud Sleuth Kafka did not yet establish a context because it only kicks in after the Kafka consumer
-        // interceptors have been processed. Therefore, we need to establish the context ourselves in this interceptor to
-        // log the incoming record with tracing information.
-        try (TracerBridge.TracerBridgeElement span = getSpan(record)) {
+        // Spring Kafka's listener-level Observation only establishes a span later, when the record is handed to the
+        // listener method. This interceptor runs earlier in the consumer pipeline, so we establish the span ourselves
+        // by extracting the trace context from the record's propagation headers to correlate the log line below.
+        try (TracerBridge.Scope ignored = tracerBridge.getSpan(record)) {
             if (log.isInfoEnabled()) {
                 log.info("Received {} from {} with offset {} on cluster {}",
                         MessageLogger.message(record.value()), topic(record), record.offset(), clusterName);
             }
-        }
-    }
-
-    private void backupTracingHeaders(ConsumerRecord<Object, Object> record) {
-        if (tracerBridge != null) {
-            tracerBridge.backupOriginalTraceContext(record);
-        }
-    }
-
-    private TracerBridge.TracerBridgeElement getSpan(ConsumerRecord<?, ?> record) {
-        if (tracerBridge != null) {
-            return tracerBridge.getSpan(record);
-        } else {
-            return () -> {
-            };
         }
     }
 

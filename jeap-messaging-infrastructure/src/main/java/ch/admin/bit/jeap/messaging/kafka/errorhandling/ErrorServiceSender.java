@@ -65,27 +65,12 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
 
     @Override
     public void accept(ConsumerRecord<?, ?> consumerRecord, Exception exception) {
-        // Spring Cloud Sleuth already closed the span in which the exception occurred and does not activate a new tracing
-        // context for handling the exception. Therefore, we establish this context ourselves here by creating a child
-        // span in the failed message's original trace context and by executing the error handling within this span.
-        restoreOriginalTracingHeaders(consumerRecord);
-        try (TracerBridge.TracerBridgeElement ignored = getSpan(consumerRecord)) {
+        // Spring Kafka's DefaultErrorHandler invokes this recoverer after the listener-level Observation scope has
+        // been closed, so no current tracing context is active here. We re-extract the trace context from the record's
+        // propagation headers (still intact — Micrometer/OTel read headers without mutating them) and open a child
+        // span so the produced MessageProcessingFailedEvent is correlated back to the originating message's trace.
+        try (TracerBridge.Scope ignored = tracerBridge.getSpan(consumerRecord)) {
             createAndSendMessageProcessingFailedEvent(consumerRecord, exception);
-        }
-    }
-
-    private void restoreOriginalTracingHeaders(ConsumerRecord<?, ?> record) {
-        if (tracerBridge != null) {
-            tracerBridge.restoreOriginalTraceContext(record);
-        }
-    }
-
-    private TracerBridge.TracerBridgeElement getSpan(ConsumerRecord<?, ?> record) {
-        if (tracerBridge != null) {
-            return tracerBridge.getSpan(record);
-        } else {
-            return () -> {
-            };
         }
     }
 

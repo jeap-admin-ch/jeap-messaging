@@ -44,7 +44,7 @@ import static ch.admin.bit.jeap.messaging.kafka.properties.PropertyRequirements.
 
 @AutoConfiguration(before = {KafkaAutoConfiguration.class, KafkaConsumerConfiguration.class},
         after = {KafkaTracingConfiguration.class},
-        afterName = "BraveAutoConfiguration")
+        afterName = "org.springframework.boot.actuate.autoconfigure.tracing.otel.OtelTracingAutoConfiguration")
 @EnableKafka
 @Import(JeapKafkaBeanRegistrar.class)
 @Slf4j

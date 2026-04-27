@@ -7,7 +7,7 @@
     <parent>
         <groupId>ch.admin.bit.jeap</groupId>
         <artifactId>jeap-messaging</artifactId>
-        <version>14.3.0-alpha-springboot4-SNAPSHOT</version>
+        <version>14.4.0-alpha-springboot4-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-messaging-infrastructure-kafka</artifactId>
@@ -77,8 +77,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.zipkin.brave</groupId>
-            <artifactId>brave-instrumentation-kafka-clients</artifactId>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

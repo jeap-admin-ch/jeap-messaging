@@ -28,9 +28,9 @@ public class KafkaConsumerConfiguration {
     @Bean
     ErrorServiceSender errorServiceSender(BeanFactory beanFactory) {
         BackOff retrySendingError = new FixedBackOff(properties.getErrorServiceRetryIntervalMs(), properties.getErrorServiceRetryAttempts());
-        TracerBridge tracerBridgeOrNull = tracerBridge.orElse(null);
+        TracerBridge tracerBridgeOrNoop = tracerBridge.orElse(TracerBridge.NOOP);
         StackTraceHasher stackTraceHasher = new StackTraceHasher(properties);
-        return new ErrorServiceSender(beanFactory, properties, errorServiceFailedHandler, retrySendingError, tracerBridgeOrNull, stackTraceHasher);
+        return new ErrorServiceSender(beanFactory, properties, errorServiceFailedHandler, retrySendingError, tracerBridgeOrNoop, stackTraceHasher);
     }
 
     @Bean

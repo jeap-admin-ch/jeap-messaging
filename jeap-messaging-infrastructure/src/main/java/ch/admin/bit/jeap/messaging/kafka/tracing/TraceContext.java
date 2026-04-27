@@ -14,4 +14,10 @@ public class TraceContext {
     Long parentSpanId;
 
     String traceIdString;
+
+    /**
+     * Sampling decision inherited from the original span. {@code null} means "unknown" — applies to contexts
+     * persisted by older jEAP versions that did not record this flag.
+     */
+    Boolean sampled;
 }
