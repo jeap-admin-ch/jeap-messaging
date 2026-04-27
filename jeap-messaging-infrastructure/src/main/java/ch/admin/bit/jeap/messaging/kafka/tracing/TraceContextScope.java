@@ -9,6 +9,12 @@ package ch.admin.bit.jeap.messaging.kafka.tracing;
  */
 public interface TraceContextScope extends AutoCloseable {
 
+    /**
+     * Shared no-op scope for callers that need to return a {@code TraceContextScope} when no tracing is active.
+     * Closing it does nothing, so it is safe to use as the empty case in try-with-resources.
+     */
+    TraceContextScope NOOP = () -> { };
+
     @Override
     void close();
 }
