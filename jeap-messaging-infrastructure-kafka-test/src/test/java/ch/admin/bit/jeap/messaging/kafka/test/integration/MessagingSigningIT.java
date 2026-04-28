@@ -18,6 +18,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.messaging.Message;
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
                 "management.endpoint.prometheus.access=unrestricted",
                 "management.endpoints.web.exposure.include=*"
         })
+@AutoConfigureMetrics
 @ActiveProfiles("test-signing-publisher")
 @Import(MessagingMessageConsumer.class)
 @DirtiesContext

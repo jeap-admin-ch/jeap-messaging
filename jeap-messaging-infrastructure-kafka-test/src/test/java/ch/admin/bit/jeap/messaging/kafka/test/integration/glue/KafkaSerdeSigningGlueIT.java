@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
                 "jeap.messaging.kafka.cluster.aws.securityProtocol=PLAINTEXT",
                 "jeap.messaging.kafka.exposeMessageKeyToConsumer=true"
         })
+@AutoConfigureMetrics
 @Import({KafkaSerdeGlueIT.TestConsumerConfig.class, KafkaSerdeSigningGlueIT.MessagingMessageListenerConfig.class, MessagingMessageConsumer.class})
 @ActiveProfiles("test-signing-publisher")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)

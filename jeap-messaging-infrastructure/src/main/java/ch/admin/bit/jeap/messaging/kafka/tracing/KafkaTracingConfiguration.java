@@ -17,8 +17,8 @@ import org.springframework.context.annotation.Bean;
  * match and produce a bridge that opens OTel scopes the Brave-backed providers can't see.
  */
 @AutoConfiguration(afterName = {
-        "org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration",
-        "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration"
+        "org.springframework.boot.opentelemetry.autoconfigure.OpenTelemetrySdkAutoConfiguration",
+        "org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.OpenTelemetryTracingAutoConfiguration"
 })
 @ConditionalOnClass(value = {Tracer.class, OpenTelemetry.class}, name = "io.micrometer.tracing.otel.bridge.OtelTracer")
 @ConditionalOnBean({Tracer.class, OpenTelemetry.class})

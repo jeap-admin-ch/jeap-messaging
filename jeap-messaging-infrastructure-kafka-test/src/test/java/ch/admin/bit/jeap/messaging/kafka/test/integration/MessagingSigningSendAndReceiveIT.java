@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -46,6 +47,7 @@ import static org.mockito.Mockito.doAnswer;
                 "management.endpoints.web.exposure.include=*",
                 "jeap.messaging.kafka.exposeMessageKeyToConsumer=true"
         })
+@AutoConfigureMetrics
 @ActiveProfiles({"test-signing-publisher", "test-signing-subscriber"})
 @DirtiesContext
 public class MessagingSigningSendAndReceiveIT extends KafkaIntegrationTestBase {

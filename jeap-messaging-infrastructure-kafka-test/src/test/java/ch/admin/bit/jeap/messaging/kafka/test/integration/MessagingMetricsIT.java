@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.application.name=jme-messaging-subscriber-service",
         "management.endpoint.prometheus.enabled=true",
         "management.endpoints.web.exposure.include=*"})
+@AutoConfigureMetrics
 @DirtiesContext
 class MessagingMetricsIT extends KafkaIntegrationTestBase {
 
