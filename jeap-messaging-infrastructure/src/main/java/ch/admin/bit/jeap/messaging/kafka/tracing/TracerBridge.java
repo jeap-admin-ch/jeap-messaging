@@ -25,10 +25,10 @@ public interface TracerBridge {
     /**
      * Activates an INTERNAL span whose parent context is extracted from the record's tracing headers if present.
      * The caller is responsible to close the scope -> use within try-catch.
-     * @param record The Kafka record to extract the parent tracing span from.
+     * @param consumerRecord The Kafka record to extract the parent tracing span from.
      * @return The scope of the span as AutoCloseable
      */
-    Scope getSpan(ConsumerRecord<?, ?> record);
+    Scope getSpan(ConsumerRecord<?, ?> consumerRecord);
 
     /**
      * AutoCloseable handle that keeps a tracing span active until closed.

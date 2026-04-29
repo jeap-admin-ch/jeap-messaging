@@ -46,7 +46,7 @@ public class ConsumerLoggingInterceptor implements ConsumerInterceptor<Object, O
         // Spring Kafka's listener-level Observation only establishes a span later, when the record is handed to the
         // listener method. This interceptor runs earlier in the consumer pipeline, so we establish the span ourselves
         // by extracting the trace context from the record's propagation headers to correlate the log line below.
-        try (TracerBridge.Scope ignored = tracerBridge.getSpan(record)) {
+        try (TracerBridge.Scope _ = tracerBridge.getSpan(record)) {
             if (log.isInfoEnabled()) {
                 log.info("Received {} from {} with offset {} on cluster {}",
                         MessageLogger.message(record.value()), topic(record), record.offset(), clusterName);

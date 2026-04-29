@@ -54,10 +54,10 @@ class OtelTracerBridgeTest {
     void getSpan_whenRecordHasTraceparentHeader_emitsChildSpanWithSameTraceId() {
         String traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
         String parentSpanId = "00f067aa0ba902b7";
-        ConsumerRecord<String, String> record = recordWithHeaders(
+        ConsumerRecord<String, String> consumerRecord = recordWithHeaders(
                 header("traceparent", "00-" + traceId + "-" + parentSpanId + "-01"));
 
-        try (TracerBridge.Scope autoClosed = bridge.getSpan(record)) {
+        try (TracerBridge.Scope _ = bridge.getSpan(consumerRecord)) {
             // span active, then auto-closed
         }
 
@@ -73,9 +73,9 @@ class OtelTracerBridgeTest {
 
     @Test
     void getSpan_whenRecordHasNoPropagationHeaders_returnsNoopAndEmitsNoSpan() {
-        ConsumerRecord<String, String> record = recordWithHeaders();
+        ConsumerRecord<String, String> consumerRecord = recordWithHeaders();
 
-        try (TracerBridge.Scope autoClosed = bridge.getSpan(record)) {
+        try (TracerBridge.Scope autoClosed = bridge.getSpan(consumerRecord)) {
             assertThat(autoClosed).isSameAs(TracerBridge.Scope.NOOP);
         }
 
@@ -86,10 +86,10 @@ class OtelTracerBridgeTest {
     void getSpan_whenTraceparentHeaderMalformed_returnsNoopAndEmitsNoSpan() {
         // We rely on the propagator to reject invalid headers by returning an invalid SpanContext. For such cases,
         // this test asserts that the bridge returns NOOP instead of starting an orphan root span.
-        ConsumerRecord<String, String> record = recordWithHeaders(
+        ConsumerRecord<String, String> consumerRecord = recordWithHeaders(
                 header("traceparent", "00-deadbeef-cafebabe-01"));
 
-        try (TracerBridge.Scope autoClosed = bridge.getSpan(record)) {
+        try (TracerBridge.Scope autoClosed = bridge.getSpan(consumerRecord)) {
             assertThat(autoClosed).isSameAs(TracerBridge.Scope.NOOP);
         }
 
@@ -107,11 +107,11 @@ class OtelTracerBridgeTest {
                 TextMapPropagator.composite(
                         W3CTraceContextPropagator.getInstance(),
                         W3CBaggagePropagator.getInstance())));
-        ConsumerRecord<String, String> record = recordWithHeaders(
+        ConsumerRecord<String, String> consumerRecord = recordWithHeaders(
                 header("traceparent", "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"),
                 header("baggage", "tenant=acme,user-id=42"));
 
-        try (TracerBridge.Scope ignored = baggageBridge.getSpan(record)) {
+        try (TracerBridge.Scope _ = baggageBridge.getSpan(consumerRecord)) {
             Baggage baggage = Baggage.current();
             assertThat(baggage.getEntryValue("tenant")).isEqualTo("acme");
             assertThat(baggage.getEntryValue("user-id")).isEqualTo("42");

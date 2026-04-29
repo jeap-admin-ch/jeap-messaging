@@ -42,7 +42,7 @@ public class OtelTracerBridge implements TracerBridge {
         public Iterable<String> keys(Headers carrier) {
             return StreamSupport.stream(carrier.spliterator(), false)
                     .map(Header::key)
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         @Override
@@ -64,8 +64,8 @@ public class OtelTracerBridge implements TracerBridge {
 
     @Override
     @SuppressWarnings("resource") // span scope must be closed by caller
-    public Scope getSpan(ConsumerRecord<?, ?> record) {
-        Context extracted = propagator.extract(Context.root(), record.headers(), HEADER_GETTER);
+    public Scope getSpan(ConsumerRecord<?, ?> consumerRecord) {
+        Context extracted = propagator.extract(Context.root(), consumerRecord.headers(), HEADER_GETTER);
         if (!Span.fromContext(extracted).getSpanContext().isValid()) {
             log.trace("Not starting a span because no valid tracing context could be extracted from the consumer record.");
             return Scope.NOOP;

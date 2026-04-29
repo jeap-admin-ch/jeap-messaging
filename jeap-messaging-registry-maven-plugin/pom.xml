@@ -7,7 +7,7 @@
     <parent>
         <artifactId>jeap-messaging</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>14.3.0-alpha-springboot4-SNAPSHOT</version>
+        <version>14.3.1-alpha-springboot4-SNAPSHOT</version>
     </parent>
 
     <artifactId>jeap-messaging-registry-maven-plugin</artifactId>

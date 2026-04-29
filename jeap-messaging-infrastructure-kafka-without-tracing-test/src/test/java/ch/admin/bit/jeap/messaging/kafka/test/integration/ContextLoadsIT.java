@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "jeap.messaging.kafka.embedded=true"
 })
 @ContextConfiguration(classes = {TestConfig.class})
-public class ContextLoadsIT {
+class ContextLoadsIT {
 
     @Autowired
     ObjectProvider<TracerBridge> tracerBridgeObjectProvider;

@@ -44,7 +44,7 @@ class TraceContextProviderAndUpdaterTest {
     @Test
     void getTraceContext_reflectsActiveSpan() {
         Span span = tracer.nextSpan().name("test").start();
-        try (Tracer.SpanInScope ignored = tracer.withSpan(span)) {
+        try (Tracer.SpanInScope _ = tracer.withSpan(span)) {
             TraceContext ctx = provider.getTraceContext();
             assertThat(ctx).isNotNull();
             assertThat(ctx.getTraceIdString()).hasSize(32);
@@ -65,7 +65,7 @@ class TraceContextProviderAndUpdaterTest {
                 "4bf92f3577b34da6a3ce929d0e0e4736",
                 Boolean.TRUE);
 
-        try (TraceContextScope scope = updater.setTraceContext(target)) {
+        try (TraceContextScope _ = updater.setTraceContext(target)) {
             TraceContext current = provider.getTraceContext();
             assertThat(current).isNotNull();
             assertThat(current.getTraceIdString()).isEqualTo("4bf92f3577b34da6a3ce929d0e0e4736");
@@ -80,9 +80,9 @@ class TraceContextProviderAndUpdaterTest {
         TraceContext outer = newContext("aaaaaaaaaaaaaaaabbbbbbbbbbbbbbbb", "1111111111111111");
         TraceContext inner = newContext("ccccccccccccccccdddddddddddddddd", "2222222222222222");
 
-        try (TraceContextScope outerScope = updater.setTraceContext(outer)) {
+        try (TraceContextScope _ = updater.setTraceContext(outer)) {
             assertThat(provider.getTraceContext().getTraceIdString()).isEqualTo("aaaaaaaaaaaaaaaabbbbbbbbbbbbbbbb");
-            try (TraceContextScope innerScope = updater.setTraceContext(inner)) {
+            try (TraceContextScope _ = updater.setTraceContext(inner)) {
                 assertThat(provider.getTraceContext().getTraceIdString()).isEqualTo("ccccccccccccccccdddddddddddddddd");
             }
             assertThat(provider.getTraceContext().getTraceIdString()).isEqualTo("aaaaaaaaaaaaaaaabbbbbbbbbbbbbbbb");
@@ -101,11 +101,11 @@ class TraceContextProviderAndUpdaterTest {
                 "4bf92f3577b34da6a3ce929d0e0e4736",
                 Boolean.FALSE);
 
-        try (TraceContextScope ignored = updater.setTraceContext(unsampled)) {
+        try (TraceContextScope _ = updater.setTraceContext(unsampled)) {
             // Derive a child span: it must inherit the unsampled flag from the restored context so downstream
             // producers do not export spans that the originating trace chose to drop.
             Span child = tracer.nextSpan().name("child").start();
-            try (Tracer.SpanInScope childScope = tracer.withSpan(child)) {
+            try (Tracer.SpanInScope _ = tracer.withSpan(child)) {
                 assertThat(child.context().sampled())
                         .as("Child of an unsampled restored context must remain unsampled.")
                         .isFalse();
