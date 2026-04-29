@@ -11,6 +11,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [14.3.0-alpha-springboot4] - 2026-04-29
 ### Changed
 - Tracing stack migrated from Brave/Zipkin to OpenTelemetry (via Micrometer Tracing + OTel bridge).
+- update jeap-crypto from 8.2.0-alpha-springboot4 to 8.3.0-alpha-springboot4
 
 ## [14.2.0-alpha-springboot4] - 2026-04-24
 
