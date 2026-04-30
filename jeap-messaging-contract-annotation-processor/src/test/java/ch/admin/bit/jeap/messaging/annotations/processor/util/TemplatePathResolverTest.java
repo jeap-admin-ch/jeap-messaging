@@ -139,7 +139,7 @@ class TemplatePathResolverTest {
     }
 
     @Test
-    void testGetCustomTemplatesPathFromMainResources() throws IOException {
+    void testGetOpenSearchPathFromMainJavaInCompileContext() throws IOException {
         TypeElement annotatedElement = mock(TypeElement.class);
         Name qualifiedName = mock(Name.class);
         when(qualifiedName.toString()).thenReturn("ch.admin.bit.jeap.SomeClass");
@@ -150,18 +150,18 @@ class TemplatePathResolverTest {
         when(filer.getResource(StandardLocation.SOURCE_PATH, "", "ch/admin/bit/jeap/SomeClass.java")).thenReturn(fileObject);
 
         try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            Path customPath = Paths.get("/path/to/src/main/resources/opensearch");
-            mockedFiles.when(() -> Files.exists(customPath)).thenReturn(true);
+            Path openSearchPath = Paths.get("/path/to/src/main/resources/opensearch");
+            mockedFiles.when(() -> Files.exists(openSearchPath)).thenReturn(true);
 
-            String templatePath = resolver.getTemplatePath(annotatedElement, "opensearch");
+            String templatePath = resolver.getTemplatePath(annotatedElement);
 
             assertNotNull(templatePath);
-            assertEquals(customPath.toAbsolutePath().toString(), templatePath);
+            assertEquals(openSearchPath.toAbsolutePath().toString(), templatePath);
         }
     }
 
     @Test
-    void testGetCustomTemplatesPathFromTestResources() throws IOException {
+    void testGetOpenSearchPathFromTestJavaInCompileContext() throws IOException {
         TypeElement annotatedElement = mock(TypeElement.class);
         Name qualifiedName = mock(Name.class);
         when(qualifiedName.toString()).thenReturn("ch.admin.bit.jeap.SomeClass");
@@ -172,55 +172,13 @@ class TemplatePathResolverTest {
         when(filer.getResource(StandardLocation.SOURCE_PATH, "", "ch/admin/bit/jeap/SomeClass.java")).thenReturn(fileObject);
 
         try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            Path customPath = Paths.get("/path/to/src/test/resources/opensearch");
-            mockedFiles.when(() -> Files.exists(customPath)).thenReturn(true);
+            Path openSearchPath = Paths.get("/path/to/src/test/resources/opensearch");
+            mockedFiles.when(() -> Files.exists(openSearchPath)).thenReturn(true);
 
-            String templatePath = resolver.getTemplatePath(annotatedElement, "opensearch");
-
-            assertNotNull(templatePath);
-            assertEquals(customPath.toAbsolutePath().toString(), templatePath);
-        }
-    }
-
-    @Test
-    void testGetCustomTemplatesPathNotFound() throws IOException {
-        TypeElement annotatedElement = mock(TypeElement.class);
-        Name qualifiedName = mock(Name.class);
-        when(qualifiedName.toString()).thenReturn("ch.admin.bit.jeap.SomeClass");
-        when(annotatedElement.getQualifiedName()).thenReturn(qualifiedName);
-
-        FileObject fileObject = mock(FileObject.class);
-        when(fileObject.toUri()).thenReturn(URI.create("file:///path/to/src/main/java/ch/admin/bit/jeap/SomeClass.java"));
-        when(filer.getResource(StandardLocation.SOURCE_PATH, "", "ch/admin/bit/jeap/SomeClass.java")).thenReturn(fileObject);
-
-        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            mockedFiles.when(() -> Files.exists(any(Path.class))).thenReturn(false);
-
-            String templatePath = resolver.getTemplatePath(annotatedElement, "nonexistent");
-
-            assertNull(templatePath);
-        }
-    }
-
-    @Test
-    void testGetTemplatesPathBlankDelegatesToDefault() throws IOException {
-        TypeElement annotatedElement = mock(TypeElement.class);
-        Name qualifiedName = mock(Name.class);
-        when(qualifiedName.toString()).thenReturn("ch.admin.bit.jeap.SomeClass");
-        when(annotatedElement.getQualifiedName()).thenReturn(qualifiedName);
-
-        FileObject fileObject = mock(FileObject.class);
-        when(fileObject.toUri()).thenReturn(URI.create("file:///path/to/src/main/java/ch/admin/bit/jeap/SomeClass.java"));
-        when(filer.getResource(StandardLocation.SOURCE_PATH, "", "ch/admin/bit/jeap/SomeClass.java")).thenReturn(fileObject);
-
-        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            Path templatesPath = Paths.get("/path/to/src/main/resources/process/templates");
-            mockedFiles.when(() -> Files.exists(templatesPath)).thenReturn(true);
-
-            String templatePath = resolver.getTemplatePath(annotatedElement, "");
+            String templatePath = resolver.getTemplatePath(annotatedElement);
 
             assertNotNull(templatePath);
-            assertEquals(templatesPath.toAbsolutePath().toString(), templatePath);
+            assertEquals(openSearchPath.toAbsolutePath().toString(), templatePath);
         }
     }
 }

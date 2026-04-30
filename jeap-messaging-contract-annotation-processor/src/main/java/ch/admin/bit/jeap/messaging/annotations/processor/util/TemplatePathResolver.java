@@ -29,19 +29,6 @@ public class TemplatePathResolver {
      * @return the path to the templates directory as a String, or null if the path could not be determined
      */
     public String getTemplatePath(Element annotatedElement) {
-        return getTemplatePath(annotatedElement, null);
-    }
-
-    /**
-     * Resolves the templates directory path. When {@code templatesPath} is non-blank it is resolved
-     * relative to the module's {@code src/[main|test]/resources}; otherwise the default
-     * {@code process/templates} or {@code processarchive} directory is used.
-     *
-     * @param annotatedElement the annotated element from which the module root is determined
-     * @param templatesPath    optional explicit path relative to {@code src/[main|test]/resources}; blank to use the default
-     * @return the absolute path to the templates directory, or null if it could not be determined
-     */
-    public String getTemplatePath(Element annotatedElement, String templatesPath) {
         try {
             String className = ((TypeElement) annotatedElement).getQualifiedName().toString();
             FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", className.replace('.', '/') + ".java");
@@ -53,20 +40,22 @@ public class TemplatePathResolver {
             }
 
             if (sourcePath != null) {
-                // sourcePath.getParent() = src/main or src/test
-                Path resourcesBase = sourcePath.getParent().resolve("resources");
-
-                if (templatesPath != null && !templatesPath.isBlank()) {
-                    Path customPath = resourcesBase.resolve(templatesPath);
-                    if (Files.exists(customPath)) {
-                        return customPath.toAbsolutePath().toString();
-                    }
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                            "Templates directory not found: " + customPath, annotatedElement);
-                    return null;
+                Path processContextTemplatesPath = sourcePath.getParent().resolve("resources/process/templates");
+                if (Files.exists(processContextTemplatesPath)) {
+                    return processContextTemplatesPath.toAbsolutePath().toString();
+                }
+                Path processArchiveTemplatesPath = sourcePath.getParent().resolve("resources/processarchive");
+                if (Files.exists(processArchiveTemplatesPath)) {
+                    return processArchiveTemplatesPath.toAbsolutePath().toString();
+                }
+                Path openSearchTemplatesPath = sourcePath.getParent().resolve("resources/opensearch");
+                if (Files.exists(openSearchTemplatesPath)) {
+                    return openSearchTemplatesPath.toAbsolutePath().toString();
                 }
 
-                return resolveDefaultTemplatePath(resourcesBase, annotatedElement);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Template directory not found.");
+                return null;
+
             } else {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "src/main/java or src/test/java directory not found.");
                 return null;
@@ -75,18 +64,4 @@ public class TemplatePathResolver {
             return null;
         }
     }
-
-    private String resolveDefaultTemplatePath(Path resourcesBase, Element annotatedElement) {
-        Path processContextTemplatesPath = resourcesBase.resolve("process/templates");
-        if (Files.exists(processContextTemplatesPath)) {
-            return processContextTemplatesPath.toAbsolutePath().toString();
-        }
-        Path processArchiveTemplatesPath = resourcesBase.resolve("processarchive");
-        if (Files.exists(processArchiveTemplatesPath)) {
-            return processArchiveTemplatesPath.toAbsolutePath().toString();
-        }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Template directory not found.", annotatedElement);
-        return null;
-    }
 }
-
