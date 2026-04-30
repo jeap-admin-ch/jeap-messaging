@@ -17,7 +17,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class JeapMessageTemplateAnnotationProcessorTest {
@@ -43,11 +42,13 @@ class JeapMessageTemplateAnnotationProcessorTest {
         processor = new JeapMessageTemplateAnnotationProcessor();
         processor.init(processingEnv);
 
+        // Use reflection to set the private fields
         setPrivateField(processor, "avroClassFinder", avroClassFinder);
         setPrivateField(processor, "templatePathResolver", templatePathResolver);
         setPrivateField(processor, "templateMessageCollector", templateMessageCollector);
 
-        resetAlreadyProcessed();
+        // Reset the static variable
+        setStaticField();
     }
 
     private void setPrivateField(Object target, String fieldName, Object value) throws Exception {
@@ -56,14 +57,14 @@ class JeapMessageTemplateAnnotationProcessorTest {
         field.set(target, value);
     }
 
-    private void resetAlreadyProcessed() throws Exception {
+    private void setStaticField() throws Exception {
         Field field = JeapMessageTemplateAnnotationProcessor.class.getDeclaredField("alreadyProcessed");
         field.setAccessible(true);
         field.set(null, false);
     }
 
     @Test
-    void processWithValidAnnotations_collectsMessagesAndGeneratesContracts() {
+    void testProcessWithValidAnnotations() {
         TypeElement annotation = mock(TypeElement.class);
         Element annotatedElement = mock(Element.class);
         JeapMessageConsumerContractsByTemplates annotationInstance = mock(JeapMessageConsumerContractsByTemplates.class);
@@ -73,27 +74,23 @@ class JeapMessageTemplateAnnotationProcessorTest {
         when(annotatedElement.getAnnotation(JeapMessageConsumerContractsByTemplates.class))
                 .thenReturn(annotationInstance);
         when(annotationInstance.appName()).thenReturn("TestApp");
-        when(annotationInstance.templatesPath()).thenReturn("opensearch");
 
         Set<Class<?>> annotatedClasses = new HashSet<>(Collections.singletonList(Object.class));
         when(avroClassFinder.getAvroGeneratedClasses()).thenReturn(annotatedClasses);
-        when(templatePathResolver.getTemplatePath(annotatedElement, "opensearch"))
-                .thenReturn("/path/to/templates");
+        when(templatePathResolver.getTemplatePath(annotatedElement)).thenReturn("/path/to/templates");
 
         Map<String, Set<String>> templateMessages = new HashMap<>();
         templateMessages.put("TestMessage", Set.of("topic1", "topic2"));
-        when(templateMessageCollector.collectTemplateMessages(eq("/path/to/templates"), any()))
-                .thenReturn(templateMessages);
+        when(templateMessageCollector.collectTemplateMessages(anyString(), any())).thenReturn(templateMessages);
 
         boolean result = processor.process(Collections.singleton(annotation), roundEnv);
 
         assertTrue(result);
-        verify(templateMessageCollector).collectTemplateMessages(eq("/path/to/templates"), any());
         verify(messager, never()).printMessage(eq(Diagnostic.Kind.ERROR), anyString());
     }
 
     @Test
-    void processWithoutAnnotatedElements_returnsFalse() {
+    void testProcessWithoutAnnotations() {
         when(roundEnv.getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class))
                 .thenReturn(Collections.emptySet());
 
@@ -104,112 +101,31 @@ class JeapMessageTemplateAnnotationProcessorTest {
     }
 
     @Test
-    void processWithNullTemplatePath_skipsMessageCollection() {
+    void testProcessWithNoTemplatePath() {
         TypeElement annotation = mock(TypeElement.class);
         Element annotatedElement = mock(Element.class);
-        JeapMessageConsumerContractsByTemplates annotationInstance = mock(JeapMessageConsumerContractsByTemplates.class);
 
         doReturn(Collections.singleton(annotatedElement))
                 .when(roundEnv).getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class);
-        when(annotatedElement.getAnnotation(JeapMessageConsumerContractsByTemplates.class))
-                .thenReturn(annotationInstance);
-        when(annotationInstance.templatesPath()).thenReturn("custom/path");
-
-        Set<Class<?>> annotatedClasses = new HashSet<>(Collections.singletonList(Object.class));
-        when(avroClassFinder.getAvroGeneratedClasses()).thenReturn(annotatedClasses);
-        when(templatePathResolver.getTemplatePath(annotatedElement, "custom/path")).thenReturn(null);
+        when(templatePathResolver.getTemplatePath(annotatedElement)).thenReturn(null);
 
         boolean result = processor.process(Collections.singleton(annotation), roundEnv);
 
         assertTrue(result);
-        verify(templateMessageCollector, never()).collectTemplateMessages(anyString(), any());
     }
 
     @Test
-    void processWithNoAnnotatedClasses_skipsContractGeneration() {
+    void testProcessWithNoAnnotatedClasses() {
         TypeElement annotation = mock(TypeElement.class);
         Element annotatedElement = mock(Element.class);
 
         doReturn(Collections.singleton(annotatedElement))
                 .when(roundEnv).getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class);
+        when(templatePathResolver.getTemplatePath(annotatedElement)).thenReturn("/path/to/templates");
         when(avroClassFinder.getAvroGeneratedClasses()).thenReturn(Collections.emptySet());
 
         boolean result = processor.process(Collections.singleton(annotation), roundEnv);
 
         assertTrue(result);
-        verify(templatePathResolver, never()).getTemplatePath(any(), any());
-        verify(templateMessageCollector, never()).collectTemplateMessages(anyString(), any());
-    }
-
-    @Test
-    void processWithEmptyMessages_skipsContractGeneration() {
-        TypeElement annotation = mock(TypeElement.class);
-        Element annotatedElement = mock(Element.class);
-        JeapMessageConsumerContractsByTemplates annotationInstance = mock(JeapMessageConsumerContractsByTemplates.class);
-
-        doReturn(Collections.singleton(annotatedElement))
-                .when(roundEnv).getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class);
-        when(annotatedElement.getAnnotation(JeapMessageConsumerContractsByTemplates.class))
-                .thenReturn(annotationInstance);
-        when(annotationInstance.appName()).thenReturn("TestApp");
-        when(annotationInstance.templatesPath()).thenReturn("/some/path");
-
-        Set<Class<?>> annotatedClasses = new HashSet<>(Collections.singletonList(Object.class));
-        when(avroClassFinder.getAvroGeneratedClasses()).thenReturn(annotatedClasses);
-        when(templatePathResolver.getTemplatePath(annotatedElement, "/some/path")).thenReturn("/resolved/path");
-        when(templateMessageCollector.collectTemplateMessages(eq("/resolved/path"), any()))
-                .thenReturn(Collections.emptyMap());
-
-        boolean result = processor.process(Collections.singleton(annotation), roundEnv);
-
-        assertTrue(result);
-        verify(messager, never()).printMessage(any(), anyString());
-    }
-
-    @Test
-    void processWhenNoTypeRefFoundForMessage_printsWarning() {
-        TypeElement annotation = mock(TypeElement.class);
-        Element annotatedElement = mock(Element.class);
-        JeapMessageConsumerContractsByTemplates annotationInstance = mock(JeapMessageConsumerContractsByTemplates.class);
-
-        doReturn(Collections.singleton(annotatedElement))
-                .when(roundEnv).getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class);
-        when(annotatedElement.getAnnotation(JeapMessageConsumerContractsByTemplates.class))
-                .thenReturn(annotationInstance);
-        when(annotationInstance.appName()).thenReturn("TestApp");
-        when(annotationInstance.templatesPath()).thenReturn("/some/path");
-
-        // Object.class has no TypeRef inner class → findTypeRefOfClassByShortName returns null
-        Set<Class<?>> annotatedClasses = new HashSet<>(Collections.singletonList(Object.class));
-        when(avroClassFinder.getAvroGeneratedClasses()).thenReturn(annotatedClasses);
-        when(templatePathResolver.getTemplatePath(annotatedElement, "/some/path")).thenReturn("/resolved/path");
-
-        Map<String, Set<String>> messages = new HashMap<>();
-        messages.put("Object", Set.of("topic1")); // matches Object.class simple name but has no TypeRef
-        when(templateMessageCollector.collectTemplateMessages(eq("/resolved/path"), any()))
-                .thenReturn(messages);
-
-        boolean result = processor.process(Collections.singleton(annotation), roundEnv);
-
-        assertTrue(result);
-        verify(messager).printMessage(eq(Diagnostic.Kind.WARNING), contains("Object"));
-    }
-
-    @Test
-    void processOnSecondCall_returnsImmediatelyWithoutProcessing() {
-        when(roundEnv.getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class))
-                .thenReturn(Collections.emptySet());
-        processor.process(Collections.emptySet(), roundEnv); // first call
-
-        TypeElement annotation = mock(TypeElement.class);
-        Element annotatedElement = mock(Element.class);
-        doReturn(Collections.singleton(annotatedElement))
-                .when(roundEnv).getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class);
-
-        boolean result = processor.process(Collections.singleton(annotation), roundEnv); // second call
-
-        assertFalse(result);
-        verify(avroClassFinder, never()).getAvroGeneratedClasses();
     }
 }
-

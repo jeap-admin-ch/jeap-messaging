@@ -49,34 +49,23 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class)) {
             processed = true;
             Set<Class<?>> annotatedClasses = avroClassFinder.getAvroGeneratedClasses();
-            if (annotatedClasses.isEmpty()) {
-                continue;
-            }
+            String templatePath = templatePathResolver.getTemplatePath(annotatedElement);
 
-            JeapMessageConsumerContractsByTemplates annotation =
-                    annotatedElement.getAnnotation(JeapMessageConsumerContractsByTemplates.class);
-            String templatePath = templatePathResolver.getTemplatePath(annotatedElement, annotation.templatesPath());
+            if (templatePath != null && !annotatedClasses.isEmpty()) {
+                Map<String, Set<String>> templateMessages = templateMessageCollector.collectTemplateMessages(templatePath, processingEnv.getMessager());
 
-            if (templatePath == null) {
-                // getTemplatePath already reported the specific error via the messager
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                        "Contract generation aborted: could not resolve templates path '" + annotation.templatesPath() + "'",
-                        annotatedElement);
-                continue;
-            }
-
-            Map<String, Set<String>> messages =
-                    templateMessageCollector.collectTemplateMessages(templatePath, processingEnv.getMessager());
-            if (!messages.isEmpty()) {
-                generateConsumerContracts(annotatedElement, annotatedClasses, messages, annotation.appName());
+                if (!templateMessages.isEmpty()) {
+                    generateConsumerContracts(annotatedElement, annotatedClasses, templateMessages);
+                }
             }
         }
         return processed;
     }
 
-    private void generateConsumerContracts(Element annotatedElement, Set<Class<?>> annotatedClasses,
-                                           Map<String, Set<String>> messages, String appName) {
-        for (Map.Entry<String, Set<String>> entry : messages.entrySet()) {
+    private void generateConsumerContracts(Element annotatedElement, Set<Class<?>> annotatedClasses, Map<String, Set<String>> templateMessages) {
+        String appName = annotatedElement.getAnnotation(JeapMessageConsumerContractsByTemplates.class).appName();
+
+        for (Map.Entry<String, Set<String>> entry : templateMessages.entrySet()) {
             String name = entry.getKey();
             Set<String> topics = entry.getValue();
             TypeMirror typeMirror = TypeRefFinder.findTypeRefOfClassByShortName(processingEnv, annotatedClasses, name);

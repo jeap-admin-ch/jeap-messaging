@@ -1,8 +1,0 @@
-{
-  "messages": [
-    {
-      "messageName": "JeapInitializerSimpleTestEvent",
-      "topicName": "messages-topic1"
-    }
-  ]
-}
