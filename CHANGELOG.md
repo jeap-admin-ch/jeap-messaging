@@ -8,8 +8,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [13.8.0] - 2026-05-06
 
 ### Changed
+  - fixed version in publiccode.html
 - Update parent from 6.0.3 to 6.0.4
 - update jeap-spring-boot-roles-anywhere-starter from 1.27.0 to 1.28.0
+- update jeap-spring-boot-vault-starter from 22.2.0-alpha-springboot4 to 22.3.1-alpha-springboot4
+- update jeap-crypto from 7.4.0 to 7.5.0
 
 ## [13.6.0] - 2026-04-29
 ### Changed
