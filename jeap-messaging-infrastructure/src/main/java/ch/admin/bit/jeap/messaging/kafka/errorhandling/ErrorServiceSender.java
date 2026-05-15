@@ -69,7 +69,7 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         // been closed, so no current tracing context is active here. We re-extract the trace context from the record's
         // propagation headers (still intact — Micrometer/OTel read headers without mutating them) and open a child
         // span so the produced MessageProcessingFailedEvent is correlated back to the originating message's trace.
-        try (TracerBridge.Scope _ = tracerBridge.getSpan(consumerRecord)) {
+        try (TracerBridge.Scope _ = tracerBridge.getSpan(consumerRecord, "jeap-messaging.error-scope")) {
             createAndSendMessageProcessingFailedEvent(consumerRecord, exception);
         }
     }

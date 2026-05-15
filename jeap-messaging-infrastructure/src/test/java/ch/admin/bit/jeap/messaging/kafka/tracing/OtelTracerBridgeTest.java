@@ -32,6 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OtelTracerBridgeTest {
 
+    private static final String DEFAULT_SPAN_NAME = "jeap.testspan";
+
     private InMemorySpanExporter spanExporter;
     private SdkTracerProvider sdkTracerProvider;
     private OtelTracerBridge bridge;
@@ -57,7 +59,7 @@ class OtelTracerBridgeTest {
         ConsumerRecord<String, String> consumerRecord = recordWithHeaders(
                 header("traceparent", "00-" + traceId + "-" + parentSpanId + "-01"));
 
-        try (TracerBridge.Scope _ = bridge.getSpan(consumerRecord)) {
+        try (TracerBridge.Scope _ = bridge.getSpan(consumerRecord, DEFAULT_SPAN_NAME)) {
             // span active, then auto-closed
         }
 
@@ -68,14 +70,32 @@ class OtelTracerBridgeTest {
                     assertThat(s.getTraceId()).isEqualTo(traceId);
                     assertThat(s.getParentSpanId()).isEqualTo(parentSpanId);
                     assertThat(s.getKind()).isEqualTo(SpanKind.INTERNAL);
+                    assertThat(s.getName()).isEqualTo(DEFAULT_SPAN_NAME);
                 });
+    }
+
+    @Test
+    void getSpan_whenNameIsNull_usesDefaultSpanName() {
+        String traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+        String parentSpanId = "00f067aa0ba902b7";
+        ConsumerRecord<String, String> consumerRecord = recordWithHeaders(
+                header("traceparent", "00-" + traceId + "-" + parentSpanId + "-01"));
+
+        try (TracerBridge.Scope _ = bridge.getSpan(consumerRecord, null)) {
+            // span active, then auto-closed
+        }
+
+        assertThat(spanExporter.getFinishedSpanItems())
+                .hasSize(1)
+                .first()
+                .satisfies(s -> assertThat(s.getName()).isEqualTo("jeap-messaging.consumer-scope"));
     }
 
     @Test
     void getSpan_whenRecordHasNoPropagationHeaders_returnsNoopAndEmitsNoSpan() {
         ConsumerRecord<String, String> consumerRecord = recordWithHeaders();
 
-        try (TracerBridge.Scope autoClosed = bridge.getSpan(consumerRecord)) {
+        try (TracerBridge.Scope autoClosed = bridge.getSpan(consumerRecord, DEFAULT_SPAN_NAME)) {
             assertThat(autoClosed).isSameAs(TracerBridge.Scope.NOOP);
         }
 
@@ -89,7 +109,7 @@ class OtelTracerBridgeTest {
         ConsumerRecord<String, String> consumerRecord = recordWithHeaders(
                 header("traceparent", "00-deadbeef-cafebabe-01"));
 
-        try (TracerBridge.Scope autoClosed = bridge.getSpan(consumerRecord)) {
+        try (TracerBridge.Scope autoClosed = bridge.getSpan(consumerRecord, DEFAULT_SPAN_NAME)) {
             assertThat(autoClosed).isSameAs(TracerBridge.Scope.NOOP);
         }
 
@@ -111,7 +131,7 @@ class OtelTracerBridgeTest {
                 header("traceparent", "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"),
                 header("baggage", "tenant=acme,user-id=42"));
 
-        try (TracerBridge.Scope _ = baggageBridge.getSpan(consumerRecord)) {
+        try (TracerBridge.Scope _ = baggageBridge.getSpan(consumerRecord, DEFAULT_SPAN_NAME)) {
             Baggage baggage = Baggage.current();
             assertThat(baggage.getEntryValue("tenant")).isEqualTo("acme");
             assertThat(baggage.getEntryValue("user-id")).isEqualTo("42");

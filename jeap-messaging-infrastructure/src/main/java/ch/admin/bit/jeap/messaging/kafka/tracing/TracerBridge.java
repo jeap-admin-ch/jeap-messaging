@@ -19,7 +19,7 @@ public interface TracerBridge {
     /**
      * Bridge that always returns a no-op {@link Scope}. Use NOOP instead of null.
      */
-    TracerBridge NOOP = _ -> () -> {
+    TracerBridge NOOP = (_,_) -> () -> {
     };
 
     /**
@@ -28,7 +28,7 @@ public interface TracerBridge {
      * @param consumerRecord The Kafka record to extract the parent tracing span from.
      * @return The scope of the span as AutoCloseable
      */
-    Scope getSpan(ConsumerRecord<?, ?> consumerRecord);
+    Scope getSpan(ConsumerRecord<?, ?> consumerRecord, String spanName);
 
     /**
      * AutoCloseable handle that keeps a tracing span active until closed.

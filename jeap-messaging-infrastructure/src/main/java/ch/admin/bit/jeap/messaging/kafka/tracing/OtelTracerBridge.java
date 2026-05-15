@@ -13,6 +13,7 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -36,6 +37,8 @@ import java.util.stream.StreamSupport;
  */
 @Slf4j
 public class OtelTracerBridge implements TracerBridge {
+
+    private static final String DEFAULT_SPAN_NAME = "jeap-messaging.consumer-scope";
 
     private static final TextMapGetter<Headers> HEADER_GETTER = new TextMapGetter<>() {
         @Override
@@ -64,13 +67,13 @@ public class OtelTracerBridge implements TracerBridge {
 
     @Override
     @SuppressWarnings("resource") // span scope must be closed by caller
-    public Scope getSpan(ConsumerRecord<?, ?> consumerRecord) {
+    public Scope getSpan(ConsumerRecord<?, ?> consumerRecord, String spanName) {
         Context extracted = propagator.extract(Context.root(), consumerRecord.headers(), HEADER_GETTER);
         if (!Span.fromContext(extracted).getSpanContext().isValid()) {
             log.trace("Not starting a span because no valid tracing context could be extracted from the consumer record.");
             return Scope.NOOP;
         }
-        Span span = tracer.spanBuilder("jeap-messaging.consumer-scope")
+        Span span = tracer.spanBuilder(Objects.requireNonNullElse(spanName, DEFAULT_SPAN_NAME))
                 .setSpanKind(SpanKind.INTERNAL)
                 .setParent(extracted)
                 .startSpan();
