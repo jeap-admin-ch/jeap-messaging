@@ -8,6 +8,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
 > - The Spring Boot 4 upgrade process happens on the `master` branch, with the goal of releasing Spring Boot 4 compatible versions of all jeap components in a single major release.
 
+## [14.8.0-alpha-springboot4] - 2026-05-15
+### Changed
+- added second argument to TraceBridge.getSpan to allow to pass in the spanName and have more meaningful traces
+
 ## [14.7.0-alpha-springboot4] - 2026-05-08
 ### Changed
   escaping Spring's MVC handling while the trace context (`traceId`, `spanId`) is still present.

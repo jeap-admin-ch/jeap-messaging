@@ -27,7 +27,7 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>14.7.0-alpha-springboot4-SNAPSHOT</version>
+    <version>14.8.0-alpha-springboot4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
