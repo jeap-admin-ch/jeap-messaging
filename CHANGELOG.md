@@ -12,7 +12,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Pin Netty version to 4.1.133.Final to address CVE-2026-42583
 - update jeap-spring-boot-roles-anywhere-starter from 1.28.0 to 1.29.0
 - update jeap-crypto from 7.5.0 to 7.6.0
-- update jeap-spring-boot-vault-starter from 22.5.0-alpha-springboot4 to 22.5.1-alpha-springboot4
 
 ## [13.8.0] - 2026-05-06
 
@@ -20,7 +19,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - fixed version in publiccode.html
 - Update parent from 6.0.3 to 6.0.4
 - update jeap-spring-boot-roles-anywhere-starter from 1.27.0 to 1.28.0
-- update jeap-spring-boot-vault-starter from 22.2.0-alpha-springboot4 to 22.3.1-alpha-springboot4
 - update jeap-crypto from 7.4.0 to 7.5.0
 
 ## [13.6.0] - 2026-04-29
