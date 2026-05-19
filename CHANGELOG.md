@@ -13,6 +13,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Update parent from 7.0.7-alpha-springboot4 to 7.0.9-alpha-springboot4
 - update jeap-spring-boot-roles-anywhere-starter from 2.4.0-alpha-springboot4 to 2.5.0-alpha-springboot4
+- update jeap-spring-boot-vault-starter from 22.5.1-alpha-springboot4 to 22.6.0-alpha-springboot4
+- update jeap-crypto from 8.5.0-alpha-springboot4 to 8.6.0-alpha-springboot4
 
 ## [14.8.0-alpha-springboot4] - 2026-05-15
 ### Changed
