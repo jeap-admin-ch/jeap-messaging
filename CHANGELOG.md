@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Update parent from 6.0.4 to 6.0.5
+- Pin Netty version to 4.1.133.Final to address CVE-2026-42583
 
 ## [13.8.0] - 2026-05-06
 
