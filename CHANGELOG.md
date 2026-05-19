@@ -8,13 +8,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [13.9.0] - 2026-05-19
 
 ### Changed
-  which never happens as it is a stream.
-  It ignores requests with Accept: text/event-stream as the `ShallowEtagFilter` was waiting for the response to complete
 - Update parent from 6.0.4 to 6.0.5
 - Pin Netty version to 4.1.133.Final to address CVE-2026-42583
 - update jeap-spring-boot-roles-anywhere-starter from 1.28.0 to 1.29.0
-- Set `SseAwareEtagHeaderFilter` as default bean for the ShallowEtagFilter. 
-- Custom subclass of `ShallowEtagFilter` called `SseAwareEtagHeaderFilter`
 - update jeap-crypto from 7.5.0 to 7.6.0
 - update jeap-spring-boot-vault-starter from 22.5.0-alpha-springboot4 to 22.5.1-alpha-springboot4
 
