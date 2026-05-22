@@ -33,10 +33,10 @@ class PomFileGeneratorTest {
                     </licenses>
                 
                     <properties>
-                        <java.version>21</java.version>
-                        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-                        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-                        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+                        <java.version>25</java.version>
+                        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+                        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+                        <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
                         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                     </properties>
                     <dependencies>
@@ -147,10 +147,10 @@ class PomFileGeneratorTest {
                     </licenses>
                 
                     <properties>
-                        <java.version>21</java.version>
-                        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-                        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-                        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+                        <java.version>25</java.version>
+                        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+                        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+                        <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
                         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                     </properties>
                     <dependencies>
