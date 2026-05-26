@@ -6,76 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
-> - The Spring Boot 4 upgrade process happens on the `master` branch, with the goal of releasing Spring Boot 4 compatible versions of all jeap components in a single major release.
 
-## [14.9.1-alpha-springboot4] - 2026-05-22
-
+## [15.0.0] - 2026-05-26
 ### Changed
-
-- Update java and plugin versions in the message type pom template
-
-## [14.9.0-alpha-springboot4] - 2026-05-19
-
-### Changed
-- Update parent from 7.0.7-alpha-springboot4 to 7.0.9-alpha-springboot4
-- update jeap-spring-boot-roles-anywhere-starter from 2.4.0-alpha-springboot4 to 2.5.0-alpha-springboot4
-- update jeap-spring-boot-vault-starter from 22.5.1-alpha-springboot4 to 22.6.0-alpha-springboot4
-- update jeap-crypto from 8.5.0-alpha-springboot4 to 8.6.0-alpha-springboot4
-
-## [14.8.0-alpha-springboot4] - 2026-05-15
-### Changed
-- added second argument to TraceBridge.getSpan to allow to pass in the spanName and have more meaningful traces
-
-## [14.7.0-alpha-springboot4] - 2026-05-08
-### Changed
-  escaping Spring's MVC handling while the trace context (`traceId`, `spanId`) is still present.
-  Enable via `jeap.logging.rest.unhandled-exception-logging.enabled=true`.
-- update jeap-crypto from 8.4.0-alpha-springboot4 to 8.5.0-alpha-springboot4
-- update jeap-spring-boot-vault-starter from 22.4.0-alpha-springboot4 to 22.5.0-alpha-springboot4
-- Added opt-in `UnhandledExceptionLoggingFilter` in `jeap-spring-boot-logging-starter` that logs exceptions
-
-## [14.6.0-alpha-springboot4] - 2026-05-06
-
-### Changed
-- Update parent from 7.0.6-alpha-springboot4 to 7.0.7-alpha-springboot4
-- update jeap-spring-boot-roles-anywhere-starter from 2.3.0-alpha-springboot4 to 2.4.0-alpha-springboot4
-- update jeap-spring-boot-vault-starter from 22.3.1-alpha-springboot4 to 22.4.0-alpha-springboot4
-- update jeap-crypto from 8.3.0-alpha-springboot4 to 8.4.0-alpha-springboot4
-
-## [14.5.0-alpha-springboot4] - 2026-05-01
-### Changed
-- adapted TemplatePathResolver that it works in IDE again
-
-## [14.4.0-alpha-springboot4] - 2026-04-30
-### Changed
-- added possibility to set templatesPath in JeapMessageConsumerContractsByTemplates to be more flexible in the location of the templates, e.g. for opensearch writer index
-
-## [14.3.1-alpha-springboot4] - 2026-04-29
-### Changed
-- Fixed Sonar findings.
-
-## [14.3.0-alpha-springboot4] - 2026-04-29
-### Changed
+- Official release with spring boot 4
 - Tracing stack migrated from Brave/Zipkin to OpenTelemetry (via Micrometer Tracing + OTel bridge).
-- update jeap-crypto from 8.2.0-alpha-springboot4 to 8.3.0-alpha-springboot4
-
-## [14.2.0-alpha-springboot4] - 2026-04-24
-
-### Changed
-- Update parent from 7.0.5-alpha-springboot4 to 7.0.6-alpha-springboot4
-- update jeap-spring-boot-vault-starter from 22.1.0-alpha-springboot4 to 22.2.0-alpha-springboot4
-- update jeap-crypto from 8.1.0-alpha-springboot4 to 8.2.0-alpha-springboot4
-- update jeap-spring-boot-roles-anywhere-starter from 2.1.0-alpha-springboot4 to 2.3.0-alpha-springboot4
-
-## [14.1.0-alpha-springboot4] - 2026-04-23
-
-### Changed
-- Update parent from 7.0.3-alpha-springboot4 to 7.0.5-alpha-springboot4
-- Update parent from 7.0.4-alpha-springboot4 to 7.0.5-alpha-springboot4
-- Update parent from 7.0.2-alpha-springboot4 to 7.0.5-alpha-springboot4
-- update jeap-crypto from 8.0.0-alpha-springboot4 to 8.1.0-alpha-springboot4
-- update jeap-spring-boot-vault-starter from 21.3.0 to 22.1.0-alpha-springboot4
-- update jeap-spring-boot-roles-anywhere-starter from 2.0.0-alpha-springboot4 to 2.1.0-alpha-springboot4
 
 ## [14.0.0] - 2026-04-16
 
