@@ -27,7 +27,7 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>15.2.0-SNAPSHOT</version>
+    <version>15.2.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -68,7 +68,7 @@
         <maven.plugin.version>3.15.2</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
         <aws-msk-iam-auth.version>2.3.5</aws-msk-iam-auth.version>
-        <schema-registry-serde.version>1.1.25</schema-registry-serde.version>
+        <schema-registry-serde.version>1.1.27</schema-registry-serde.version>
         <org.eclipse.jgit.version>7.6.0.202603022253-r</org.eclipse.jgit.version>
         <file-management.version>3.2.0</file-management.version>
         <maven-invoker.version>3.3.0</maven-invoker.version>
