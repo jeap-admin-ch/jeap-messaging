@@ -8,7 +8,7 @@ Third-party dependencies grouped by their license type (see [pom.xml](/pom.xml) 
 Apache License Version 2.0
 -------------------------------
 
-* LZ4 Java Compression - [at.yawk.lz4:lz4-java](https://github.com/yawkat/lz4-java)
+ * LZ4 Java Compression - [at.yawk.lz4:lz4-java](https://github.com/yawkat/lz4-java)
  * LZ4 Java Compression - [at.yawk.lz4:lz4-java](https://github.com/yawkat/lz4-java)
  * ch.admin.bit.jeap:jeap-crypto-core - [ch.admin.bit.jeap:jeap-crypto-core](https://github.com/jeap-admin-ch/jeap-crypto/tree/main/jeap-crypto-core)
  * ch.admin.bit.jeap:jeap-messaging-api - [ch.admin.bit.jeap:jeap-messaging-api](https://github.com/jeap-admin-ch/jeap-messaging/tree/main/jeap-messaging-api)
@@ -139,7 +139,7 @@ Apache License Version 2.0
  * Jakarta Dependency Injection - [jakarta.inject:jakarta.inject-api](https://github.com/eclipse-ee4j/injection-api)
  * javax.inject - [javax.inject:javax.inject](http://code.google.com/p/atinject/)
  * Joda-Time - [joda-time:joda-time](https://www.joda.org/joda-time/)
-* Joda-Time - [joda-time:joda-time](https://www.joda.org/joda-time/)
+ * Joda-Time - [joda-time:joda-time](https://www.joda.org/joda-time/)
  * Byte Buddy (without dependencies) - [net.bytebuddy:byte-buddy](https://bytebuddy.net/byte-buddy)
  * Byte Buddy agent - [net.bytebuddy:byte-buddy-agent](https://bytebuddy.net/byte-buddy-agent)
  * net.javacrumbs.shedlock:shedlock-core - [net.javacrumbs.shedlock:shedlock-core](http://nexus.sonatype.org/oss-repository-hosting.html/shedlock-parent/shedlock-core)
