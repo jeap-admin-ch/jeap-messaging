@@ -60,19 +60,19 @@
     </modules>
 
     <properties>
-        <avro-serializer.version>8.2.0</avro-serializer.version>
+        <avro-serializer.version>8.2.1</avro-serializer.version>
         <avro.version>1.12.1</avro.version>
         <jeap-crypto.version>9.2.0</jeap-crypto.version>
         <jeap-spring-boot-roles-anywhere-starter.version>3.3.0</jeap-spring-boot-roles-anywhere-starter.version>
-        <maven.api.version>3.9.14</maven.api.version>
+        <maven.api.version>3.9.16</maven.api.version>
         <maven.plugin.version>3.15.2</maven.plugin.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
-        <aws-msk-iam-auth.version>2.3.5</aws-msk-iam-auth.version>
+        <aws-msk-iam-auth.version>2.3.7</aws-msk-iam-auth.version>
         <schema-registry-serde.version>1.1.27</schema-registry-serde.version>
         <org.eclipse.jgit.version>7.6.0.202603022253-r</org.eclipse.jgit.version>
         <file-management.version>3.2.0</file-management.version>
         <maven-invoker.version>3.3.0</maven-invoker.version>
-        <maven-plugin-testing-harness.version>3.5.0</maven-plugin-testing-harness.version>
+        <maven-plugin-testing-harness.version>3.5.1</maven-plugin-testing-harness.version>
         <wiremock.version>3.13.2</wiremock.version>
     </properties>
 

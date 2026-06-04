@@ -7,14 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > - Spring Boot 3 maintenance (bug fixes, patches, and regular updates) continues on branch `release/springboot3`.
 
-## [15.3.0] - 2026-06-03
+## [15.3.0] - 2026-06-04
 
 ### Changed
 - Update parent from 8.0.1 to 8.1.0
 - update jeap-spring-boot-roles-anywhere-starter from 3.2.0 to 3.3.0
 - update jeap-spring-boot-vault-starter from 23.1.0 to 23.2.0
 - update jeap-crypto from 9.1.0 to 9.2.0
-- update guava-testlib from 33.5.0-jre to 33.6.0-jre
+- update avro-serializer from 8.2.0 to 8.2.1
+- update maven.api from 3.9.14 to 3.9.16
+- update aws-msk-iam-auth from 2.3.5 to 2.3.7
+- update maven-plugin-testing-harness from 3.5.0 to 3.5.1
 
 ## [15.2.1] - 2026-06-02
 
