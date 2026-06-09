@@ -27,7 +27,7 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>13.9.1-SNAPSHOT</version>
+    <version>13.9.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -60,7 +60,7 @@
     </modules>
 
     <properties>
-        <netty.version>4.1.133.Final</netty.version>
+        <netty.version>4.1.135.Final</netty.version>
         <avro-serializer.version>8.1.1</avro-serializer.version>
         <avro.version>1.12.1</avro.version>
         <jeap-crypto.version>7.6.0</jeap-crypto.version>
