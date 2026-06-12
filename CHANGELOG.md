@@ -10,9 +10,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [15.6.0] - 2026-06-12
 
 ### Changed
-
 - Update parent from 8.1.0 to 8.2.0
 - Update logstash to 9.0 (managed from internal parent)
+- update jeap-spring-boot-roles-anywhere-starter from 3.3.0 to 3.4.0
 
 ## [15.5.0] - 2026-06-11
 ### Changed
