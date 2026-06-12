@@ -2,12 +2,10 @@ package ch.admin.bit.jeap.messaging.kafka.log;
 
 import ch.admin.bit.jeap.messaging.model.Message;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
-import com.fasterxml.jackson.core.JsonGenerator;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.logstash.logback.argument.StructuredArgument;
-
-import java.io.IOException;
+import tools.jackson.core.JsonGenerator;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class MessageLogger implements StructuredArgument {
@@ -22,18 +20,18 @@ class MessageLogger implements StructuredArgument {
     }
 
     @Override
-    public void writeTo(JsonGenerator generator) throws IOException {
-        generator.writeStringField("messageType", message.getType().getName());
-        generator.writeStringField("messageVersion", message.getType().getVersion());
+    public void writeTo(JsonGenerator generator) {
+        generator.writeStringProperty("messageType", message.getType().getName());
+        generator.writeStringProperty("messageVersion", message.getType().getVersion());
         if (message.getType().getVariant() != null) {
-            generator.writeStringField("messageVariant", message.getType().getVariant());
+            generator.writeStringProperty("messageVariant", message.getType().getVariant());
         }
-        generator.writeStringField("messageId", message.getIdentity().getId());
-        generator.writeStringField("messageIdempotenceId", message.getIdentity().getIdempotenceId());
-        generator.writeStringField("messageCreated", message.getIdentity().getCreatedZoned().toString());
-        generator.writeStringField("messagePublisherSystem", message.getPublisher().getSystem());
-        generator.writeStringField("messagePublisherService", message.getPublisher().getService());
-        generator.writeStringField("messageUserId", message.getOptionalUser().map(MessageUser::getId).orElse(null));
+        generator.writeStringProperty("messageId", message.getIdentity().getId());
+        generator.writeStringProperty("messageIdempotenceId", message.getIdentity().getIdempotenceId());
+        generator.writeStringProperty("messageCreated", message.getIdentity().getCreatedZoned().toString());
+        generator.writeStringProperty("messagePublisherSystem", message.getPublisher().getSystem());
+        generator.writeStringProperty("messagePublisherService", message.getPublisher().getService());
+        generator.writeStringProperty("messageUserId", message.getOptionalUser().map(MessageUser::getId).orElse(null));
     }
 
     @Override
@@ -50,8 +48,8 @@ class MessageLogger implements StructuredArgument {
         }
 
         @Override
-        public void writeTo(JsonGenerator generator) throws IOException {
-            generator.writeStringField("messageType", messageType);
+        public void writeTo(JsonGenerator generator) {
+            generator.writeStringProperty("messageType", messageType);
         }
 
         @Override

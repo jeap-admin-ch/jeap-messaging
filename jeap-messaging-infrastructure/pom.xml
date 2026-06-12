@@ -14,10 +14,6 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <packaging>jar</packaging>
 
-    <properties>
-        <logstash.version>5.3</logstash.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -27,7 +23,6 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>${logstash.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.admin.bit.jeap</groupId>

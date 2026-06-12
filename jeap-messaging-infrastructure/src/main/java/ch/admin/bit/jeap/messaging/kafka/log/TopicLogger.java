@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.messaging.kafka.log;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -9,8 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
-
-import java.io.IOException;
+import tools.jackson.core.JsonGenerator;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class TopicLogger implements StructuredArgument {
@@ -18,12 +16,12 @@ class TopicLogger implements StructuredArgument {
     private final String topicName;
     private final Integer partition;
 
-    static TopicLogger topic(ConsumerRecord<?, ?> record) {
-        return new TopicLogger(record.topic(), record.partition());
+    static TopicLogger topic(ConsumerRecord<?, ?> consumerRecord) {
+        return new TopicLogger(consumerRecord.topic(), consumerRecord.partition());
     }
 
-    static TopicLogger topic(ProducerRecord<?, ?> record) {
-        return new TopicLogger(record.topic(), record.partition());
+    static TopicLogger topic(ProducerRecord<?, ?> producerRecord) {
+        return new TopicLogger(producerRecord.topic(), producerRecord.partition());
     }
 
     static TopicLogger topic(TopicPartition topicPartition) {
@@ -35,10 +33,10 @@ class TopicLogger implements StructuredArgument {
     }
 
     @Override
-    public void writeTo(JsonGenerator generator) throws IOException {
-        generator.writeStringField("topic", topicName);
+    public void writeTo(JsonGenerator generator) {
+        generator.writeStringProperty("topic", topicName);
         if (partition != null) {
-            generator.writeNumberField("partition", partition);
+            generator.writeNumberProperty("partition", partition);
         }
     }
 

@@ -2,13 +2,12 @@ package ch.admin.bit.jeap.messaging.kafka.log;
 
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
-import com.fasterxml.jackson.core.JsonGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.core.JsonGenerator;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,52 +20,52 @@ class MessageLoggerTest {
     private JsonGenerator jsonGenerator;
 
     @Test
-    void writeTo_whenMessageWithoutVariantAndUser_shouldWriteBasicFields() throws IOException {
+    void writeTo_whenMessageWithoutVariantAndUser_shouldWriteBasicFields() {
         TestEvent testEvent = new TestEvent();
         MessageLogger messageLogger = MessageLogger.message(testEvent);
 
         messageLogger.writeTo(jsonGenerator);
 
-        verify(jsonGenerator).writeStringField("messageType", "TestEvent");
-        verify(jsonGenerator).writeStringField("messageVersion", "1.0.0");
-        verify(jsonGenerator).writeStringField("messageId", "id");
-        verify(jsonGenerator).writeStringField("messageIdempotenceId", "idempotence-id");
-        verify(jsonGenerator).writeStringField("messagePublisherSystem", "system");
-        verify(jsonGenerator).writeStringField("messagePublisherService", "system-service");
-        verify(jsonGenerator).writeStringField("messageUserId", null);
-        verify(jsonGenerator).writeStringField(eq("messageCreated"), anyString());
-        verify(jsonGenerator, never()).writeStringField(eq("messageVariant"), anyString());
+        verify(jsonGenerator).writeStringProperty("messageType", "TestEvent");
+        verify(jsonGenerator).writeStringProperty("messageVersion", "1.0.0");
+        verify(jsonGenerator).writeStringProperty("messageId", "id");
+        verify(jsonGenerator).writeStringProperty("messageIdempotenceId", "idempotence-id");
+        verify(jsonGenerator).writeStringProperty("messagePublisherSystem", "system");
+        verify(jsonGenerator).writeStringProperty("messagePublisherService", "system-service");
+        verify(jsonGenerator).writeStringProperty("messageUserId", null);
+        verify(jsonGenerator).writeStringProperty(eq("messageCreated"), anyString());
+        verify(jsonGenerator, never()).writeStringProperty(eq("messageVariant"), anyString());
     }
 
     @Test
-    void writeTo_whenMessageWithVariant_shouldWriteVariantField() throws IOException {
+    void writeTo_whenMessageWithVariant_shouldWriteVariantField() {
         TestEventWithVariant testEvent = new TestEventWithVariant();
         MessageLogger messageLogger = MessageLogger.message(testEvent);
 
         messageLogger.writeTo(jsonGenerator);
 
-        verify(jsonGenerator).writeStringField("messageVariant", "test-variant");
-        verify(jsonGenerator).writeStringField("messageType", "TestEventWithVariant");
+        verify(jsonGenerator).writeStringProperty("messageVariant", "test-variant");
+        verify(jsonGenerator).writeStringProperty("messageType", "TestEventWithVariant");
     }
 
     @Test
-    void writeTo_whenMessageWithUser_shouldWriteUserId() throws IOException {
+    void writeTo_whenMessageWithUser_shouldWriteUserId() {
         TestEventWithUser testEvent = new TestEventWithUser();
         MessageLogger messageLogger = MessageLogger.message(testEvent);
 
         messageLogger.writeTo(jsonGenerator);
 
-        verify(jsonGenerator).writeStringField("messageUserId", "user-123");
+        verify(jsonGenerator).writeStringProperty("messageUserId", "user-123");
     }
 
     @Test
-    void writeTo_whenSimpleMessageLogger_shouldWriteOnlyMessageType() throws IOException {
+    void writeTo_whenSimpleMessageLogger_shouldWriteOnlyMessageType() {
         MessageLogger simpleLogger = MessageLogger.message("test string");
 
         simpleLogger.writeTo(jsonGenerator);
 
-        verify(jsonGenerator).writeStringField("messageType", "String");
-        verify(jsonGenerator, times(1)).writeStringField(anyString(), anyString());
+        verify(jsonGenerator).writeStringProperty("messageType", "String");
+        verify(jsonGenerator, times(1)).writeStringProperty(anyString(), anyString());
     }
 
     @Test
