@@ -147,6 +147,7 @@ Apache License Version 2.0
  * net.javacrumbs.shedlock:shedlock-spring - [net.javacrumbs.shedlock:shedlock-spring](http://nexus.sonatype.org/oss-repository-hosting.html/shedlock-parent/spring/shedlock-spring)
  * net.javacrumbs.shedlock:shedlock-sql-support - [net.javacrumbs.shedlock:shedlock-sql-support](http://nexus.sonatype.org/oss-repository-hosting.html/shedlock-parent/providers/sql/shedlock-sql-support)
  * Logstash Logback Encoder - [net.logstash.logback:logstash-logback-encoder](https://github.com/logstash/logstash-logback-encoder)
+ * Logstash Logback Encoder - [net.logstash.logback:logstash-logback-encoder](https://github.com/logfellow/logstash-logback-encoder)
  * ASM based accessors helper used by json-smart - [net.minidev:accessors-smart](https://urielch.github.io/)
  * JSON Small and Fast Parser - [net.minidev:json-smart](https://urielch.github.io/)
  * Apache Avro - [org.apache.avro:avro](https://avro.apache.org)
@@ -399,6 +400,12 @@ CDDL/GPLv2+CE
 
  * JavaMail API (no providers) - [com.sun.mail:mailapi](http://javaee.github.io/javamail/mailapi)
 
+EPL-2.0
+-------------------------------
+
+ * Logback Classic Module - [ch.qos.logback:logback-classic](http://logback.qos.ch/logback-classic)
+ * Logback Core Module - [ch.qos.logback:logback-core](http://logback.qos.ch/logback-core)
+
 Eclipse Distribution License - v 1.0
 -------------------------------
 
@@ -414,8 +421,6 @@ Eclipse Distribution License - v 1.0
 Eclipse Public License v2.0
 -------------------------------
 
- * Logback Classic Module - [ch.qos.logback:logback-classic](http://logback.qos.ch/logback-classic)
- * Logback Core Module - [ch.qos.logback:logback-core](http://logback.qos.ch/logback-core)
  * Jakarta Annotations API - [jakarta.annotation:jakarta.annotation-api](https://projects.eclipse.org/projects/ee4j.ca)
  * Jakarta Persistence API - [jakarta.persistence:jakarta.persistence-api](https://github.com/jakartaee/persistence)
  * jakarta.transaction API - [jakarta.transaction:jakarta.transaction-api](https://projects.eclipse.org/projects/ee4j.jta)
@@ -448,12 +453,6 @@ GNU General Public License, version 2 (GPL2), with the classpath exception
  * JMH Core - [org.openjdk.jmh:jmh-core](http://openjdk.java.net/projects/code-tools/jmh/jmh-core/)
  * JMH Generators: Annotation Processors - [org.openjdk.jmh:jmh-generator-annprocess](http://openjdk.java.net/projects/code-tools/jmh/jmh-generator-annprocess/)
 
-GNU Lesser General Public License
--------------------------------
-
- * Logback Classic Module - [ch.qos.logback:logback-classic](http://logback.qos.ch/logback-classic)
- * Logback Core Module - [ch.qos.logback:logback-core](http://logback.qos.ch/logback-core)
-
 Go License
 -------------------------------
 
@@ -464,6 +463,12 @@ LGPL 2.1
 -------------------------------
 
  * Javassist - [org.javassist:javassist](http://www.javassist.org/)
+
+LGPL-2.1-only
+-------------------------------
+
+ * Logback Classic Module - [ch.qos.logback:logback-classic](http://logback.qos.ch/logback-classic)
+ * Logback Core Module - [ch.qos.logback:logback-core](http://logback.qos.ch/logback-core)
 
 Lesser General Public License, version 3 or greater
 -------------------------------
@@ -482,6 +487,7 @@ MIT License
  * minimal-json - [com.eclipsesource.minimal-json:minimal-json](https://github.com/ralfstx/minimal-json)
  * ClassGraph - [io.github.classgraph:classgraph](https://github.com/classgraph/classgraph)
  * Logstash Logback Encoder - [net.logstash.logback:logstash-logback-encoder](https://github.com/logstash/logstash-logback-encoder)
+ * Logstash Logback Encoder - [net.logstash.logback:logstash-logback-encoder](https://github.com/logfellow/logstash-logback-encoder)
  * JOpt Simple - [net.sf.jopt-simple:jopt-simple](http://jopt-simple.github.io/jopt-simple)
  * argparse4j - [net.sourceforge.argparse4j:argparse4j](http://argparse4j.github.io)
  * Checker Qual - [org.checkerframework:checker-qual](https://checkerframework.org/)
