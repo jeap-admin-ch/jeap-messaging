@@ -12,6 +12,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Update parent from 8.2.0 to 8.3.0
 - update jeap-spring-boot-roles-anywhere-starter from 3.4.0 to 3.5.0
+- Deprecated spring boot starter
+- update jeap-spring-boot-vault-starter from 23.5.0 to 23.5.2
+- update jeap-crypto from 9.5.0 to 9.6.0
+- Sonar issues
 
 ## [15.6.0] - 2026-06-12
 
