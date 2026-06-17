@@ -41,7 +41,6 @@ Apache License Version 2.0
  * AWS Java SDK for AWS STS - [com.amazonaws:aws-java-sdk-sts](https://aws.amazon.com/sdkforjava)
  * JMES Path Query library - [com.amazonaws:jmespath-java](https://aws.amazon.com/sdkforjava)
  * com.dynatrace.hash4j:hash4j - [com.dynatrace.hash4j:hash4j](https://github.com/dynatrace-oss/hash4j)
- * ClassMate - [com.fasterxml:classmate](https://github.com/FasterXML/java-classmate)
  * Jackson-annotations - [com.fasterxml.jackson.core:jackson-annotations](https://github.com/FasterXML/jackson)
  * Jackson-core - [com.fasterxml.jackson.core:jackson-core](https://github.com/FasterXML/jackson-core)
  * jackson-databind - [com.fasterxml.jackson.core:jackson-databind](https://github.com/FasterXML/jackson)
@@ -58,7 +57,7 @@ Apache License Version 2.0
  * json-schema-validator - [com.github.java-json-tools:json-schema-validator](https://github.com/java-json-tools/json-schema-validator)
  * msg-simple - [com.github.java-json-tools:msg-simple](https://github.com/java-json-tools/msg-simple)
  * uri-template - [com.github.java-json-tools:uri-template](https://github.com/java-json-tools/uri-template)
- * proto-google-common-protos - [com.google.api.grpc:proto-google-common-protos](https://github.com/googleapis/java-iam/proto-google-common-protos)
+ * proto-google-common-protos - [com.google.api.grpc:proto-google-common-protos](https://github.com/googleapis/sdk-platform-java)
  * FindBugs-jsr305 - [com.google.code.findbugs:jsr305](http://findbugs.sourceforge.net/)
  * Gson - [com.google.code.gson:gson](https://github.com/google/gson)
  * error-prone annotations - [com.google.errorprone:error_prone_annotations](https://errorprone.info/error_prone_annotations)
@@ -161,9 +160,9 @@ Apache License Version 2.0
  * Apache Commons Text - [org.apache.commons:commons-text](https://commons.apache.org/proper/commons-text)
  * Apache HttpClient - [org.apache.httpcomponents:httpclient](http://hc.apache.org/httpcomponents-client)
  * Apache HttpCore - [org.apache.httpcomponents:httpcore](http://hc.apache.org/httpcomponents-core-ga)
- * Apache HttpClient - [org.apache.httpcomponents.client5:httpclient5](https://hc.apache.org/httpcomponents-client-5.5.x/5.5.2/httpclient5/)
- * Apache HttpComponents Core HTTP/1.1 - [org.apache.httpcomponents.core5:httpcore5](https://hc.apache.org/httpcomponents-core-5.3.x/5.3.6/httpcore5/)
- * Apache HttpComponents Core HTTP/2 - [org.apache.httpcomponents.core5:httpcore5-h2](https://hc.apache.org/httpcomponents-core-5.3.x/5.3.6/httpcore5-h2/)
+ * Apache HttpClient - [org.apache.httpcomponents.client5:httpclient5](https://hc.apache.org/httpcomponents-client-5.5.x/5.6.1/httpclient5/)
+ * Apache HttpComponents Core HTTP/1.1 - [org.apache.httpcomponents.core5:httpcore5](https://hc.apache.org/httpcomponents-core-5.4.x/5.4.2/httpcore5/)
+ * Apache HttpComponents Core HTTP/2 - [org.apache.httpcomponents.core5:httpcore5-h2](https://hc.apache.org/httpcomponents-core-5.4.x/5.4.2/httpcore5-h2/)
  * Apache Kafka - [org.apache.kafka:kafka-clients](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-coordinator-common](https://kafka.apache.org)
  * Apache Kafka - [org.apache.kafka:kafka-group-coordinator](https://kafka.apache.org)
@@ -275,7 +274,6 @@ Apache License Version 2.0
  * spring-boot-flyway - [org.springframework.boot:spring-boot-flyway](https://spring.io/projects/spring-boot)
  * spring-boot-health - [org.springframework.boot:spring-boot-health](https://spring.io/projects/spring-boot)
  * spring-boot-hibernate - [org.springframework.boot:spring-boot-hibernate](https://spring.io/projects/spring-boot)
- * spring-boot-http-client - [org.springframework.boot:spring-boot-http-client](https://spring.io/projects/spring-boot)
  * spring-boot-http-converter - [org.springframework.boot:spring-boot-http-converter](https://spring.io/projects/spring-boot)
  * spring-boot-jackson - [org.springframework.boot:spring-boot-jackson](https://spring.io/projects/spring-boot)
  * spring-boot-jdbc - [org.springframework.boot:spring-boot-jdbc](https://spring.io/projects/spring-boot)
@@ -291,7 +289,6 @@ Apache License Version 2.0
  * spring-boot-micrometer-tracing-test - [org.springframework.boot:spring-boot-micrometer-tracing-test](https://spring.io/projects/spring-boot)
  * spring-boot-opentelemetry - [org.springframework.boot:spring-boot-opentelemetry](https://spring.io/projects/spring-boot)
  * spring-boot-persistence - [org.springframework.boot:spring-boot-persistence](https://spring.io/projects/spring-boot)
- * spring-boot-restclient - [org.springframework.boot:spring-boot-restclient](https://spring.io/projects/spring-boot)
  * spring-boot-servlet - [org.springframework.boot:spring-boot-servlet](https://spring.io/projects/spring-boot)
  * spring-boot-sql - [org.springframework.boot:spring-boot-sql](https://spring.io/projects/spring-boot)
  * spring-boot-starter - [org.springframework.boot:spring-boot-starter](https://spring.io/projects/spring-boot)
@@ -452,6 +449,11 @@ GNU General Public License, version 2 (GPL2), with the classpath exception
  * JMH Core - [org.openjdk.jmh:jmh-core](http://openjdk.java.net/projects/code-tools/jmh/jmh-core/)
  * JMH Generators: Annotation Processors - [org.openjdk.jmh:jmh-generator-annprocess](http://openjdk.java.net/projects/code-tools/jmh/jmh-generator-annprocess/)
 
+GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
+-------------------------------
+
+ * SpotBugs Annotations - [com.github.spotbugs:spotbugs-annotations](https://spotbugs.github.io/)
+
 Go License
 -------------------------------
 
@@ -516,7 +518,6 @@ Public Domain
 
  * AOP alliance - [aopalliance:aopalliance](http://aopalliance.sourceforge.net)
  * HdrHistogram - [org.hdrhistogram:HdrHistogram](http://hdrhistogram.github.io/HdrHistogram/)
- * LatencyUtils - [org.latencyutils:LatencyUtils](http://latencyutils.github.io/LatencyUtils/)
 
 The BSD 2-Clause License
 -------------------------------
