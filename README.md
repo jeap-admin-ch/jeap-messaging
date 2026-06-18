@@ -1,59 +1,76 @@
 # jEAP Messaging
 
-jEAP Messaging is a library to handle messaging using kafka. It provides
+jEAP Messaging is a library for sending and receiving messages over Apache Kafka in Spring Boot
+applications. It builds on [Spring for Apache Kafka](https://spring.io/projects/spring-kafka) and Avro,
+and lets a microservice produce and consume strongly-typed events and commands with minimal
+boilerplate. It provides:
 
- * A structured definition of message types using Avro Schema and message type descriptors
- * Avro serialization of message types to kafka records
- * Pre-configured Spring Kafka beans for producers and consumers
- * Transactional outbox pattern for reliable message delivery
- * Declaration of consumed/produced message types on topics using Java annotations
- * Error handling for messages that fail during processing (integration with a jeap-errorhandling-service)
- * Health indicator for Kafka broker connectivity
+* A structured definition of message types using Avro schemas and message-type descriptors
+* Avro serialization of message types to Kafka records
+* Pre-configured Spring Kafka beans for producers and consumers (single- and multi-cluster)
+* Declaration of consumed/produced message types on topics using Java annotations (message contracts)
+* Built-in error handling that never loses a message (integration with a `jeap-error-handling-service`)
+* Idempotent message handling, message signing and encryption, and a Kafka broker health indicator
 
-## Health Indicators
+For the transactional outbox pattern see the separate
+[jeap-messaging-outbox](https://github.com/jeap-admin-ch/jeap-messaging-outbox) library.
 
-When `spring-boot-actuator` is on the classpath, jeap-messaging automatically registers a health indicator:
+## Documentation
 
-### `jeapKafka`
-Checks broker connectivity for each configured Kafka cluster by calling `describeCluster()` via the Kafka
-Admin API. Reports `clusterId` and `nodeCount` per cluster. Available at `/actuator/health/jeapKafka`.
+Start with [Getting started](docs/getting-started.md), then follow the links below.
 
-### Probe integration (opt-in)
-`jeapKafka` can be added to the liveness and/or readiness probe groups in `application.properties` (or yml):
+| Topic                                                   | File                                                                             |
+|---------------------------------------------------------|----------------------------------------------------------------------------------|
+| Getting started (add the dependency, produce & consume) | [docs/getting-started.md](docs/getting-started.md)                               |
+| Architecture & three-layer model                        | [docs/architecture.md](docs/architecture.md)                                     |
+| Choosing dependencies                                   | [docs/dependencies.md](docs/dependencies.md)                                     |
+| Configuration reference (`jeap.messaging.kafka.*`)      | [docs/configuration.md](docs/configuration.md)                                   |
+| Message types (events & commands)                       | [docs/message-types.md](docs/message-types.md)                                   |
+| Defining messages in Avro                               | [docs/defining-messages.md](docs/defining-messages.md)                           |
+| Avro Maven plugin                                       | [docs/avro-maven-plugin.md](docs/avro-maven-plugin.md)                           |
+| Schema evolution                                        | [docs/message-evolution.md](docs/message-evolution.md)                           |
+| Message Type Registry                                   | [docs/message-type-registry.md](docs/message-type-registry.md)                   |
+| Publishing messages                                     | [docs/publishing-messages.md](docs/publishing-messages.md)                       |
+| Consuming messages                                      | [docs/consuming-messages.md](docs/consuming-messages.md)                         |
+| Kafka how-to (integrate Kafka into a service)           | [docs/kafka-how-to.md](docs/kafka-how-to.md)                                     |
+| Kafka topics & client configuration                     | [docs/kafka-topics-and-configuration.md](docs/kafka-topics-and-configuration.md) |
+| Message contracts                                       | [docs/message-contracts.md](docs/message-contracts.md)                           |
+| Idempotent message handler                              | [docs/idempotent-message-handler.md](docs/idempotent-message-handler.md)         |
+| Error handling                                          | [docs/error-handling.md](docs/error-handling.md)                                 |
+| Confluent Schema Registry                               | [docs/schema-registry-confluent.md](docs/schema-registry-confluent.md)           |
+| AWS Glue Schema Registry                                | [docs/schema-registry-aws-glue.md](docs/schema-registry-aws-glue.md)             |
+| AWS MSK IAM authentication                              | [docs/aws-msk-iam-authentication.md](docs/aws-msk-iam-authentication.md)         |
+| Signing messages                                        | [docs/signing-messages.md](docs/signing-messages.md)                             |
+| Encrypting messages                                     | [docs/encrypting-messages.md](docs/encrypting-messages.md)                       |
+| Message filtering                                       | [docs/message-filtering.md](docs/message-filtering.md)                           |
+| Health indicators                                       | [docs/health-indicators.md](docs/health-indicators.md)                           |
+| Testing                                                 | [docs/testing.md](docs/testing.md)                                               |
 
-```properties
-management.endpoint.health.probes.enabled=true
-# Restart the pod after an extended outage — retrying from a clean state may restore connectivity
-management.endpoint.health.group.liveness.include=livenessState,jeapKafka
-# Mark the pod as not ready while Kafka is unreachable
-management.endpoint.health.group.readiness.include=readinessState,jeapKafka
-```
+## Modules
 
-Both can be combined. The same `down-after` grace period applies to both, giving the built-in Kafka
-reconnection logic time to recover before the probe flips to `DOWN`.
+The artifact most consumers depend on is `jeap-messaging-infrastructure-kafka`. Group id for all
+modules is `ch.admin.bit.jeap`; the version is managed by the jEAP Spring Boot parent.
 
-### Recovery grace period
-The indicator reports `UP` with a `recovering: true` detail for a configurable grace period after a failure
-is first detected. Only after this period has elapsed does it flip to `DOWN`. This gives the built-in Kafka
-reconnection logic time to recover before the probe reacts.
-
-The total time before a probe sees `DOWN` is `down-after` + (failure threshold × check interval). With the
-default `down-after=35s`:
-
-| Platform    | Settings                                             | Total time before DOWN    |
-|-------------|------------------------------------------------------|---------------------------|
-| Kubernetes  | `failureThreshold=5`, `periodSeconds=5`              | 35s + 25s = ~60s          |
-| AWS ECS     | `unhealthy_threshold=5`, `health_check_interval=15s` | 35s + 75s = ~110s         |
-
-The relevant defaults (all overridable in `application.properties`):
-
-| Property                                                           | Default | Description                                                           |
-|--------------------------------------------------------------------|---------|-----------------------------------------------------------------------|
-| `management.health.jeap-kafka.enabled`                             | `true`  | Enable/disable the Kafka broker health indicator                      |
-| `management.health.jeap-kafka.response-timeout`                    | `1s`    | Timeout per broker check                                              |
-| `management.health.jeap-kafka.down-after`                          | `35s`   | Grace period before reporting DOWN                                    |
-| `management.health.kafka.enabled`                                  | `false` | Spring Boot's built-in single-cluster indicator (disabled by default) |
-| `spring.kafka.listener.auth-exception-retry-interval`              | `10s`   | Retry interval for auth failures in listener containers               |
+| Module                                                     | Purpose                                                                                             |
+|------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| `jeap-messaging-model`                                     | Infrastructure-independent interfaces for domain events and commands                                |
+| `jeap-messaging-api`                                       | `MessageListener` / `MessagePublisher` interfaces                                                   |
+| `jeap-messaging-avro`                                      | Avro implementation of the model: `AvroMessage`, builders, `AvroSerializationHelper`                |
+| `jeap-messaging-avro-maven-plugin`                         | Generates Java classes from Avro schemas / the Message Type Registry                                |
+| `jeap-messaging-avro-compiler`, `-validator`, `-test`      | Internal Avro compilation, validation and test support                                              |
+| `jeap-messaging-avro-errorevent`                           | Avro types for the error-handling integration                                                       |
+| `jeap-messaging-infrastructure`                            | Core Kafka infrastructure: serialization, signing, crypto, tracing, metrics, health, error handling |
+| `jeap-messaging-infrastructure-kafka`                      | Spring Boot auto-configuration; the main consumer-facing artifact                                   |
+| `jeap-messaging-infrastructure-kafka-test`                 | Test fixtures: `TestMessageSender`, `TestKafkaListener`, `KafkaIntegrationTestBase`                 |
+| `jeap-messaging-infrastructure-kafka-without-tracing-test` | Test fixtures for services that do not use tracing                                                  |
+| `jeap-messaging-confluent-schema-registry`                 | Confluent Schema Registry integration                                                               |
+| `jeap-messaging-glue-schema-registry`                      | AWS Glue Schema Registry integration                                                                |
+| `jeap-messaging-aws-msk-iam-auth`                          | AWS MSK IAM authentication                                                                          |
+| `jeap-messaging-idempotence`                               | `@IdempotentMessageHandler` with a JPA-backed processing store and housekeeping                     |
+| `jeap-messaging-contract-annotations`                      | Message-contract annotations                                                                        |
+| `jeap-messaging-contract-annotation-processor`             | Annotation processor generating the contract JSON uploaded during the build                         |
+| `jeap-messaging-contract-maven-plugin`                     | Maven plugin for message contracts                                                                  |
+| `jeap-messaging-registry-maven-plugin`                     | Verifies and exports a Message Type Registry                                                        |
 
 ## Changes
 
