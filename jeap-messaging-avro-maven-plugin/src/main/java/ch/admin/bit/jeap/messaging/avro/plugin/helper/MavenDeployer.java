@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -85,15 +86,28 @@ public class MavenDeployer {
     @SneakyThrows
     private InvocationResult executeRequest(InvocationRequest request) {
         Invoker invoker = createInvoker();
+        List<String> outputLines = Collections.synchronizedList(new ArrayList<>());
+        request.setOutputHandler(outputLines::add);
         try {
             InvocationResult result = invoker.execute(request);
             if (result.getExitCode() != 0) {
+                if (isArtifactAlreadyDeployed(outputLines)) {
+                    log.info("Artifact already deployed, skipping deployment for: " + request.getPomFile());
+                    return result;
+                }
                 throw new MojoExecutionException("Build failed with exitCode " + result.getExitCode());
             }
             return result;
         } catch (MavenInvocationException e) {
             throw new MojoExecutionException("Error during Maven Invocation: " + e.getMessage(), e);
         }
+    }
+
+    static boolean isArtifactAlreadyDeployed(List<String> outputLines) {
+        return outputLines.stream().anyMatch(line ->
+                line.contains("Return code is: 409") ||
+                        line.contains("Repository does not allow updating artifacts") ||
+                        line.contains("cannot be updated"));
     }
 
     Invoker createInvoker() {

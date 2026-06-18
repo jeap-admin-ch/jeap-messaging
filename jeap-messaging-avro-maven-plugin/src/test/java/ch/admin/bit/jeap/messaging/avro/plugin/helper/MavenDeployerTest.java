@@ -21,8 +21,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +46,7 @@ class MavenDeployerTest {
     private MavenDeployer mavenDeployer;
 
     @BeforeEach
-    void setUp() throws MavenInvocationException {
+    void setUp() {
         mavenDeployer = new MavenDeployer(new SystemStreamLog(), GOAL, true, MAVEN_EXECUTABLE, SETTINGS_FILE, "my-profile") {
             @Override
             Invoker createInvoker() {
@@ -55,7 +56,7 @@ class MavenDeployerTest {
     }
 
     @BeforeAll
-    static void prepareFakeProxyProperties() throws MojoExecutionException {
+    static void prepareFakeProxyProperties() {
         System.setProperty(HTTP_FAKE_PROXY_PROPERTY, "foo-proxy");
         System.setProperty(HTTP_FAKE_NON_PROXY_PROPERTY, "non-proxy");
     }
@@ -107,5 +108,44 @@ class MavenDeployerTest {
         MojoExecutionException mojoExecutionException = assertThrows(MojoExecutionException.class,
                 () -> mavenDeployer.deployProjects(twoPoms));
         assertEquals("Build failed with exitCode 2", mojoExecutionException.getMessage());
+    }
+
+    @Test
+    void deployProjects_whenReturnCodeIsNonZeroAndArtifactAlreadyDeployed_thenShouldSkip() throws Exception {
+        List<Path> onePom = List.of(Paths.get("proj-1"));
+        doAnswer(invocation -> {
+            InvocationRequest request = invocation.getArgument(0);
+            request.getOutputHandler(null).consumeLine("Return code is: 409 , ReasonPhrase:Conflict.");
+            return invocationResult;
+        }).when(invoker).execute(any());
+        when(invocationResult.getExitCode()).thenReturn(1);
+
+        List<InvocationResult> results = mavenDeployer.deployProjects(onePom);
+
+        assertEquals(1, results.size());
+    }
+
+    @Test
+    void isArtifactAlreadyDeployed_whenOutputContains409_thenReturnsTrue() {
+        assertTrue(MavenDeployer.isArtifactAlreadyDeployed(
+                List.of("some line", "Return code is: 409 , ReasonPhrase:Conflict.", "another line")));
+    }
+
+    @Test
+    void isArtifactAlreadyDeployed_whenOutputContainsCannotUpdate_thenReturnsTrue() {
+        assertTrue(MavenDeployer.isArtifactAlreadyDeployed(
+                List.of("Repository does not allow updating artifacts")));
+    }
+
+    @Test
+    void isArtifactAlreadyDeployed_whenOutputContainsCannotBeUpdated_thenReturnsTrue() {
+        assertTrue(MavenDeployer.isArtifactAlreadyDeployed(
+                List.of("status code: 400, reason phrase: jme-foo-1.0.0.pom cannot be updated (400)")));
+    }
+
+    @Test
+    void isArtifactAlreadyDeployed_whenOutputHasNoAlreadyDeployedIndicator_thenReturnsFalse() {
+        assertFalse(MavenDeployer.isArtifactAlreadyDeployed(
+                List.of("BUILD FAILURE", "Some other error")));
     }
 }
