@@ -119,7 +119,7 @@ class PomFileGeneratorTest {
 
         Path outputPath = Path.of("", "target", "unit-test-pom");
         PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, null, new SystemStreamLog());
-        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", "", "myVersion", "jeapMessagingVersion");
+        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", "", "myVersion", "jeapMessagingVersion", true);
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();
@@ -239,7 +239,7 @@ class PomFileGeneratorTest {
         String dependency = PomFileGenerator.getCommonDependency("myDepGroupId", "myDepArtifactId", "myDepVersion");
         Path outputPath = Path.of("", "target", "unit-test-pom");
         PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, null, new SystemStreamLog());
-        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
+        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion", true);
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();
@@ -312,11 +312,27 @@ class PomFileGeneratorTest {
         Path outputPath = Path.of("", "target", "unit-test-pom");
         File pomTemplateFile = new File("src/test/resources/pom-template/custom.pom.xml");
         PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, pomTemplateFile, new SystemStreamLog());
-        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion");
+        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", dependency, "myVersion", "jeapMessagingVersion", true);
         Path filename = Path.of(outputPath.toString(), "pom.xml");
         assertThat(Files.exists(filename))
                 .isTrue();
         assertThat(Files.readString(filename))
                 .isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    void generatePomFile_withoutClassifierArtifact() throws MojoExecutionException, IOException {
+        Path outputPath = Path.of("", "target", "unit-test-pom");
+        PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, null, new SystemStreamLog());
+        pomFileGenerator.generatePomFile("myGroupId", "myArtifactId", "", "myVersion", "jeapMessagingVersion", false);
+        Path filename = Path.of(outputPath.toString(), "pom.xml");
+        String pomContent = Files.readString(filename);
+
+        // No additional classifier artifact must be generated for the common library
+        assertThat(pomContent).doesNotContain("<classifier>");
+        assertThat(pomContent).doesNotContain("additional-artifact-with-classifier");
+        // The rest of the maven-jar-plugin (manifest config) and maven-source-plugin remain
+        assertThat(pomContent).contains("maven-jar-plugin");
+        assertThat(pomContent).contains("maven-source-plugin");
     }
 }

@@ -60,17 +60,7 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>additional-artifact-with-classifier</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>${version}</classifier>
-                        </configuration>
-                    </execution>
-                </executions>
+                <!-- ${classifierExecution} -->
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>

@@ -29,9 +29,10 @@ public class PomFileGenerator {
     }
 
     public void generatePomFile(String groupId, String artefactId,
-                                String dependency, String version, String jeapMessagingVersion) throws MojoExecutionException {
+                                String dependency, String version, String jeapMessagingVersion,
+                                boolean withClassifierArtifact) throws MojoExecutionException {
         try {
-            String pomContent = getPomXmlContent(groupId, artefactId, dependency, version, jeapMessagingVersion);
+            String pomContent = getPomXmlContent(groupId, artefactId, dependency, version, jeapMessagingVersion, withClassifierArtifact);
             Path path = Paths.get(outputPath.toString(), POM_XML_FILE_NAME);
             Files.createDirectories(outputPath);
             Files.writeString(path, pomContent);
@@ -40,10 +41,11 @@ public class PomFileGenerator {
         }
     }
 
-    private String getPomXmlContent(String groupId, String artifactId, String dependency, String version, String jeapMessagingVersion) throws IOException {
+    private String getPomXmlContent(String groupId, String artifactId, String dependency, String version, String jeapMessagingVersion, boolean withClassifierArtifact) throws IOException {
         String pomTemplate = loadPomTemplate();
-        // Allow xml-commenting the dependency replacement variable as '<!-- ${dependency} -->' to make sure the template file represents a valid xml document
+        // Allow xml-commenting the replacement variables as '<!-- ${...} -->' to make sure the template file represents a valid xml document
         pomTemplate = pomTemplate.replace("<!-- ${dependency} -->", "${dependency}");
+        pomTemplate = pomTemplate.replace("<!-- ${classifierExecution} -->", "${classifierExecution}");
 
         Map<String, String> params = new HashMap<>();
         params.put("groupId", groupId);
@@ -51,7 +53,25 @@ public class PomFileGenerator {
         params.put("dependency", dependency);
         params.put("version", version);
         params.put("jeapMessagingVersion", jeapMessagingVersion);
+        params.put("classifierExecution", withClassifierArtifact ? getClassifierExecution(version) : "");
         return StringSubstitutor.replace(pomTemplate, params);
+    }
+
+    public static String getClassifierExecution(String version) {
+        // The version is substituted here (not via StringSubstitutor) because StringSubstitutor
+        // does not re-scan replacement values for further variables.
+        return """
+                <executions>
+                    <execution>
+                        <id>additional-artifact-with-classifier</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>%s</classifier>
+                        </configuration>
+                    </execution>
+                </executions>""".formatted(version);
     }
 
     private String loadPomTemplate() throws IOException {

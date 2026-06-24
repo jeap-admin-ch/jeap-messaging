@@ -270,7 +270,9 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
 
                 final Path outputPath = Paths.get(avroCompiler.getOutputDirectory().getAbsolutePath(), entry.getKey(), MessageTypeRegistryConstants.COMMON_DIR_NAME);
                 PomFileGenerator pomFileGenerator = new PomFileGenerator(outputPath, pomTemplateFile, getLog());
-                pomFileGenerator.generatePomFile(getGroupIdPrefixWithTrailingDot() + entry.getKey().toLowerCase(Locale.ROOT), entry.getKey() + "-messaging-common", "", getCommonLibVersionAsProjectVersion(), this.jeapMessagingVersion);
+                // Common types exist in a single version per build and are consumed without a classifier,
+                // so no additional classifier artifact is generated for them.
+                pomFileGenerator.generatePomFile(getGroupIdPrefixWithTrailingDot() + entry.getKey().toLowerCase(Locale.ROOT), entry.getKey() + "-messaging-common", "", getCommonLibVersionAsProjectVersion(), this.jeapMessagingVersion, false);
 
                 getLog().info("+++ Compiled " + entry.getValue().size() + " common schemas for system " + entry.getKey());
             }
@@ -371,7 +373,8 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
                     camelCase2Snake(typeReference.getName()),
                     getDependencyDefinition(typeReference),
                     getArtifactVersion(typeReference.getVersion()),
-                    this.jeapMessagingVersion);
+                    this.jeapMessagingVersion,
+                    true);
             compileSchema(outputPath, avroCompiler, schema);
         }
         getLog().info("Compiled all schemas");

@@ -23,30 +23,32 @@ import static org.junit.jupiter.api.Assertions.*;
 @MojoTest
 class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
 
-    private static final String EXPECTED_EVENT_TYPE_REF = "public static class TypeRef implements ch.admin.bit.jeap.messaging.avro.MessageTypeMetadata {\n" +
-                                                          "    public static final String REGISTRY_URL = \"gitUrl\";\n" +
-            "    public static final String REGISTRY_BRANCH = \"my-branch\";\n" +
-                                                          "    public static final String REGISTRY_COMMIT = \"cafebabe\";\n" +
-                                                          "    public static final String COMPATIBILITY_MODE = \"BACKWARD\";\n" +
-                                                          "    public static final String MESSAGE_TYPE_VERSION = \"1.1.0\";\n" +
-                                                          "    public static final String MESSAGE_TYPE_NAME = \"JmeDeclarationCreatedEvent\";\n" +
-                                                          "    public static final String SYSTEM_NAME = \"JME\";\n" +
-                                                          "    public static final String TOPIC_ADDITIONAL_TOPIC = \"additional-topic\";\n" +
-                                                          "    public static final String TOPIC_JME_MESSAGING_DECLARATION_CREATED = \"jme-messaging-declaration-created\";\n" +
-                                                          "    public static final String DEFAULT_TOPIC = \"jme-messaging-declaration-created\";\n" +
-                                                          "}";
-    private static final String EXPECTED_COMMAND_TYPE_REF = "public static class TypeRef implements ch.admin.bit.jeap.messaging.avro.MessageTypeMetadata {\n" +
-                                                            "    public static final String REGISTRY_URL = \"gitUrl\";\n" +
-            "    public static final String REGISTRY_BRANCH = \"my-branch\";\n" +
-                                                            "    public static final String REGISTRY_COMMIT = \"cafebabe\";\n" +
-                                                            "    public static final String COMPATIBILITY_MODE = \"BACKWARD\";\n" +
-                                                            "    public static final String MESSAGE_TYPE_VERSION = \"1.0.0\";\n" +
-                                                            "    public static final String MESSAGE_TYPE_NAME = \"JmeCreateDeclarationCommand\";\n" +
-                                                            "    public static final String SYSTEM_NAME = \"JME\";\n" +
-                                                            "    public static final String TOPIC_ADDITIONAL_TOPIC = \"additional-topic\";\n" +
-                                                            "    public static final String TOPIC_JME_MESSAGING_CREATE_DECLARATION = \"jme-messaging-create-declaration\";\n" +
-                                                            "    public static final String DEFAULT_TOPIC = \"jme-messaging-create-declaration\";\n" +
-                                                            "}";
+    private static final String EXPECTED_EVENT_TYPE_REF = """
+            public static class TypeRef implements ch.admin.bit.jeap.messaging.avro.MessageTypeMetadata {
+                public static final String REGISTRY_URL = "gitUrl";
+                public static final String REGISTRY_BRANCH = "my-branch";
+                public static final String REGISTRY_COMMIT = "cafebabe";
+                public static final String COMPATIBILITY_MODE = "BACKWARD";
+                public static final String MESSAGE_TYPE_VERSION = "1.1.0";
+                public static final String MESSAGE_TYPE_NAME = "JmeDeclarationCreatedEvent";
+                public static final String SYSTEM_NAME = "JME";
+                public static final String TOPIC_ADDITIONAL_TOPIC = "additional-topic";
+                public static final String TOPIC_JME_MESSAGING_DECLARATION_CREATED = "jme-messaging-declaration-created";
+                public static final String DEFAULT_TOPIC = "jme-messaging-declaration-created";
+            }""";
+    private static final String EXPECTED_COMMAND_TYPE_REF = """
+            public static class TypeRef implements ch.admin.bit.jeap.messaging.avro.MessageTypeMetadata {
+                public static final String REGISTRY_URL = "gitUrl";
+                public static final String REGISTRY_BRANCH = "my-branch";
+                public static final String REGISTRY_COMMIT = "cafebabe";
+                public static final String COMPATIBILITY_MODE = "BACKWARD";
+                public static final String MESSAGE_TYPE_VERSION = "1.0.0";
+                public static final String MESSAGE_TYPE_NAME = "JmeCreateDeclarationCommand";
+                public static final String SYSTEM_NAME = "JME";
+                public static final String TOPIC_ADDITIONAL_TOPIC = "additional-topic";
+                public static final String TOPIC_JME_MESSAGING_CREATE_DECLARATION = "jme-messaging-create-declaration";
+                public static final String DEFAULT_TOPIC = "jme-messaging-create-declaration";
+            }""";
 
 
     private File setupTestDirectory(Path tempDir, String resourcePath) throws Exception {
@@ -184,8 +186,11 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
         // On a feature branch the common lib snapshot version is the timestamp-based commonLibVersion
         // (yyyy.MM.dd.HH.mm.ss) followed by -SNAPSHOT, without the (potentially long) branch name.
         String commonPom = Files.readString(new File(testDirectory, "target/generated-sources/jme/_common/pom.xml").toPath());
-        assertThat(commonPom).containsPattern("<version>\\d{4}\\.\\d{2}\\.\\d{2}\\.\\d{2}\\.\\d{2}\\.\\d{2}-SNAPSHOT</version>");
-        assertThat(commonPom).doesNotContain("my-branch");
+        assertThat(commonPom)
+                .containsPattern("<version>\\d{4}\\.\\d{2}\\.\\d{2}\\.\\d{2}\\.\\d{2}\\.\\d{2}-SNAPSHOT</version>")
+                .doesNotContain("my-branch")
+                .doesNotContain("<classifier>")
+                .doesNotContain("additional-artifact-with-classifier");
     }
 
     private void assertSystemCommonFilesRemoved(List<String> filenames) {
