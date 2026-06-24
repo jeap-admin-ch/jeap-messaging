@@ -433,7 +433,9 @@ public class MessageTypesCompilerMojo extends AbstractMojo {
     }
 
     private String getCommonLibSnapshotVersion() {
-        return String.format("%s-%s-SNAPSHOT", commonLibVersion, getSanitizedCurrentBranchName());
+        // commonLibVersion is already timestamp-based (yyyy.MM.dd.HH.mm.ss), so it acts as the
+        // timestamp infix between version and -SNAPSHOT, keeping snapshot versions short.
+        return String.format("%s-SNAPSHOT", commonLibVersion);
     }
 
     private String getSanitizedCurrentBranchName() {

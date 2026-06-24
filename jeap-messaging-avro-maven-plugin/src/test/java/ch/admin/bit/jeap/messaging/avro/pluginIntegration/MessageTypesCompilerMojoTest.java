@@ -166,6 +166,28 @@ class MessageTypesCompilerMojoTest extends AbstractAvroMojoTest {
         assertFileContains(testDirectory, "target/generated-sources/jme/JmeDeclarationCreatedEvent/1.4.0/pom.xml", "<classifier>1.4.0</classifier>");
     }
 
+    @Test
+    @InjectMojo(goal = "compile-message-types", pom = "src/test/resources/sample-message-type-registry/pom.xml")
+    void execute_generateAllMessageTypes_commonLibSnapshotVersionUsesTimestampInfix(MessageTypesCompilerMojo myMojo, @TempDir Path tempDir) throws Exception {
+        final File testDirectory = setupTestDirectory(tempDir, "src/test/resources/sample-message-type-registry");
+        pointToTempDir(myMojo, testDirectory);
+
+        myMojo.setGenerateAllMessageTypes(true);
+        myMojo.setCurrentBranch("my-branch");
+        myMojo.setCommitId("cafebabe");
+        myMojo.setGitUrl("gitUrl");
+        myMojo.setFetchTags(false);
+        myMojo.setGroupIdPrefix("ch.bit.admin.test");
+
+        myMojo.execute();
+
+        // On a feature branch the common lib snapshot version is the timestamp-based commonLibVersion
+        // (yyyy.MM.dd.HH.mm.ss) followed by -SNAPSHOT, without the (potentially long) branch name.
+        String commonPom = Files.readString(new File(testDirectory, "target/generated-sources/jme/_common/pom.xml").toPath());
+        assertThat(commonPom).containsPattern("<version>\\d{4}\\.\\d{2}\\.\\d{2}\\.\\d{2}\\.\\d{2}\\.\\d{2}-SNAPSHOT</version>");
+        assertThat(commonPom).doesNotContain("my-branch");
+    }
+
     private void assertSystemCommonFilesRemoved(List<String> filenames) {
         List<String> classes = filenames.stream()
                 .filter(this::isSystemCommonFile)
