@@ -10,11 +10,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -77,9 +73,9 @@ public class MavenDeployer {
     }
 
     private Future<InvocationResult> runMavenInvoker(ExecutorService executorService, InvocationRequest request) {
-        log.info("Executing maven request for pom %s: mnv=%s args=%s profiles=%s goals=%s props=%s".formatted(
+        log.info("Executing maven request for pom %s: mnv=%s args=%s profiles=%s props=%s".formatted(
                 request.getPomFile(), getMavenExecutable(), request.getArgs(),
-                request.getProfiles() == null ? "" : request.getProfiles(), request.getGoals(), request.getProperties()));
+                request.getProfiles() == null ? "" : request.getProfiles(), request.getProperties()));
         return executorService.submit(() -> executeRequest(request));
     }
 
@@ -87,7 +83,11 @@ public class MavenDeployer {
     private InvocationResult executeRequest(InvocationRequest request) {
         Invoker invoker = createInvoker();
         List<String> outputLines = Collections.synchronizedList(new ArrayList<>());
-        request.setOutputHandler(outputLines::add);
+        request.setOutputHandler(line -> {
+            outputLines.add(line);
+            // Forward the invoked Maven build's output to the plugin log so it is visible in the build log
+            log.info(line);
+        });
         try {
             InvocationResult result = invoker.execute(request);
             if (result.getExitCode() != 0) {
@@ -123,7 +123,7 @@ public class MavenDeployer {
         if (profile != null) {
             request.setProfiles(List.of(profile));
         }
-        request.setGoals(List.of(mavenDeployGoal));
+        request.addArgs(List.of(mavenDeployGoal));
         Properties properties = new Properties();
         // No tests in generated message types, skip
         properties.setProperty("maven.test.skip", "true");

@@ -81,7 +81,7 @@ class MavenDeployerTest {
         assertEquals(new File(MAVEN_EXECUTABLE), invocationRequest.getMavenExecutable());
         assertEquals(new File(SETTINGS_FILE), invocationRequest.getGlobalSettingsFile());
         assertEquals(List.of("my-profile"), invocationRequest.getProfiles());
-        assertEquals(List.of(GOAL), invocationRequest.getGoals());
+        assertEquals(List.of(GOAL), invocationRequest.getArgs());
         assertEquals("foo-proxy", invocationRequest.getProperties().get(HTTP_FAKE_PROXY_PROPERTY));
         assertEquals("non-proxy", invocationRequest.getProperties().get(HTTP_FAKE_NON_PROXY_PROPERTY));
         assertEquals("true", invocationRequest.getProperties().get("maven.test.skip"));
