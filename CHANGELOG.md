@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.13.1] - 2026-07-01
+### Changed
+- update jeap-crypto from 9.11.0 to 9.11.1
+- update jeap-spring-boot-vault-starter from 23.10.0 to 23.10.1
+- Add missing `test` scope to test/mock dependencies (`spring-boot-webmvc-test` in swagger starter, `wiremock-standalone` in security starter)
+
 ## [15.13.0] - 2026-06-30
 
 ### Changed
