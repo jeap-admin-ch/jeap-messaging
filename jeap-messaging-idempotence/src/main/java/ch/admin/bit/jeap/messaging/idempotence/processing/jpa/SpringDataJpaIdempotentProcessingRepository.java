@@ -18,11 +18,22 @@ public interface SpringDataJpaIdempotentProcessingRepository extends JpaReposito
 
     @Transactional
     @Modifying
-    // With PostgreSQL a simpler query would be possible: INSERT INTO idempotent_processing (idempotence_id, idempotence_id_context, created_at) VALUES ( ?1, ?2, ?3) ON CONFLICT DO NOTHING
     @Query(nativeQuery = true, value = "INSERT INTO idempotent_processing (idempotence_id, idempotence_id_context, created_at) " +
                                        "SELECT ?1, ?2, ?3 WHERE NOT EXISTS " +
                                        "(SELECT * FROM idempotent_processing WHERE idempotence_id = ?1 AND idempotence_id_context = ?2)")
     int createIfNotExists(String idempotenceId, String idempotenceIdContext, ZonedDateTime createdAt);
+
+    // A record concurrently inserted by another transaction fails createIfNotExists() with a unique constraint
+    // violation once the other transaction commits. ON CONFLICT DO NOTHING instead skips the insert without an error
+    // in this case (guaranteed under read committed isolation). The conflict target is omitted deliberately: the
+    // primary key is the table's only unique constraint, and the target-less form is also supported by
+    // PostgreSQL-compatible databases (e.g. H2 in PostgreSQL compatibility mode).
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true, value = "INSERT INTO idempotent_processing (idempotence_id, idempotence_id_context, created_at) " +
+                                       "VALUES (?1, ?2, ?3) " +
+                                       "ON CONFLICT DO NOTHING")
+    int createIfNotExistsOnConflictDoNothing(String idempotenceId, String idempotenceIdContext, ZonedDateTime createdAt);
 
     @Transactional
     @Modifying

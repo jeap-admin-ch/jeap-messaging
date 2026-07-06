@@ -16,7 +16,10 @@ import org.springframework.core.Ordered;
 @ConfigurationProperties(prefix = "jeap.messaging.idempotent-message-handler")
 public class IdempotentMessageHandlerConfig {
 
-    // Lowest precedence puts this advice nearest to the method execution, i.e. after advices having a higher priority.
+    /**
+     * Order of the idempotent message handler advice. The default (lowest precedence) puts this advice nearest to the
+     * method execution, i.e. after advices having a higher priority such as the transaction management advice.
+     */
     private int adviceOrder = Ordered.LOWEST_PRECEDENCE;
 
 }

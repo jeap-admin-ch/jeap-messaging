@@ -1,0 +1,30 @@
+{
+  "properties": [
+    {
+      "name": "jeap.messaging.idempotent-processing.insert-mode",
+      "type": "ch.admin.bit.jeap.messaging.idempotence.processing.jpa.IdempotentProcessingInsertMode",
+      "description": "Strategy used to insert idempotent processing records. With 'auto' (the default), the PostgreSQL-specific 'INSERT ... ON CONFLICT DO NOTHING' insert is used on PostgreSQL and the portable 'INSERT ... WHERE NOT EXISTS' insert on any other database.",
+      "sourceType": "ch.admin.bit.jeap.messaging.idempotence.processing.jpa.IdempotentProcessingJpaConfig",
+      "defaultValue": "auto"
+    }
+  ],
+  "hints": [
+    {
+      "name": "jeap.messaging.idempotent-processing.insert-mode",
+      "values": [
+        {
+          "value": "auto",
+          "description": "Choose the insert strategy based on the database in use: 'on-conflict-do-nothing' on PostgreSQL, 'where-not-exists' otherwise."
+        },
+        {
+          "value": "where-not-exists",
+          "description": "Portable insert using 'INSERT ... SELECT ... WHERE NOT EXISTS'. Works on any SQL database. A concurrent insert of the same idempotent processing record by another transaction surfaces as a unique constraint violation."
+        },
+        {
+          "value": "on-conflict-do-nothing",
+          "description": "PostgreSQL-specific insert using 'INSERT ... ON CONFLICT DO NOTHING'. A concurrent insert of the same idempotent processing record by another transaction does not raise an error: the message is skipped silently if the other transaction committed the record."
+        }
+      ]
+    }
+  ]
+}

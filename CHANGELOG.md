@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.14.0] - 2026-07-07
+
+### Changed
+- Idempotent message handler: on PostgreSQL, idempotent processing records are now created with `INSERT ... ON CONFLICT DO NOTHING`,
+  so handling the same message concurrently no longer fails the second handler with a duplicate key violation.
+  The insert strategy is auto-detected and can be overridden with the new property `jeap.messaging.idempotent-processing.insert-mode`.
+- Idempotent message handler: `IdempotentMessageHandlerExecutionSkippedException` now provides `MessageHandlerExceptionInformation`
+  with temporality `TEMPORARY` and specific error codes, letting the jEAP error handling service resend skipped messages
+  automatically instead of creating a manual task.
+
 ## [15.13.2] - 2026-07-06
 ### Changed
 - update jeap-crypto from 9.11.1 to 9.11.2
