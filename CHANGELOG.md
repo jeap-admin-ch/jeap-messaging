@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.16.0] - 2026-07-09
+### Changed
+- update jeap-crypto from 9.12.0 to 9.13.0
+- update jeap-spring-boot-vault-starter from 23.11.0 to 23.12.0
+- Add OIDC Authorization mock server.
+
 ## [15.15.0] - 2026-07-09
 ### Changed
 - update jeap-crypto from 9.11.2 to 9.12.0
