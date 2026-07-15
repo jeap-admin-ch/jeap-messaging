@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.20.0] - 2026-07-16
+
+### Changed
+- `jeap-messaging-glue-schema-registry`: exclude okio, okio-fakefilesystem, wire-schema and kotlin-scripting-compiler(-impl)-embeddable
+  from `schema-registry-serde`. These transitives only serve the serde's protobuf data format support, which is not functional in jEAP
+  (wire-runtime already excluded, Avro only). The serde's stale okio 3.4.0 broke okhttp 5.x consumers at runtime, notably the
+  OpenTelemetry OTLP trace exporter of the Spring Boot 4 based jeap monitoring starter (`NoSuchMethodError: okio.Okio.socket`).
+
 ## [15.19.0] - 2026-07-15
 
 ### Changed
