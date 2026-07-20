@@ -73,7 +73,7 @@
         <file-management.version>3.2.0</file-management.version>
         <maven-invoker.version>3.3.0</maven-invoker.version>
         <maven-plugin-testing-harness.version>3.5.1</maven-plugin-testing-harness.version>
-        <wiremock.version>3.13.2</wiremock.version>
+        <wiremock-spring-boot.version>4.2.2</wiremock-spring-boot.version>
     </properties>
 
     <dependencyManagement>
@@ -186,9 +186,10 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wiremock</groupId>
-                <artifactId>wiremock</artifactId>
-                <version>${wiremock.version}</version>
+                <groupId>org.wiremock.integrations</groupId>
+                <artifactId>wiremock-spring-boot-standalone</artifactId>
+                <version>${wiremock-spring-boot.version}</version>
+                <scope>test</scope>
             </dependency>
             <!-- Pin to 4.0.3 due to CVE-2025-67030 -->
             <dependency>
