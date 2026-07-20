@@ -71,6 +71,29 @@ to duplicate message publication or chronic consumer-group rebalancing and is wo
 
 Storage is JPA-backed. The identity `IdempotentProcessingIdentity` is
 `{idempotence_id, idempotence_id_context}`. A datasource and the backing table are required.
+Do not impose arbitrary length limits on these values. For PostgreSQL, use `TEXT` for both columns:
+
+```sql
+CREATE TABLE idempotent_processing
+(
+    idempotence_id         TEXT                     NOT NULL,
+    idempotence_id_context TEXT                     NOT NULL,
+    created_at             TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT pk_idempotent_processing
+        PRIMARY KEY (idempotence_id, idempotence_id_context)
+);
+```
+
+Existing PostgreSQL tables that used the former example's 200-character limits can be migrated with:
+
+```sql
+ALTER TABLE idempotent_processing
+    ALTER COLUMN idempotence_id TYPE TEXT,
+    ALTER COLUMN idempotence_id_context TYPE TEXT;
+```
+
+The same recommendation applies to other string columns unless the domain itself defines a maximum
+length. The included Flyway example therefore also uses `TEXT` for the ShedLock string columns.
 
 ## Insert strategy
 

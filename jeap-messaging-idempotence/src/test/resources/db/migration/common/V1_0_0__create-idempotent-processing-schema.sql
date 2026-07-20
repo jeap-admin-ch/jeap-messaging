@@ -5,8 +5,8 @@
 -- if you plan to use AWS DMS for database migration or validation.
 CREATE TABLE  idempotent_processing
 (
-    idempotence_id         varchar(200)             NOT NULL,
-    idempotence_id_context varchar(200)             NOT NULL,
+    idempotence_id         text           NOT NULL,
+    idempotence_id_context text           NOT NULL,
     created_at             timestamp with time zone NOT NULL,
     CONSTRAINT pk_idempotent_processing PRIMARY KEY (idempotence_id, idempotence_id_context)
 );
