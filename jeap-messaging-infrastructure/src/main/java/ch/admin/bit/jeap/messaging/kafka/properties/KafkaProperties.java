@@ -219,10 +219,14 @@ public class KafkaProperties implements InitializingBean {
     @Getter
     private boolean consumeWithoutContractAllowed = false;
     /**
-     * Normally if an event for whom you no contract exists in the event registry is published you are notified by a
-     * Warning in the log. You can switch this off by setting this flag. In these cases such events are dropped (if
-     * consumeWithoutContractAllowed is false) or consumed (if consumeWithoutContractAllowed is true) without
-     * log statement
+     * Normally, when an event is consumed for which no contract exists in the event registry, you are notified by a
+     * warning in the log. You can switch this log statement off by setting this flag. This flag only affects logging:
+     * the contract check still runs, i.e. such events are still dropped (if consumeWithoutContractAllowed is false)
+     * or consumed (if consumeWithoutContractAllowed is true) - just without a log statement.
+     * <p>
+     * This flag applies to consuming messages only. When publishing an event without a contract, a warning is always
+     * logged (if publishWithoutContractAllowed is true), or an error is logged and the send fails (if
+     * publishWithoutContractAllowed is false).
      */
     @Setter
     @Getter

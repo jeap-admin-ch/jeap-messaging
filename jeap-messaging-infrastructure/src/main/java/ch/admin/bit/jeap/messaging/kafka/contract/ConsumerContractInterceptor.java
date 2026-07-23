@@ -24,17 +24,14 @@ public class ConsumerContractInterceptor implements ConsumerInterceptor<Object, 
     private ContractsValidator contractsValidator;
     private boolean allowNoContractEvents;
     private boolean silentIgnoreWithoutContract;
+    private boolean exemptFromConsumerContractCheck;
 
     @Override
     public void configure(Map<String, ?> configs) {
         contractsValidator = (ContractsValidator) configs.get(CONTRACTS_VALIDATOR);
         allowNoContractEvents = (Boolean) configs.get(ALLOW_NO_CONTRACT_EVENTS);
         silentIgnoreWithoutContract = (Boolean) configs.get(SILENT_IGNORE_NO_CONTRACT_EVENTS);
-        boolean exemptFromConsumerContractCheck = isExemptFromConsumerContractCheck(configs);
-        if (exemptFromConsumerContractCheck) {
-            silentIgnoreWithoutContract = true;
-            allowNoContractEvents = true;
-        }
+        exemptFromConsumerContractCheck = isExemptFromConsumerContractCheck(configs);
     }
 
     private static boolean isExemptFromConsumerContractCheck(Map<String, ?> configs) {
@@ -44,7 +41,8 @@ public class ConsumerContractInterceptor implements ConsumerInterceptor<Object, 
 
     @Override
     public ConsumerRecords<Object, Object> onConsume(ConsumerRecords<Object, Object> records) {
-        if (silentIgnoreWithoutContract) {
+        // No contract checks for test consumers, i.e. consumers created by an integration test
+        if (exemptFromConsumerContractCheck) {
             return records;
         }
 
@@ -59,32 +57,39 @@ public class ConsumerContractInterceptor implements ConsumerInterceptor<Object, 
                 .toList();
     }
 
-    private boolean isConsummationAllowed(ConsumerRecord<Object, Object> record) {
-        if (!(record.value() instanceof AvroMessage avroMessage)) {
+    private boolean isConsummationAllowed(ConsumerRecord<Object, Object> consumerRecord) {
+        if (!(consumerRecord.value() instanceof AvroMessage avroMessage)) {
             return true;
         }
 
         MessageType type = avroMessage.getType();
-        String topic = record.topic();
+        String topic = consumerRecord.topic();
         try {
             contractsValidator.ensureConsumerContract(type, topic);
             return true;
         } catch (NoContractException e) {
-            if (allowNoContractEvents) {
-                String message = String.format("You have no contract to consume events of type %s from topic %s. " +
-                                "However as consumeWithoutContractAllowed is ON this event will still be consumed. " +
-                                "If you do not want to see this message set silentIgnoreWithoutContract to true.",
-                        type, topic);
-                log.warn(message);
-            } else {
-                String message = String.format("You have no contract to consume events of type %s from topic %s. " +
-                                "This event is filtered out and will not be consumed by this application. " +
-                                "Use consumeWithoutContractAllowed to change this behavior in a dev environment. " +
-                                "If you do not want to see this message set silentIgnoreWithoutContract to true.",
-                        type, topic);
-                log.warn(message, e);
-            }
+            logMissingConsumerContract(type, topic, e);
             return allowNoContractEvents;
+        }
+    }
+
+    private void logMissingConsumerContract(MessageType type, String topic, NoContractException e) {
+        if (silentIgnoreWithoutContract) {
+            return;
+        }
+        if (allowNoContractEvents) {
+            String message = String.format("You have no contract to consume events of type %s from topic %s. " +
+                            "However as consumeWithoutContractAllowed is ON this event will still be consumed. " +
+                            "If you do not want to see this message set silentIgnoreWithoutContract to true.",
+                    type, topic);
+            log.warn(message);
+        } else {
+            String message = String.format("You have no contract to consume events of type %s from topic %s. " +
+                            "This event is filtered out and will not be consumed by this application. " +
+                            "Use consumeWithoutContractAllowed to change this behavior in a dev environment. " +
+                            "If you do not want to see this message set silentIgnoreWithoutContract to true.",
+                    type, topic);
+            log.warn(message, e);
         }
     }
 

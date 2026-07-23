@@ -81,9 +81,10 @@ separate services and are out of scope here.
 
 ## Configuration
 
-For relaxing contract enforcement during development and testing, see `publishWithoutContractAllowed`,
-`consumeWithoutContractAllowed` and `silentIgnoreWithoutContract` in the
-[Configuration reference](configuration.md).
+For relaxing contract enforcement during development and testing, see `publishWithoutContractAllowed` and
+`consumeWithoutContractAllowed` in the [Configuration reference](configuration.md). To suppress only the log
+statement emitted when a message without a contract is received (without relaxing enforcement), see
+`silentIgnoreWithoutContract`.
 
 ## Related
 

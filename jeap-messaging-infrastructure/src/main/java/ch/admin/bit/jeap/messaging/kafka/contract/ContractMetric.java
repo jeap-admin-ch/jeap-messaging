@@ -28,10 +28,12 @@ public class ContractMetric {
         int consumeWithoutContract = kafkaProperties.isConsumeWithoutContractAllowed() ? 1 : 0;
         int publishWithoutContract = kafkaProperties.isPublishWithoutContractAllowed() ? 1 : 0;
         int noMasterContracts = hasNoMasterContracts() ? 1 : 0;
+        int silentIgnoreWithoutContract = kafkaProperties.isSilentIgnoreWithoutContract() ? 1 : 0;
         List<MultiGauge.Row<?>> rows = List.of(
                 MultiGauge.Row.of(Tags.of(TAG_SWITCH_NAME, "consumeWithoutContract"), consumeWithoutContract),
                 MultiGauge.Row.of(Tags.of(TAG_SWITCH_NAME, "publishWithoutContract"), publishWithoutContract),
-                MultiGauge.Row.of(Tags.of(TAG_SWITCH_NAME, "noMasterContracts"), noMasterContracts)
+                MultiGauge.Row.of(Tags.of(TAG_SWITCH_NAME, "noMasterContracts"), noMasterContracts),
+                MultiGauge.Row.of(Tags.of(TAG_SWITCH_NAME, "silentIgnoreWithoutContract"), silentIgnoreWithoutContract)
         );
         MultiGauge.builder(METRIC_NAME)
                 .description("Contract validation of jeap-messaging library")

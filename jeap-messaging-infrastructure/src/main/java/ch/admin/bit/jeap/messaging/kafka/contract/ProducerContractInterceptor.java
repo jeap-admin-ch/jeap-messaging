@@ -29,46 +29,52 @@ public class ProducerContractInterceptor implements ProducerInterceptor<Object, 
     }
 
     @Override
-    public ProducerRecord<Object, Object> onSend(ProducerRecord<Object, Object> record) {
-        //In this case we do not even need to check
-        if (allowNoContractEventsSilent) {
-            return record;
-        }
+    public ProducerRecord<Object, Object> onSend(ProducerRecord<Object, Object> producerRecord) {
         // No contract warnings/error for test messages, i.e. messages produced by an integration test
-        if (isExemptFromProducerContractCheck(record)) {
-            return record;
+        if (isExemptFromProducerContractCheck(producerRecord)) {
+            return producerRecord;
         }
         // Not a jEAP message - skip check
-        if (!(record.value() instanceof AvroMessage avroMessage)) {
-            return record;
+        if (!(producerRecord.value() instanceof AvroMessage avroMessage)) {
+            return producerRecord;
         }
 
         MessageType type = avroMessage.getType();
-        String topic = record.topic();
+        String topic = producerRecord.topic();
         try {
             contractsValidator.ensurePublisherContract(type, topic);
-            return record;
+            return producerRecord;
         } catch (NoContractException e) {
-            if (allowNoContractEvents) {
-                String message = String.format("You have no contract to publish events of type %s on topic %s but still do so. " +
-                                "However as publishWithoutContractAllowed is ON this event will still be published",
-                        type, topic);
-                log.warn(message);
-                return record;
-            }
-            String message = String.format("You have no contract to publish events of type %s on topic %s but still do so. " +
-                            "This event is NOT published and an exception is send to the application. " +
-                            "Use publishWithoutContractAllowed to change this behavior in a dev environment",
-                    type, topic);
-            log.error(message, e);
-
-            /*
-             * This is kind of hacky. We cannot throw an exception here as they are not propagated (check description on
-             * {@link ProducerInterceptor#onSend(ProducerRecord)}). However, we can return a record that throws an exception
-             * if its evaluated
-             */
-            return new NoContractProducerRecord<>(e);
+            return handleMissingPublisherContract(producerRecord, type, topic, e);
         }
+    }
+
+    private ProducerRecord<Object, Object> handleMissingPublisherContract(ProducerRecord<Object, Object> producerRecord,
+                                                                          MessageType type, String topic,
+                                                                          NoContractException e) {
+        // Publishing without a contract is allowed silently, e.g. for internal producers like the error handler
+        if (allowNoContractEventsSilent) {
+            return producerRecord;
+        }
+        if (allowNoContractEvents) {
+            String message = String.format("You have no contract to publish events of type %s on topic %s but still do so. " +
+                            "However as publishWithoutContractAllowed is ON this event will still be published",
+                    type, topic);
+            log.warn(message);
+            return producerRecord;
+        }
+        String message = String.format("You have no contract to publish events of type %s on topic %s but still do so. " +
+                        "This event is NOT published and an exception is send to the application. " +
+                        "Use publishWithoutContractAllowed to change this behavior in a dev environment",
+                type, topic);
+        log.error(message, e);
+
+        /*
+         * This is kind of hacky. We cannot throw an exception here as they are not propagated (check description on
+         * {@link ProducerInterceptor#onSend(ProducerRecord)}). However, we can return a record that throws an exception
+         * if its evaluated
+         */
+        return new NoContractProducerRecord<>(e);
     }
 
     private static boolean isExemptFromProducerContractCheck(ProducerRecord<Object, Object> producerRecord) {

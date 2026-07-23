@@ -6,15 +6,20 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(OutputCaptureExtension.class)
 class ConsumerContractInterceptorTest {
 
     @Test
@@ -66,6 +71,56 @@ class ConsumerContractInterceptorTest {
         assertEquals(1, remainingRecords.size());
         assertSame(avroRecord, remainingRecords.get(0));
         verify(contractsValidator).ensureConsumerContract(messageType, topic);
+    }
+
+    @Test
+    void filtersOutAvroRecordsWhenNoContractAndNotAllowedEvenWhenSilent(CapturedOutput output) {
+        String topic = "test-topic";
+        TopicPartition topicPartition = new TopicPartition(topic, 0);
+
+        ContractsValidator contractsValidator = mock(ContractsValidator.class);
+        ConsumerContractInterceptor interceptor = configuredInterceptor(contractsValidator, false, true, null);
+
+        AvroMessage avroMessage = mock(AvroMessage.class);
+        MessageType messageType = messageType("event-type", "1");
+        when(avroMessage.getType()).thenReturn(messageType);
+        doThrow(NoContractException.noContract("test-app", "consumer", messageType.getName(), topic))
+                .when(contractsValidator).ensureConsumerContract(messageType, topic);
+
+        ConsumerRecord<Object, Object> avroRecord = new ConsumerRecord<>(topic, 0, 0L, "k1", avroMessage);
+        ConsumerRecords<Object, Object> records = new ConsumerRecords<>(Map.of(topicPartition, List.of(avroRecord)), Map.of());
+
+        ConsumerRecords<Object, Object> filtered = interceptor.onConsume(records);
+
+        assertEquals(0, filtered.records(topicPartition).size());
+        verify(contractsValidator).ensureConsumerContract(messageType, topic);
+        assertThat(output).doesNotContain("You have no contract to consume events");
+    }
+
+    @Test
+    void keepsAvroRecordsWhenNoContractButAllowedAndSilent(CapturedOutput output) {
+        String topic = "test-topic";
+        TopicPartition topicPartition = new TopicPartition(topic, 0);
+
+        ContractsValidator contractsValidator = mock(ContractsValidator.class);
+        ConsumerContractInterceptor interceptor = configuredInterceptor(contractsValidator, true, true, null);
+
+        AvroMessage avroMessage = mock(AvroMessage.class);
+        MessageType messageType = messageType("event-type", "1");
+        when(avroMessage.getType()).thenReturn(messageType);
+        doThrow(NoContractException.noContract("test-app", "consumer", messageType.getName(), topic))
+                .when(contractsValidator).ensureConsumerContract(messageType, topic);
+
+        ConsumerRecord<Object, Object> avroRecord = new ConsumerRecord<>(topic, 0, 0L, "k1", avroMessage);
+        ConsumerRecords<Object, Object> records = new ConsumerRecords<>(Map.of(topicPartition, List.of(avroRecord)), Map.of());
+
+        ConsumerRecords<Object, Object> filtered = interceptor.onConsume(records);
+
+        List<ConsumerRecord<Object, Object>> remainingRecords = filtered.records(topicPartition);
+        assertEquals(1, remainingRecords.size());
+        assertSame(avroRecord, remainingRecords.get(0));
+        verify(contractsValidator).ensureConsumerContract(messageType, topic);
+        assertThat(output).doesNotContain("You have no contract to consume events");
     }
 
     @Test

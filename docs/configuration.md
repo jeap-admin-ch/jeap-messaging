@@ -57,7 +57,7 @@ default cluster needs neither.
 |---------------------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------|
 | `publishWithoutContractAllowed` | `false` | Allow producing without a contract. **Must be `false` in production**                                                                 |
 | `consumeWithoutContractAllowed` | `false` | Allow consuming without a contract. **Must be `false` in production**                                                                 |
-| `silentIgnoreWithoutContract`   | `false` | Suppress the error logged when a message without a contract is received (e.g. when listening to a topic carrying several event types) |
+| `silentIgnoreWithoutContract`   | `false` | Suppress only the log statement emitted when a message without a contract is received (e.g. when listening to a topic carrying several event types). Contract enforcement still applies |
 
 See [Message contracts](message-contracts.md).
 
