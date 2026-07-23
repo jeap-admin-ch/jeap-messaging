@@ -60,7 +60,6 @@
     </modules>
 
     <properties>
-        <netty.version>4.1.135.Final</netty.version>
         <avro-serializer.version>8.1.1</avro-serializer.version>
         <avro.version>1.12.1</avro.version>
         <jeap-crypto.version>7.10.0</jeap-crypto.version>
