@@ -10,6 +10,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Update parent from 8.7.0 to 8.7.1
 - update jeap-spring-boot-roles-anywhere-starter from 3.20.0 to 3.21.0
+- update avro-serializer from 8.2.1 to 8.3.1
+- update org.eclipse.jgit from 7.6.0.202603022253-r to 7.7.1.202607240634-r
 
 ## [17.8.0] - 2026-08-08
 
