@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.10.0] - 2026-08-11
+
+### Changed
+
+- Update parent from 8.7.1 to 8.8.0
+
 ## [17.9.0] - 2026-08-10
 
 ### Changed
