@@ -11,6 +11,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Update parent from 8.8.0 to 8.9.1
 - Update parent from 8.8.0 to 8.9.0
 - update jeap-spring-boot-roles-anywhere-starter from 3.22.0 to 3.23.0
+- update jeap-crypto from 10.11.0 to 10.12.0
+- update jeap-spring-boot-vault-starter from 24.11.0 to 24.12.0
 
 ## [17.10.0] - 2026-08-11
 
