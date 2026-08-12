@@ -60,19 +60,9 @@
     </modules>
 
     <properties>
-        <avro-serializer.version>8.3.1</avro-serializer.version>
-        <avro.version>1.12.1</avro.version>
         <jeap-crypto.version>10.12.0</jeap-crypto.version>
         <jeap-spring-boot-roles-anywhere-starter.version>3.23.0</jeap-spring-boot-roles-anywhere-starter.version>
-        <maven.api.version>3.9.16</maven.api.version>
         <maven.plugin.version>3.15.2</maven.plugin.version>
-        <aws-msk-iam-auth.version>2.3.7</aws-msk-iam-auth.version>
-        <schema-registry-serde.version>1.1.27</schema-registry-serde.version>
-        <org.eclipse.jgit.version>7.7.1.202607240634-r</org.eclipse.jgit.version>
-        <file-management.version>3.2.0</file-management.version>
-        <maven-invoker.version>3.3.0</maven-invoker.version>
-        <maven-plugin-testing-harness.version>3.5.1</maven-plugin-testing-harness.version>
-        <wiremock-spring-boot.version>4.2.2</wiremock-spring-boot.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
     </properties>
 
@@ -155,21 +145,6 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro</artifactId>
-                <version>${avro.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro-compiler</artifactId>
-                <version>${avro.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.confluent</groupId>
-                <artifactId>kafka-avro-serializer</artifactId>
-                <version>${avro-serializer.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>jeap-messaging-infrastructure-kafka-test</artifactId>
                 <version>${project.version}</version>
@@ -184,18 +159,6 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>jeap-messaging-contract-annotations</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wiremock.integrations</groupId>
-                <artifactId>wiremock-spring-boot-standalone</artifactId>
-                <version>${wiremock-spring-boot.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <!-- Pin to 4.0.3 due to CVE-2025-67030 -->
-            <dependency>
-                <groupId>org.codehaus.plexus</groupId>
-                <artifactId>plexus-utils</artifactId>
-                <version>4.0.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

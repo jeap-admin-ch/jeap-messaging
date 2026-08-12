@@ -18,7 +18,6 @@
         <dependency>
             <groupId>software.amazon.msk</groupId>
             <artifactId>aws-msk-iam-auth</artifactId>
-            <version>${aws-msk-iam-auth.version}</version>
             <exclusions>
                 <!-- URL connection client (JDK default, no dependencies) is added as dependency -->
                 <exclusion>
@@ -82,7 +81,6 @@
         <dependency>
             <groupId>org.junit-pioneer</groupId>
             <artifactId>junit-pioneer</artifactId>
-            <version>2.3.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
