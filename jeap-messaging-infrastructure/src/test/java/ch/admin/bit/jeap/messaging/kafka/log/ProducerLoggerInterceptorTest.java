@@ -1,11 +1,9 @@
 package ch.admin.bit.jeap.messaging.kafka.log;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,11 +23,6 @@ import static org.mockito.Mockito.doReturn;
 @SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
 class ProducerLoggerInterceptorTest {
-
-    @BeforeAll
-    static void installAvroClassWhitelist() {
-        AvroClassSecurity.installDefaultIfMissing();
-    }
 
     @Mock
     private ProducerRecord<Object, Object> producerRecord;

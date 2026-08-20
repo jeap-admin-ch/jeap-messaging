@@ -1,9 +1,7 @@
 package ch.admin.bit.jeap.messaging.kafka.log;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,11 +15,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MessageLoggerTest {
-
-    @BeforeAll
-    static void installAvroClassWhitelist() {
-        AvroClassSecurity.installDefaultIfMissing();
-    }
 
     @Mock
     private JsonGenerator jsonGenerator;

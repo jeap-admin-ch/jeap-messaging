@@ -1,17 +1,10 @@
 package ch.admin.bit.jeap.messaging.idempotence.processing.idempotentprocessing;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class IdempotentProcessingIdentityTest {
-
-    @BeforeAll
-    static void installAvroClassWhitelist() {
-        AvroClassSecurity.installDefaultIfMissing();
-    }
 
     @Test
     void from_commandWithoutVersion_contextIsSetWithoutVersion(){
