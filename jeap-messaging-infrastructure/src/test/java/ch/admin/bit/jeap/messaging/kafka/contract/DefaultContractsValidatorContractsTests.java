@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.messaging.kafka.contract;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType;
 import ch.admin.bit.jeap.messaging.model.MessageType;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,11 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DefaultContractsValidatorContractsTests {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     private static final String TEST_APP_NAME = "test-app";
     private static final String TEST_APP_PRODUCED_TYPE = "Produced";

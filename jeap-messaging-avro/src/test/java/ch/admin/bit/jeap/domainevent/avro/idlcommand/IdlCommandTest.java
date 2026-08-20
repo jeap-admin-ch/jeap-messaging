@@ -1,10 +1,12 @@
 package ch.admin.bit.jeap.domainevent.avro.idlcommand;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.command.Command;
 import ch.admin.bit.jeap.domainevent.avro.command.idl.IdlTestCommand;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageUser;
 import ch.admin.bit.jeap.messaging.avro.AvroSerializationHelper;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,14 +15,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class IdlCommandTest {
 
-    private static final AvroMessageUser USER = AvroMessageUser.newBuilder()
-            .setFamilyName("Muster")
-            .setGivenName("Hans")
-            .setId("some-id-111")
-            .setBusinessPartnerName("Restaurant Sternen")
-            .setBusinessPartnerId("some-bpid-234235")
-            .setPropertiesMap(Map.of("key-1", "value-1", "key-2", "value-2"))
-            .build();
+    private static AvroMessageUser defaultUser;
+
+    @BeforeAll
+    static void installAvroClassWhitelistAndCreateUser() {
+        // The whitelist has to be installed before the first Avro type is built
+        AvroClassSecurity.installDefaultIfMissing();
+        defaultUser = AvroMessageUser.newBuilder()
+                .setFamilyName("Muster")
+                .setGivenName("Hans")
+                .setId("some-id-111")
+                .setBusinessPartnerName("Restaurant Sternen")
+                .setBusinessPartnerId("some-bpid-234235")
+                .setPropertiesMap(Map.of("key-1", "value-1", "key-2", "value-2"))
+                .build();
+    }
 
     @Test
     void create() {
@@ -38,7 +47,7 @@ class IdlCommandTest {
     void builder() {
         IdlTestCommand target = IdlCommandBuilder.create()
                 .idempotenceId("ID-123")
-                .user(USER)
+                .user(defaultUser)
                 .build();
         assertNotNull(target);
         assertNotNull(target.getIdentity());
@@ -58,7 +67,7 @@ class IdlCommandTest {
         assertEquals("customId", target.getReferences().getOtherReference().getCustomId());
         assertTrue(target.getOptionalUser().isPresent());
         MessageUser userFromEvent = target.getOptionalUser().get();
-        assertEquals(USER, userFromEvent);
+        assertEquals(defaultUser, userFromEvent);
     }
 
     @Test

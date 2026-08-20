@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.kafka.serde.confluent;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.kafka.examples.Payment;
 import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageEncryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroDeserializer;
@@ -35,6 +37,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SuppressWarnings("resource")
 class EncryptionIntegrationTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
     private static final String TOPIC = "topic";
     private String bootstrapServer;
 

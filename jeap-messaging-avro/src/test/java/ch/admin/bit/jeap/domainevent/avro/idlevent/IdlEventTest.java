@@ -1,10 +1,12 @@
 package ch.admin.bit.jeap.domainevent.avro.idlevent;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventUser;
 import ch.admin.bit.jeap.domainevent.avro.event.idl.IdlTestEvent;
 import ch.admin.bit.jeap.messaging.avro.AvroSerializationHelper;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,14 +15,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class IdlEventTest {
 
-    private static final AvroDomainEventUser USER = AvroDomainEventUser.newBuilder()
-            .setFamilyName("Muster")
-            .setGivenName("Hans")
-            .setId("some-id-111")
-            .setBusinessPartnerName("Restaurant Sternen")
-            .setBusinessPartnerId("some-bpid-234235")
-            .setPropertiesMap(Map.of("key-1", "value-1", "key-2", "value-2"))
-            .build();
+    private static AvroDomainEventUser defaultUser;
+
+    @BeforeAll
+    static void installAvroClassWhitelistAndCreateUser() {
+        // The whitelist has to be installed before the first Avro type is built
+        AvroClassSecurity.installDefaultIfMissing();
+        defaultUser = AvroDomainEventUser.newBuilder()
+                .setFamilyName("Muster")
+                .setGivenName("Hans")
+                .setId("some-id-111")
+                .setBusinessPartnerName("Restaurant Sternen")
+                .setBusinessPartnerId("some-bpid-234235")
+                .setPropertiesMap(Map.of("key-1", "value-1", "key-2", "value-2"))
+                .build();
+    }
 
     @Test
     void create() {
@@ -38,7 +47,7 @@ class IdlEventTest {
     void builder() {
         IdlTestEvent target = IdlEventBuilder.create()
                 .idempotenceId("ID-123")
-                .user(USER)
+                .user(defaultUser)
                 .build();
         assertNotNull(target);
         assertNotNull(target.getIdentity());
@@ -58,7 +67,7 @@ class IdlEventTest {
         assertEquals("customId", target.getReferences().getOtherReference().getCustomId());
         assertTrue(target.getOptionalUser().isPresent());
         MessageUser userFromEvent = target.getOptionalUser().get();
-        assertEquals(USER, userFromEvent);
+        assertEquals(defaultUser, userFromEvent);
     }
 
     @Test
@@ -90,7 +99,7 @@ class IdlEventTest {
     void serializationTest() throws Exception {
         IdlTestEvent target = IdlEventBuilder.create()
                 .idempotenceId("idempotenceId")
-                .user(USER)
+                .user(defaultUser)
                 .build();
         byte[] serialized = AvroSerializationHelper.serialize(target);
         IdlTestEvent result = AvroSerializationHelper.deserialize(serialized, IdlTestEvent.class);
@@ -110,12 +119,12 @@ class IdlEventTest {
 
     @Test
     void serializationUserWithoutExplicitFieldsTest() throws Exception {
-        AvroDomainEventUser USER = AvroDomainEventUser.newBuilder()
+        AvroDomainEventUser user = AvroDomainEventUser.newBuilder()
                 .setPropertiesMap(Map.of("I.am.a.key", "value"))
                 .build();
         IdlTestEvent target = IdlEventBuilder.create()
                 .idempotenceId("idempotenceId")
-                .user(USER)
+                .user(user)
                 .build();
         byte[] serialized = AvroSerializationHelper.serialize(target);
         IdlTestEvent result = AvroSerializationHelper.deserialize(serialized, IdlTestEvent.class);
@@ -124,14 +133,14 @@ class IdlEventTest {
 
     @Test
     void serializationUserOnlyExplicitFieldsTest() throws Exception {
-        AvroDomainEventUser USER = AvroDomainEventUser.newBuilder()
+        AvroDomainEventUser user = AvroDomainEventUser.newBuilder()
                 .setFamilyName("Muster")
                 .setGivenName("Hans")
                 .setId("some-id-111")
                 .build();
         IdlTestEvent target = IdlEventBuilder.create()
                 .idempotenceId("idempotenceId")
-                .user(USER)
+                .user(user)
                 .build();
         byte[] serialized = AvroSerializationHelper.serialize(target);
         IdlTestEvent result = AvroSerializationHelper.deserialize(serialized, IdlTestEvent.class);

@@ -1,5 +1,6 @@
 package ch.admin.bit.jeap.messaging.avro.errorevent;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType;
@@ -9,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.apache.kafka.common.record.TimestampType;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -19,11 +21,19 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MessageProcessingFailedEventBuilderTest {
+
     private final static ConsumerRecord<?, ?> originalMessage = new ConsumerRecord<>("Topic", 1, 2, new byte[]{0, 1}, new byte[]{1, 1});
-    private final static ConsumerRecord<byte[], Message> originalJeapMessage =
-            new ConsumerRecord<>("Topic", 1, 2, new byte[]{0, 1}, createTestMessage());
-    private final static ConsumerRecord<byte[], Message> originalJeapMessageWithPreservedHeader =
-            new ConsumerRecord<>("Topic", 1, 2L, 0L, TimestampType.CREATE_TIME, 0, 0, new byte[]{0, 1}, createTestMessage(), createHeaders(), Optional.empty());
+    private static ConsumerRecord<byte[], Message> originalJeapMessage;
+    private static ConsumerRecord<byte[], Message> originalJeapMessageWithPreservedHeader;
+
+    @BeforeAll
+    static void installAvroClassWhitelistAndCreateMessages() {
+        // The whitelist has to be installed before the first Avro type is built
+        AvroClassSecurity.installDefaultIfMissing();
+        originalJeapMessage = new ConsumerRecord<>("Topic", 1, 2, new byte[]{0, 1}, createTestMessage());
+        originalJeapMessageWithPreservedHeader = new ConsumerRecord<>("Topic", 1, 2L, 0L, TimestampType.CREATE_TIME,
+                0, 0, new byte[]{0, 1}, createTestMessage(), createHeaders(), Optional.empty());
+    }
 
     private static Headers createHeaders() {
         RecordHeaders headers = new RecordHeaders();

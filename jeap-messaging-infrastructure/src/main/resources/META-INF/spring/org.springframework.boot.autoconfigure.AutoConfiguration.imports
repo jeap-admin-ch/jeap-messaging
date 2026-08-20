@@ -1,3 +1,4 @@
+ch.admin.bit.jeap.messaging.kafka.avro.AvroClassSecurityAutoConfiguration
 ch.admin.bit.jeap.messaging.kafka.properties.KafkaPropertiesConfiguration
 ch.admin.bit.jeap.messaging.kafka.tracing.KafkaTracingConfiguration
 ch.admin.bit.jeap.messaging.kafka.contract.ContractConfiguration

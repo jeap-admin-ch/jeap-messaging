@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.domainevent.avro.noreferencesevent;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
 import ch.admin.bit.jeap.domainevent.avro.event.noreferencesevent.NoReferencesEvent;
 import ch.admin.bit.jeap.messaging.avro.AvroSerializationHelper;
@@ -8,6 +10,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NoReferencesEventTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     @Test
     void create() {

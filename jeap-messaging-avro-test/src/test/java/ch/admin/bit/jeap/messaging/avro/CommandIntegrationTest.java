@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.messaging.avro;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 
 import ch.admin.bit.jeap.command.avro.AvroCommand;
 import ch.admin.bit.jeap.command.avro.AvroCommandBuilder;
@@ -11,6 +13,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommandIntegrationTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     @Test
     void testGeneratedEvent() {

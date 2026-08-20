@@ -91,9 +91,15 @@ during [schema evolution](message-evolution.md):
 public void consume(JmeSimpleTestV2Event event, Acknowledgment ack) { ...}
 ```
 
+## Avro class whitelist
+
+The classes Avro trusts to be referenced from a schema are configured under `jeap.messaging.avro.*`,
+see [Avro class whitelist](avro-class-security.md).
+
 ## Related
 
 - [Getting started](getting-started.md)
 - [Kafka topics & client configuration](kafka-topics-and-configuration.md)
 - [Health indicators](health-indicators.md)
 - [Message contracts](message-contracts.md)
+- [Avro class whitelist](avro-class-security.md)

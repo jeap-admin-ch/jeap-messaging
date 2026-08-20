@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.messaging.kafka.errorhandling;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.avro.SerializedMessageHolder;
@@ -26,6 +28,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ErrorServiceSenderNoContentTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
     @Mock
     private KafkaTemplate<AvroMessageKey, AvroMessage> kafkaTemplate;
     @Mock

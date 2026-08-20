@@ -27,7 +27,7 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>17.17.0-SNAPSHOT</version>
+    <version>18.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>

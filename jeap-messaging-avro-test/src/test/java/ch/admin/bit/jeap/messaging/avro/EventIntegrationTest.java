@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.messaging.avro;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEvent;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventBuilder;
 import ch.admin.bit.jeap.domainevent.avro.event.integration.idl.IdlTestIntegrationEvent;
@@ -10,6 +12,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EventIntegrationTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     @Test
     void testGeneratedEvent() {

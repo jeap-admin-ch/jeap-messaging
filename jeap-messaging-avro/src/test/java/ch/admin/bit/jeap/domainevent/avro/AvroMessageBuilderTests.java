@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.domainevent.avro;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.command.avro.AvroCommand;
 import ch.admin.bit.jeap.command.avro.AvroCommandBuilder;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
@@ -19,6 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class AvroMessageBuilderTests {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
     @Test
     void create() {
         SimpleEvent simpleEvent = SimpleBuilder.create().idempotenceId("idempotenceId").build();

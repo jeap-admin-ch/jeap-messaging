@@ -1,10 +1,12 @@
 package ch.admin.bit.jeap.domainevent.avro.schema;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventUser;
 import ch.admin.bit.jeap.domainevent.avro.event.schema.AvroSchemaTestEvent;
 import ch.admin.bit.jeap.messaging.avro.AvroSerializationHelper;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,14 +15,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AvroSchemaTestEventTest {
 
-    private static final AvroDomainEventUser USER = AvroDomainEventUser.newBuilder()
-            .setFamilyName("Muster")
-            .setGivenName("Hans")
-            .setId("some-id-111")
-            .setBusinessPartnerName("Restaurant Sternen")
-            .setBusinessPartnerId("some-bpid-234235")
-            .setPropertiesMap(Map.of("key-1", "value-1", "key-2", "value-2"))
-            .build();
+    private static AvroDomainEventUser defaultUser;
+
+    @BeforeAll
+    static void installAvroClassWhitelistAndCreateUser() {
+        // The whitelist has to be installed before the first Avro type is built
+        AvroClassSecurity.installDefaultIfMissing();
+        defaultUser = AvroDomainEventUser.newBuilder()
+                .setFamilyName("Muster")
+                .setGivenName("Hans")
+                .setId("some-id-111")
+                .setBusinessPartnerName("Restaurant Sternen")
+                .setBusinessPartnerId("some-bpid-234235")
+                .setPropertiesMap(Map.of("key-1", "value-1", "key-2", "value-2"))
+                .build();
+    }
 
     @Test
     void create() {
@@ -38,7 +47,7 @@ class AvroSchemaTestEventTest {
     void builder() {
         AvroSchemaTestEvent target = AvroSchemaTestEventBuilder.create()
                 .idempotenceId("ID-123")
-                .user(USER)
+                .user(defaultUser)
                 .build();
         assertNotNull(target);
         assertNotNull(target.getIdentity());
@@ -56,7 +65,7 @@ class AvroSchemaTestEventTest {
         assertEquals("testId", target.getReferences().getReference1().getTestId());
         assertTrue(target.getOptionalUser().isPresent());
         MessageUser userFromEvent = target.getOptionalUser().get();
-        assertEquals(USER, userFromEvent);
+        assertEquals(defaultUser, userFromEvent);
     }
 
     @Test
@@ -71,7 +80,7 @@ class AvroSchemaTestEventTest {
     void serializationTest() throws Exception {
         AvroSchemaTestEvent target = AvroSchemaTestEventBuilder.create()
                 .idempotenceId("idempotenceId")
-                .user(USER)
+                .user(defaultUser)
                 .build();
         byte[] serialized = AvroSerializationHelper.serialize(target);
         AvroSchemaTestEvent result = AvroSerializationHelper.deserialize(serialized, AvroSchemaTestEvent.class);

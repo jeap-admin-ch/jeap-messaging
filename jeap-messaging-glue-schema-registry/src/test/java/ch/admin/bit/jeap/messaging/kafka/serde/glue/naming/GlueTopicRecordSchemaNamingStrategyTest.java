@@ -1,5 +1,7 @@
 package ch.admin.bit.jeap.messaging.kafka.serde.glue.naming;
 
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.messaging.test.glue.avro.TestEmptyMessageKey;
 import org.apache.avro.generic.GenericRecord;
 import org.junit.jupiter.api.Test;
@@ -7,6 +9,11 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GlueTopicRecordSchemaNamingStrategyTest {
+
+    @BeforeAll
+    static void installAvroClassWhitelist() {
+        AvroClassSecurity.installDefaultIfMissing();
+    }
 
     private final GlueTopicRecordSchemaNamingStrategy strategy = new GlueTopicRecordSchemaNamingStrategy();
 

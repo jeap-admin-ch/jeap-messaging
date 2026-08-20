@@ -28,6 +28,7 @@ Start with [Getting started](docs/getting-started.md), then follow the links bel
 | Message types (events & commands)                       | [docs/message-types.md](docs/message-types.md)                                   |
 | Defining messages in Avro                               | [docs/defining-messages.md](docs/defining-messages.md)                           |
 | Avro Maven plugin                                       | [docs/avro-maven-plugin.md](docs/avro-maven-plugin.md)                           |
+| Avro class whitelist                                    | [docs/avro-class-security.md](docs/avro-class-security.md)                       |
 | Schema evolution                                        | [docs/message-evolution.md](docs/message-evolution.md)                           |
 | Message Type Registry                                   | [docs/message-type-registry.md](docs/message-type-registry.md)                   |
 | Publishing messages                                     | [docs/publishing-messages.md](docs/publishing-messages.md)                       |
