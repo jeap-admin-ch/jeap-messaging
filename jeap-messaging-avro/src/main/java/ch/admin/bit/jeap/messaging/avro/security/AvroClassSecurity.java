@@ -208,10 +208,18 @@ public final class AvroClassSecurity {
 
     /**
      * Restores Avro's own default whitelist and forgets the installed one, so that {@link #install(Collection,
-     * Collection)} can install a different whitelist again.
+     * Collection)} can install a different whitelist again. <b>Intended for tests only.</b>
      * <p>
-     * <b>Intended for tests only.</b> Resetting does not undo anything: Avro keeps the classes it already resolved
-     * in its {@code SpecificData} cache and does not validate them again.
+     * This resets the <i>predicate</i>, not what Avro has already done with it. A test that asks the predicate
+     * directly - {@code ClassSecurityValidator.getGlobal().isTrusted(clazz)} - sees the new whitelist immediately,
+     * because nothing is cached on that path. A test that lets Avro <i>resolve</i> a class does not: Avro validates a
+     * class the first time {@code SpecificData} resolves it from a schema and caches the result, and the shared
+     * {@link org.apache.avro.specific.SpecificData#get()} instance keeps that cache for the lifetime of the JVM.
+     * <p>
+     * A test that has to observe a class actually being <b>rejected</b> therefore needs a fresh
+     * {@code new SpecificData()} as well, otherwise an entry another test left in the shared cache makes the
+     * assertion pass for the wrong reason. Widening is unaffected: a class that was resolved under a narrower
+     * whitelist stays resolved.
      */
     public static synchronized void reset() {
         ClassSecurityValidator.setGlobal(ClassSecurityValidator.DEFAULT);
