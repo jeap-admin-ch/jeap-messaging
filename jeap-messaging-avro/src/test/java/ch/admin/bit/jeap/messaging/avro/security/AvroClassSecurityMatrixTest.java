@@ -70,7 +70,7 @@ class AvroClassSecurityMatrixTest {
         }
 
         @Test
-        void nonAvroClassesAreNotTrusted_noEvenInsideTheDefaultPackage() {
+        void nonAvroClassesAreNotTrusted_notEvenInsideTheDefaultPackage() {
             assertFalse(isTrusted(NotAnAvroType.class), "non-Avro inside ch.admin");
             assertFalse(isTrusted(ExternalPojo.class), "non-Avro outside ch.admin");
         }

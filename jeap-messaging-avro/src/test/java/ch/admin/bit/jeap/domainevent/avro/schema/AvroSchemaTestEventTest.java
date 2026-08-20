@@ -1,10 +1,10 @@
 package ch.admin.bit.jeap.domainevent.avro.schema;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventUser;
 import ch.admin.bit.jeap.domainevent.avro.event.schema.AvroSchemaTestEvent;
 import ch.admin.bit.jeap.messaging.avro.AvroSerializationHelper;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

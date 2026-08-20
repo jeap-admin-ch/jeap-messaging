@@ -1,15 +1,15 @@
 package ch.admin.bit.jeap.domainevent.avro;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
-import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.command.avro.AvroCommand;
 import ch.admin.bit.jeap.command.avro.AvroCommandBuilder;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
 import ch.admin.bit.jeap.messaging.avro.*;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.model.MessageReferences;
 import lombok.Data;
 import lombok.Getter;
 import org.apache.avro.Schema;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;

@@ -1,8 +1,7 @@
 package ch.admin.bit.jeap.kafka.serde.confluent;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
-import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.kafka.examples.Payment;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.kafka.legacydecryption.LegacyMessageEncryptor;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.CustomKafkaAvroDeserializer;
 import ch.admin.bit.jeap.messaging.kafka.serde.confluent.config.CustomKafkaAvroDeserializerConfig;
@@ -20,6 +19,7 @@ import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;

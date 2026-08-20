@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.kafka.signature.benchmark;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventPublisher;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventType;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureAuthenticityService;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureService;
@@ -33,6 +34,11 @@ import static java.util.stream.Collectors.joining;
  * Utility class providing methods for signature benchmarking.
  */
 class Benchmarks {
+
+    static {
+        // The benchmarks are driven by JMH, not by JUnit, so nothing else installs the Avro class whitelist
+        AvroClassSecurity.installDefaultIfMissing();
+    }
     private static final String TEST_SERVICE_NAME = "jme-messaging-receiverpublisher-service";
     private static final String CERT_PATH = "/perftest/perftest.crt";
     private static final String INTERMEDIATE_CA_PATH = "/perftest/intermediateCA.crt";
@@ -67,7 +73,7 @@ class Benchmarks {
         // Initialize containers and validators
         SubscriberValidationPropertiesContainer validationContainer = initializeValidationContainer(props);
         SubscriberCertificatesContainer certificatesContainer = initializeCertificatesContainer(props);
-        CertificateAndSignatureVerifier verifier = createVerifier(certificatesContainer);
+        CertificateAndSignatureVerifier verifier = createVerifier();
 
         return new DefaultSignatureAuthenticityService(validationContainer, verifier, certificatesContainer, Optional.empty());
     }
@@ -164,8 +170,7 @@ class Benchmarks {
         return container;
     }
 
-    private static CertificateAndSignatureVerifier createVerifier(
-            SubscriberCertificatesContainer certificatesContainer) {
+    private static CertificateAndSignatureVerifier createVerifier() {
         SignatureCertificateValidator certificateValidator = new SignatureCertificateValidator();
         SignatureVerifier signatureVerifier = new SignatureVerifier();
         SignatureSubscriberProperties props = new SignatureSubscriberProperties(true, null,

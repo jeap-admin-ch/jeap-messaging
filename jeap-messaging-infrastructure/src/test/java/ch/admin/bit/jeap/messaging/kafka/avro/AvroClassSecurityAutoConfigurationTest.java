@@ -116,9 +116,9 @@ class AvroClassSecurityAutoConfigurationTest {
     }
 
     @Test
-    void secondContextWithADifferentWhitelist_failsFastInsteadOfApplyingItPartially() {
+    void secondContextNarrowingTheWhitelist_failsFastInsteadOfApplyingItPartially() {
         contextRunner
-                .withPropertyValues("jeap.messaging.avro.trusted-packages=com.example.messaging")
+                .withPropertyValues("jeap.messaging.avro.trusted-packages=com.example.messaging,com.example.other")
                 .run(context -> assertThat(context).hasNotFailed());
 
         contextRunner
@@ -127,7 +127,7 @@ class AvroClassSecurityAutoConfigurationTest {
                         .hasFailed()
                         .getFailure()
                         .isInstanceOf(IllegalStateException.class)
-                        .hasMessageContaining("already installed")
+                        .hasMessageContaining("cannot be narrowed")
                         .hasMessageContaining("com.example.other"));
     }
 

@@ -3,8 +3,8 @@ package ch.admin.bit.jeap.messaging.avro.security;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.specific.SpecificFixed;
 import org.apache.avro.specific.SpecificRecord;
-import org.apache.avro.util.ClassSecurityValidator;
 import org.apache.avro.util.ClassSecurityValidator.ClassSecurityPredicate;
+import org.apache.avro.util.ClassSecurityValidator;
 
 import java.util.Collection;
 import java.util.List;
@@ -127,6 +127,7 @@ public final class AvroClassSecurity {
             || SpecificFixed.class.isAssignableFrom(clazz);
 
     private static TrustedNames installedPolicy;
+    private static boolean installedPolicyIsDefault;
 
     private AvroClassSecurity() {
     }
@@ -138,6 +139,7 @@ public final class AvroClassSecurity {
     public static synchronized void installDefaultIfMissing() {
         if (installedPolicy == null) {
             install(List.of(), List.of());
+            installedPolicyIsDefault = true;
         }
     }
 
@@ -160,7 +162,7 @@ public final class AvroClassSecurity {
      */
     public static synchronized void install(Collection<String> trustedPackages, Collection<String> trustedClasses) {
         Set<String> packagePrefixes = toPackagePrefixes(trustedPackages);
-        Set<String> classNames = toNonBlankSet(trustedClasses);
+        Set<String> classNames = toClassNames(trustedClasses);
 
         // The built-in packages only trust Avro generated types; jEAP's own package always, the wider default
         // package only as long as the service configures nothing itself
@@ -169,17 +171,23 @@ public final class AvroClassSecurity {
                 : List.of(JEAP_TRUSTED_PACKAGE));
 
         TrustedNames policy = new TrustedNames(packagePrefixes, classNames, builtInPackagePrefixes);
-        if (installedPolicy != null) {
-            if (installedPolicy.equals(policy)) {
-                return;
+        if (installedPolicy != null && !installedPolicy.equals(policy)) {
+            // Widening is harmless - nothing already resolved becomes untrusted - and replacing the whitelist that
+            // installDefaultIfMissing() put in place is what an application context does when it starts up. Only a
+            // whitelist that would take trust away is refused: Avro validates a class the first time it resolves it
+            // and caches the result, so the narrowing would apply to part of the application only.
+            if (!installedPolicyIsDefault && !policy.covers(installedPolicy)) {
+                throw new IllegalStateException(("The Avro class whitelist is already installed with the packages %s "
+                        + "and the classes %s and cannot be narrowed to the packages %s and the classes %s. Avro "
+                        + "validates a class only the first time it resolves it, so the narrowed whitelist would not "
+                        + "apply to the classes already in use. Configure '%s' / '%s' before the application context "
+                        + "starts.")
+                        .formatted(sorted(installedPolicy.packagePrefixes()), sorted(installedPolicy.classNames()),
+                                sorted(policy.packagePrefixes()), sorted(policy.classNames()),
+                                TRUSTED_PACKAGES_PROPERTY, TRUSTED_CLASSES_PROPERTY));
             }
-            throw new IllegalStateException(("The Avro class whitelist is already installed with the packages %s and "
-                    + "the classes %s and cannot be changed to the packages %s and the classes %s. Avro validates a "
-                    + "class only the first time it resolves it, so a whitelist installed later would not apply to "
-                    + "the classes already in use. Configure '%s' / '%s' before the application context starts.")
-                    .formatted(sorted(installedPolicy.packagePrefixes()), sorted(installedPolicy.classNames()),
-                            sorted(policy.packagePrefixes()), sorted(policy.classNames()),
-                            TRUSTED_PACKAGES_PROPERTY, TRUSTED_CLASSES_PROPERTY));
+        } else if (installedPolicy != null) {
+            return;
         }
 
         ClassSecurityPredicate predicate = new JeapTrustedClasses(
@@ -190,6 +198,7 @@ public final class AvroClassSecurity {
                 policy);
         ClassSecurityValidator.setGlobal(predicate);
         installedPolicy = policy;
+        installedPolicyIsDefault = false;
     }
 
     private static List<String> sorted(Set<String> values) {
@@ -207,6 +216,7 @@ public final class AvroClassSecurity {
     public static synchronized void reset() {
         ClassSecurityValidator.setGlobal(ClassSecurityValidator.DEFAULT);
         installedPolicy = null;
+        installedPolicyIsDefault = false;
     }
 
     private static Set<String> toPackagePrefixes(Collection<String> packages) {
@@ -222,6 +232,16 @@ public final class AvroClassSecurity {
         }
         // The trailing dot makes sure a package name is matched instead of an arbitrary prefix
         return packageName.endsWith(".") ? packageName : packageName + ".";
+    }
+
+    private static Set<String> toClassNames(Collection<String> classNames) {
+        Set<String> names = toNonBlankSet(classNames);
+        names.stream().filter(name -> name.contains("*")).findFirst().ifPresent(name -> {
+            throw new IllegalArgumentException(("Wildcards are not supported in trusted Avro classes: %s. A trusted "
+                    + "class is matched by its exact name; use '%s' to trust a whole package.")
+                    .formatted(name, TRUSTED_PACKAGES_PROPERTY));
+        });
+        return names;
     }
 
     private static Set<String> toNonBlankSet(Collection<String> values) {
@@ -255,6 +275,15 @@ public final class AvroClassSecurity {
 
         private static boolean startsWithAny(String className, Set<String> prefixes) {
             return prefixes.stream().anyMatch(className::startsWith);
+        }
+
+        /**
+         * Whether this whitelist trusts everything the other one trusts, i.e. re-installing it takes no trust away.
+         */
+        boolean covers(TrustedNames other) {
+            return packagePrefixes.containsAll(other.packagePrefixes())
+                   && classNames.containsAll(other.classNames())
+                   && builtInPackagePrefixes.containsAll(other.builtInPackagePrefixes());
         }
     }
 

@@ -1,11 +1,11 @@
 package ch.admin.bit.jeap.domainevent.avro.idlemptyreference;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
-import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
 import ch.admin.bit.jeap.domainevent.avro.event.idl.IdlTestEvent;
 import ch.admin.bit.jeap.domainevent.avro.event.idlemptyreferences.IdlTestEmptyReferencesEvent;
 import ch.admin.bit.jeap.messaging.avro.AvroSerializationHelper;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

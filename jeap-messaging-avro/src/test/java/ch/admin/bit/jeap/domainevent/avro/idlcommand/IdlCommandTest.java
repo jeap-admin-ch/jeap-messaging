@@ -1,10 +1,10 @@
 package ch.admin.bit.jeap.domainevent.avro.idlcommand;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.command.Command;
 import ch.admin.bit.jeap.domainevent.avro.command.idl.IdlTestCommand;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageUser;
 import ch.admin.bit.jeap.messaging.avro.AvroSerializationHelper;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.model.MessageUser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

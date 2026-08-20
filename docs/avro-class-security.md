@@ -1,6 +1,6 @@
 # Avro class whitelist
 
-Since 17.17.0 (Avro 1.12.2), Avro only resolves classes from a schema when they are **trusted**. jEAP
+Since 18.0.0 (Avro 1.12.2), Avro only resolves classes from a schema when they are **trusted**. jEAP
 Messaging installs a whitelist covering the jEAP and application message classes, so in the default
 setup there is nothing to configure.
 
@@ -76,8 +76,11 @@ jeap:
 
 > As soon as one of the two properties is set, the wide `ch.admin` default is **no longer applied** —
 > that is how a service narrows the whitelist. A service that configures packages of its own **and**
-> uses message types under `ch.admin` therefore has to list those as well, for example
-> `trusted-packages: [ch.admin, com.example.messaging]`.
+> uses message types under `ch.admin` therefore has to list those as well. List the concrete packages
+> its message types are generated into, for example
+> `trusted-packages: [ch.admin.bit.myservice.messaging, com.example.messaging]` — listing the bare
+> `ch.admin` namespace would trust *every* class under it, including non-Avro ones, and is therefore
+> wider than the built-in default it replaces.
 >
 > A configured package or class is trusted whatever the class is — Avro generated or not. That is what
 > makes the properties usable for the non-Avro types a schema references through `java-class` /
@@ -95,9 +98,13 @@ trusted:
 ```
 Forbidden com.example.legacy.SomeType! This class is not trusted to be referenced from an Avro schema.
 Add its package to 'jeap.messaging.avro.trusted-packages' or the class itself to
-'jeap.messaging.avro.trusted-classes'. Currently trusted are the packages [ch.admin., ch.admin.bit.jeap.],
-the classes [], the JDK types of AvroClassSecurity.TRUSTED_JDK_CLASSES and Avro's own defaults.
+'jeap.messaging.avro.trusted-classes'. Currently trusted are the packages [] and the classes [] (any class),
+the Avro generated types in [ch.admin., ch.admin.bit.jeap.], the JDK types of
+AvroClassSecurity.TRUSTED_JDK_CLASSES and Avro's own defaults.
 ```
+
+The first two lists are what the two properties add — empty here because nothing is configured — and the
+third names the built-in packages, where only Avro generated types are trusted.
 
 ## What is trusted, in one table
 

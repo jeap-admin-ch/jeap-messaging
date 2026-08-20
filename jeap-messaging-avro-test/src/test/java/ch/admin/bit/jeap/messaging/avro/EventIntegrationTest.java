@@ -1,12 +1,12 @@
 package ch.admin.bit.jeap.messaging.avro;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
-import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEvent;
 import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventBuilder;
 import ch.admin.bit.jeap.domainevent.avro.event.integration.idl.IdlTestIntegrationEvent;
 import ch.admin.bit.jeap.domainevent.avro.event.integration.idl.IdlTestIntegrationReference;
 import ch.admin.bit.jeap.domainevent.avro.event.integration.idl.IdlTestIntegrationReferences;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -86,6 +86,30 @@ class AvroClassSecurityTest {
     }
 
     @Test
+    void install_wildcardClass_throwsException() {
+        List<String> wildcard = List.of("com.example.messaging.*");
+
+        assertThrows(IllegalArgumentException.class, () -> AvroClassSecurity.install(List.of(), wildcard));
+    }
+
+    @Test
+    void install_widerWhitelistAfterFirstInstall_isApplied() {
+        AvroClassSecurity.install(List.of("com.example.messaging"), List.of());
+
+        assertDoesNotThrow(() -> AvroClassSecurity.install(
+                List.of("com.example.messaging", "com.example.other"), List.of()));
+        assertTrue(isTrusted(com.example.messaging.ExternalPojo.class), "the original entry stays trusted");
+    }
+
+    @Test
+    void install_afterInstallDefaultIfMissing_replacesTheProvisionalDefault() {
+        AvroClassSecurity.installDefaultIfMissing();
+
+        assertDoesNotThrow(() -> AvroClassSecurity.install(List.of("com.example.messaging"), List.of()));
+        assertTrue(isTrusted(com.example.messaging.ExternalPojo.class));
+    }
+
+    @Test
     void install_differentWhitelistAfterFirstInstall_throwsAndKeepsTheInstalledOne() {
         AvroClassSecurity.install(List.of("com.example.messaging"), List.of());
         List<String> other = List.of("com.example.other");

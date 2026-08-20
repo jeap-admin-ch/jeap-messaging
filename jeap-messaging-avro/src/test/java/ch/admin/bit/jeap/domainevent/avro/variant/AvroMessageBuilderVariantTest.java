@@ -1,9 +1,9 @@
 package ch.admin.bit.jeap.domainevent.avro.variant;
 
-import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
-import org.junit.jupiter.api.BeforeAll;
 import ch.admin.bit.jeap.domainevent.DomainEvent;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageBuilderException;
+import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
