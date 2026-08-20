@@ -124,25 +124,25 @@ class ErrorServiceSenderTest {
 
     @Test
     void sendToErrorTopic() {
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
         Exception exception = new Exception();
-        target.accept(record, exception);
+        target.accept(consumerRecord, exception);
         verify(kafkaTemplate, only()).send(eq("errorTopic"), keyCaptor.capture(), eventCaptor.capture());
 
         AvroDomainEvent event = eventCaptor.getValue();
-        MessageProcessingFailedMessageKey key = keyCaptor.getValue();
+        MessageProcessingFailedMessageKey capturedKey = keyCaptor.getValue();
 
-        assertEquals(event.getIdentity().getIdempotenceId(), key.getKey());
+        assertEquals(event.getIdentity().getIdempotenceId(), capturedKey.getKey());
     }
 
     @Test
     void sendToErrorTopic_preserveTemporality() {
         MessageHandlerExceptionInformationException messageHandlerExceptionInformationException = new MessageHandlerExceptionInformationException(MessageHandlerExceptionInformation.Temporality.TEMPORARY);
         ErrorSerializedMessageHolder errorSerializedMessageHolder = new ErrorSerializedMessageHolder(new byte[]{1, 2, 3}, messageHandlerExceptionInformationException);
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, errorSerializedMessageHolder);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, errorSerializedMessageHolder);
 
         Exception exception = new ListenerExecutionFailedException("gugu", messageHandlerExceptionInformationException);
-        target.accept(record, exception);
+        target.accept(consumerRecord, exception);
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
 
         MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
@@ -158,14 +158,14 @@ class ErrorServiceSenderTest {
         doReturn(domainEventIdentity).when(domainEvent).getIdentity();
         doReturn(causingeventId).when(domainEventIdentity).getId();
         doReturn(new byte[]{1, 1}).when(domainEvent).getSerializedMessage();
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, domainEvent);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, domainEvent);
         Exception exception = new Exception();
-        target.accept(record, exception);
+        target.accept(consumerRecord, exception);
         verify(kafkaTemplate, only()).send(eq("errorTopic"), keyCaptor.capture(), any());
 
-        MessageProcessingFailedMessageKey key = keyCaptor.getValue();
+        MessageProcessingFailedMessageKey capturedKey = keyCaptor.getValue();
 
-        assertEquals(causingeventId, key.getKey());
+        assertEquals(causingeventId, capturedKey.getKey());
     }
 
     @Test
@@ -175,44 +175,44 @@ class ErrorServiceSenderTest {
                 .errorCode("TEST")
                 .temporality(MessageHandlerExceptionInformation.Temporality.PERMANENT)
                 .build();
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
-        target.accept(record, eventHandleException);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        target.accept(consumerRecord, eventHandleException);
         verify(kafkaTemplate, only()).send(any(), any(),
                 ArgumentMatchers.argThat(new LambdaArgumentMatcher((p, r) -> p.getErrorDescription() == null, "Error Description must be null")));
     }
 
     @Test
     void accept_messageWithoutErrorCode_messageSentToErrorTopic() {
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
-        target.accept(record, new ListenerExecutionFailedException("message", new NoErrorCodeException(null, MessageHandlerExceptionInformation.Temporality.PERMANENT)));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        target.accept(consumerRecord, new ListenerExecutionFailedException("message", new NoErrorCodeException(null, MessageHandlerExceptionInformation.Temporality.PERMANENT)));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
     }
 
     @Test
     void accept_messageWithoutTemporality_messageSentToErrorTopic() {
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
-        target.accept(record, new ListenerExecutionFailedException("message", new NoErrorCodeException("errorCode", null)));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        target.accept(consumerRecord, new ListenerExecutionFailedException("message", new NoErrorCodeException("errorCode", null)));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
     }
 
     @Test
     void accept_messageWithoutErrorCodeAndTemporality_messageSentToErrorTopic() {
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
-        target.accept(record, new ListenerExecutionFailedException("message", new NoErrorCodeException(null, null)));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        target.accept(consumerRecord, new ListenerExecutionFailedException("message", new NoErrorCodeException(null, null)));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
     }
 
     @Test
     void accept_messageWithoutMessage_messageSentToErrorTopic() {
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
-        target.accept(record, new ListenerExecutionFailedException(null, new NoErrorCodeException("errorCode", MessageHandlerExceptionInformation.Temporality.PERMANENT)));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        target.accept(consumerRecord, new ListenerExecutionFailedException(null, new NoErrorCodeException("errorCode", MessageHandlerExceptionInformation.Temporality.PERMANENT)));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
     }
 
     @Test
     void accept_messageWithoutMessageAndCause_messageSentToErrorTopic() {
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
-        target.accept(record, new ListenerExecutionFailedException(null, null));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        target.accept(consumerRecord, new ListenerExecutionFailedException(null, null));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
     }
 
@@ -220,8 +220,8 @@ class ErrorServiceSenderTest {
     @MethodSource("checkMessageSource")
     void checkMessage(Exception exception, ArgumentMatcher<MessageProcessingFailedEvent> matcher) {
         ListenerExecutionFailedException listenerException = new ListenerExecutionFailedException("test", exception);
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, value);
-        target.accept(record, listenerException);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        target.accept(consumerRecord, listenerException);
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), ArgumentMatchers.argThat(matcher));
     }
 

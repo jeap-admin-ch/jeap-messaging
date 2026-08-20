@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MessageProcessingFailedEventBuilderTest {
 
-    private final static ConsumerRecord<?, ?> originalMessage = new ConsumerRecord<>("Topic", 1, 2, new byte[]{0, 1}, new byte[]{1, 1});
+    private static final ConsumerRecord<?, ?> originalMessage = new ConsumerRecord<>("Topic", 1, 2, new byte[]{0, 1}, new byte[]{1, 1});
     private static ConsumerRecord<byte[], Message> originalJeapMessage;
     private static ConsumerRecord<byte[], Message> originalJeapMessageWithPreservedHeader;
 
@@ -59,13 +59,13 @@ class MessageProcessingFailedEventBuilderTest {
         return event;
     }
 
-    private final static TestException eventHandleException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.UNKNOWN);
+    private static final TestException eventHandleException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.UNKNOWN);
 
     @Test
     void permanentExceptionReference() {
-        TestException eventHandleException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.PERMANENT);
+        TestException localException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.PERMANENT);
         MessageProcessingFailedEvent messageProcessingFailedEvent = MessageProcessingFailedEventBuilder.create()
-                .eventHandleException(eventHandleException)
+                .eventHandleException(localException)
                 .serviceName("service")
                 .systemName("system")
                 .originalMessage(originalMessage, null)
@@ -79,9 +79,9 @@ class MessageProcessingFailedEventBuilderTest {
 
     @Test
     void temporaryExceptionReference() {
-        TestException eventHandleException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.TEMPORARY);
+        TestException localException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.TEMPORARY);
         MessageProcessingFailedEvent messageProcessingFailedEvent = MessageProcessingFailedEventBuilder.create()
-                .eventHandleException(eventHandleException)
+                .eventHandleException(localException)
                 .serviceName("service")
                 .systemName("system")
                 .originalMessage(originalMessage, null)
@@ -94,9 +94,9 @@ class MessageProcessingFailedEventBuilderTest {
 
     @Test
     void description() {
-        TestException eventHandleException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.TEMPORARY, "desc");
+        TestException localException = new TestException("Test", "stack", "100", MessageHandlerExceptionInformation.Temporality.TEMPORARY, "desc");
         MessageProcessingFailedEvent messageProcessingFailedEvent = MessageProcessingFailedEventBuilder.create()
-                .eventHandleException(eventHandleException)
+                .eventHandleException(localException)
                 .serviceName("service")
                 .systemName("system")
                 .originalMessage(originalMessage, null)

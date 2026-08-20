@@ -161,6 +161,9 @@ class AvroMessageBuilderTests {
     }
 
     @Data
+    // MESSAGE_TYPE_VERSION$ mimics the constant the Avro compiler generates, see record.vm - MessageVersionAccessor
+    // looks it up reflectively by that exact name, so it cannot follow the constant naming convention
+    @SuppressWarnings("java:S115")
     private static class SimpleEventWithGeneratedVersion implements AvroDomainEvent {
         public static final String MESSAGE_TYPE_VERSION$ = "4.5.6";
 
@@ -199,6 +202,9 @@ class AvroMessageBuilderTests {
     }
 
     @Data
+    // MESSAGE_TYPE_VERSION$ mimics the constant the Avro compiler generates, see record.vm - MessageVersionAccessor
+    // looks it up reflectively by that exact name, so it cannot follow the constant naming convention
+    @SuppressWarnings("java:S115")
     private static class SimpleCommandWithGeneratedVersion implements AvroCommand {
         public static final String MESSAGE_TYPE_VERSION$ = "7.8.9";
 

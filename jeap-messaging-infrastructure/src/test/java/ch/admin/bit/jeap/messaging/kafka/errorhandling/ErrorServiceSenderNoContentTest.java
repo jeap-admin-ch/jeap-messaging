@@ -62,16 +62,16 @@ class ErrorServiceSenderNoContentTest {
     @Test
     void accept_messageWithoutPayload_messageSentToErrorTopic() {
         when(key.getSerializedMessage()).thenReturn(new byte[]{0, 1});
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, key, null);
-        target.accept(record, new ListenerExecutionFailedException(null, null));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, null);
+        target.accept(consumerRecord, new ListenerExecutionFailedException(null, null));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
     }
 
     @Test
     void accept_messageWithoutKey_messageSentToErrorTopic() {
         when(value.getSerializedMessage()).thenReturn(new byte[]{0, 1});
-        ConsumerRecord<?, ?> record = new ConsumerRecord<>("topic", 1, 3, null, value);
-        target.accept(record, new ListenerExecutionFailedException(null, null));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, null, value);
+        target.accept(consumerRecord, new ListenerExecutionFailedException(null, null));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
     }
 }

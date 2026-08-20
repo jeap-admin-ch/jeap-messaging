@@ -32,7 +32,7 @@ class ProducerLoggerInterceptorTest {
     }
 
     @Mock
-    private ProducerRecord<Object, Object> record;
+    private ProducerRecord<Object, Object> consumerRecord;
 
     private PrintStream originalSysOut;
     private ByteArrayOutputStream logCapture;
@@ -55,12 +55,12 @@ class ProducerLoggerInterceptorTest {
     void onSend_whenSendingMessage_shouldLogMessage() {
         ProducerLoggerInterceptor interceptor = new ProducerLoggerInterceptor();
         TestEvent message = new TestEvent();
-        doReturn(message).when(record).value();
-        doReturn("topic").when(record).topic();
+        doReturn(message).when(consumerRecord).value();
+        doReturn("topic").when(consumerRecord).topic();
         interceptor.configure(Map.of(
                 ProducerLoggerInterceptor.CLUSTER_NAME_CONFIG, "test"));
 
-        interceptor.onSend(record);
+        interceptor.onSend(consumerRecord);
 
         originalSysOut.println(logCapture.toString());
         assertThat(logCapture.toString())
@@ -74,12 +74,12 @@ class ProducerLoggerInterceptorTest {
         logger.setLevel(Level.DEBUG);
 
         ProducerLoggerInterceptor interceptor = new ProducerLoggerInterceptor();
-        doReturn(new ReactionIdentifiedEvent()).when(record).value();
-        doReturn("topic").when(record).topic();
+        doReturn(new ReactionIdentifiedEvent()).when(consumerRecord).value();
+        doReturn("topic").when(consumerRecord).topic();
         interceptor.configure(Map.of(
                 ProducerLoggerInterceptor.CLUSTER_NAME_CONFIG, "test"));
 
-        interceptor.onSend(record);
+        interceptor.onSend(consumerRecord);
 
         originalSysOut.println(logCapture.toString());
         assertThat(logCapture.toString())
@@ -89,12 +89,12 @@ class ProducerLoggerInterceptorTest {
     @Test
     void onSend_whenSendingNonMessage_shouldLogType() {
         ProducerLoggerInterceptor interceptor = new ProducerLoggerInterceptor();
-        doReturn("some string").when(record).value();
-        doReturn("topic").when(record).topic();
+        doReturn("some string").when(consumerRecord).value();
+        doReturn("topic").when(consumerRecord).topic();
         interceptor.configure(Map.of(
                 ProducerLoggerInterceptor.CLUSTER_NAME_CONFIG, "test"));
 
-        interceptor.onSend(record);
+        interceptor.onSend(consumerRecord);
 
         originalSysOut.println(logCapture.toString());
         assertThat(logCapture.toString())
