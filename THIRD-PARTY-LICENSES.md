@@ -59,7 +59,7 @@ Apache License Version 2.0
  * json-schema-validator - [com.github.java-json-tools:json-schema-validator](https://github.com/java-json-tools/json-schema-validator)
  * msg-simple - [com.github.java-json-tools:msg-simple](https://github.com/java-json-tools/msg-simple)
  * uri-template - [com.github.java-json-tools:uri-template](https://github.com/java-json-tools/uri-template)
- * proto-google-common-protos - [com.google.api.grpc:proto-google-common-protos](https://github.com/googleapis/sdk-platform-java)
+ * proto-google-common-protos - [com.google.api.grpc:proto-google-common-protos](https://github.com/googleapis/java-iam/proto-google-common-protos)
  * FindBugs-jsr305 - [com.google.code.findbugs:jsr305](http://findbugs.sourceforge.net/)
  * Gson - [com.google.code.gson:gson](https://github.com/google/gson)
  * error-prone annotations - [com.google.errorprone:error_prone_annotations](https://errorprone.info/error_prone_annotations)
@@ -101,15 +101,15 @@ Apache License Version 2.0
  * Log Redactor - [io.confluent:logredactor](https://github.com/confluentinc/logredactor)
  * Log Redactor Metrics - [io.confluent:logredactor-metrics](https://github.com/confluentinc/logredactor)
  * context-propagation - [io.micrometer:context-propagation](https://github.com/micrometer-metrics/context-propagation)
- * micrometer-commons - [io.micrometer:micrometer-commons](https://github.com/micrometer-metrics/micrometer)
- * micrometer-core - [io.micrometer:micrometer-core](https://github.com/micrometer-metrics/micrometer)
- * micrometer-jakarta9 - [io.micrometer:micrometer-jakarta9](https://github.com/micrometer-metrics/micrometer)
- * micrometer-observation - [io.micrometer:micrometer-observation](https://github.com/micrometer-metrics/micrometer)
- * micrometer-observation-test - [io.micrometer:micrometer-observation-test](https://github.com/micrometer-metrics/micrometer)
- * micrometer-registry-otlp - [io.micrometer:micrometer-registry-otlp](https://github.com/micrometer-metrics/micrometer)
- * micrometer-registry-prometheus - [io.micrometer:micrometer-registry-prometheus](https://github.com/micrometer-metrics/micrometer)
- * micrometer-tracing - [io.micrometer:micrometer-tracing](https://github.com/micrometer-metrics/tracing)
- * micrometer-tracing-bridge-otel - [io.micrometer:micrometer-tracing-bridge-otel](https://github.com/micrometer-metrics/tracing)
+ * micrometer-commons - [io.micrometer:micrometer-commons](https://github.com/micrometer-metrics/micrometer-commercial)
+ * micrometer-core - [io.micrometer:micrometer-core](https://github.com/micrometer-metrics/micrometer-commercial)
+ * micrometer-jakarta9 - [io.micrometer:micrometer-jakarta9](https://github.com/micrometer-metrics/micrometer-commercial)
+ * micrometer-observation - [io.micrometer:micrometer-observation](https://github.com/micrometer-metrics/micrometer-commercial)
+ * micrometer-observation-test - [io.micrometer:micrometer-observation-test](https://github.com/micrometer-metrics/micrometer-commercial)
+ * micrometer-registry-otlp - [io.micrometer:micrometer-registry-otlp](https://github.com/micrometer-metrics/micrometer-commercial)
+ * micrometer-registry-prometheus - [io.micrometer:micrometer-registry-prometheus](https://github.com/micrometer-metrics/micrometer-commercial)
+ * micrometer-tracing - [io.micrometer:micrometer-tracing](https://github.com/micrometer-metrics/tracing-commercial)
+ * micrometer-tracing-bridge-otel - [io.micrometer:micrometer-tracing-bridge-otel](https://github.com/micrometer-metrics/tracing-commercial)
  * OpenTelemetry Java - [io.opentelemetry:opentelemetry-api](https://github.com/open-telemetry/opentelemetry-java)
  * OpenTelemetry Java - [io.opentelemetry:opentelemetry-common](https://github.com/open-telemetry/opentelemetry-java)
  * OpenTelemetry Java - [io.opentelemetry:opentelemetry-context](https://github.com/open-telemetry/opentelemetry-java)
@@ -157,7 +157,7 @@ Apache License Version 2.0
  * Apache Commons Text - [org.apache.commons:commons-text](https://commons.apache.org/proper/commons-text)
  * Apache HttpClient - [org.apache.httpcomponents:httpclient](http://hc.apache.org/httpcomponents-client)
  * Apache HttpCore - [org.apache.httpcomponents:httpcore](http://hc.apache.org/httpcomponents-core-ga)
- * Apache HttpClient - [org.apache.httpcomponents.client5:httpclient5](https://hc.apache.org/httpcomponents-client-5.5.x/5.6.1/httpclient5/)
+ * Apache HttpClient - [org.apache.httpcomponents.client5:httpclient5](https://hc.apache.org/httpcomponents-client-5.6.x/5.6.4/httpclient5/)
  * Apache HttpComponents Core HTTP/1.1 - [org.apache.httpcomponents.core5:httpcore5](https://hc.apache.org/httpcomponents-core-5.4.x/5.4.3/httpcore5/)
  * Apache HttpComponents Core HTTP/2 - [org.apache.httpcomponents.core5:httpcore5-h2](https://hc.apache.org/httpcomponents-core-5.4.x/5.4.3/httpcore5-h2/)
  * Apache Kafka - [org.apache.kafka:kafka-clients](https://kafka.apache.org)
@@ -235,7 +235,7 @@ Apache License Version 2.0
  * Kotlin Stdlib Jdk7 - [org.jetbrains.kotlin:kotlin-stdlib-jdk7](https://kotlinlang.org/)
  * Kotlin Stdlib Jdk8 - [org.jetbrains.kotlin:kotlin-stdlib-jdk8](https://kotlinlang.org/)
  * kotlinx-serialization-core - [org.jetbrains.kotlinx:kotlinx-serialization-core-jvm](https://github.com/Kotlin/kotlinx.serialization)
- * JSpecify annotations - [org.jspecify:jspecify](http://jspecify.org/)
+ * JSpecify annotations - [org.jspecify:jspecify](https://jspecify.dev/)
  * Objenesis - [org.objenesis:objenesis](http://objenesis.org/objenesis)
  * org.opentest4j:opentest4j - [org.opentest4j:opentest4j](https://github.com/ota4j-team/opentest4j)
  * Reflections - [org.reflections:reflections](http://github.com/ronmamo/reflections)
@@ -443,11 +443,6 @@ GNU General Public License, version 2 (GPL2), with the classpath exception
  * jakarta.transaction API - [jakarta.transaction:jakarta.transaction-api](https://projects.eclipse.org/projects/ee4j.jta)
  * JMH Core - [org.openjdk.jmh:jmh-core](http://openjdk.java.net/projects/code-tools/jmh/jmh-core/)
  * JMH Generators: Annotation Processors - [org.openjdk.jmh:jmh-generator-annprocess](http://openjdk.java.net/projects/code-tools/jmh/jmh-generator-annprocess/)
-
-GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
--------------------------------
-
- * SpotBugs Annotations - [com.github.spotbugs:spotbugs-annotations](https://spotbugs.github.io/)
 
 Go License
 -------------------------------
