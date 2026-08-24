@@ -48,7 +48,7 @@ public class NoContractException extends RuntimeException {
         return new NoContractException(message);
     }
 
-    public static NoContractException cannotReadContractFile(Resource contractFile, IOException e) {
+    public static NoContractException cannotReadContractFile(Resource contractFile, Throwable e) {
         String message = String.format("Cannot read contract file %s", contractFile.getDescription());
         return new NoContractException(message, e);
     }

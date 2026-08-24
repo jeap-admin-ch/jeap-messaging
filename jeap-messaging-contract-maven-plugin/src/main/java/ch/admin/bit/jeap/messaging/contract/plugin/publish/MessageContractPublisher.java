@@ -2,9 +2,9 @@ package ch.admin.bit.jeap.messaging.contract.plugin.publish;
 
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.CreateMessageContractsDto;
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.maven.plugin.logging.Log;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.file.Path;
 import java.util.List;

@@ -5,9 +5,10 @@ import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.CreateMessageCont
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractDto;
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractRole;
 import ch.admin.bit.jeap.messaging.contract.v2.Contract;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,8 +25,9 @@ public class MessageContracts {
 
     private static final String CONTRACT_SUFFIX = "-contract.json";
 
-    private final ObjectMapper objectMapper = new JsonMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private final ObjectMapper objectMapper = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
 
     Optional<CreateMessageContractsDto> loadAll(Path contractPath) {
         if (Files.exists(contractPath)) {
@@ -85,7 +87,7 @@ public class MessageContracts {
     private Contract deserializeContract(Path path) {
         try {
             return objectMapper.readValue(path.toFile(), Contract.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw MessageContractPublishException.contractDeserializationFailure(path, e);
         }
     }
