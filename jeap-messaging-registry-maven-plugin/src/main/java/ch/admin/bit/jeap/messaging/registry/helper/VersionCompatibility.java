@@ -1,7 +1,7 @@
 package ch.admin.bit.jeap.messaging.registry.helper;
 
 import ch.admin.bit.jeap.messaging.registry.dto.CompatibilityMode;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 import java.util.Map;
@@ -16,15 +16,15 @@ public class VersionCompatibility {
     public record Compatibility(SemanticVersion newVersion, SemanticVersion oldVersion,
                                 CompatibilityMode compatibilityMode) {
         public static Optional<Compatibility> parseIfDefined(JsonNode versionNode, SemanticVersionList semanticVersionList) {
-            SemanticVersion newVersion = SemanticVersion.parse(versionNode.get("version").asText());
+            SemanticVersion newVersion = SemanticVersion.parse(versionNode.get("version").asString());
             Optional<CompatibilityMode> compatibilityModeIfPresent = Optional.ofNullable(versionNode.get("compatibilityMode"))
-                    .map(JsonNode::asText)
+                    .map(JsonNode::asString)
                     .map(CompatibilityMode::valueOf);
 
             return compatibilityModeIfPresent.map(mode -> {
                 JsonNode compatibleVersion = versionNode.get("compatibleVersion");
                 SemanticVersion oldVersion = compatibleVersion == null ?
-                        getPreviousVersion(semanticVersionList, newVersion) : SemanticVersion.parse(compatibleVersion.asText());
+                        getPreviousVersion(semanticVersionList, newVersion) : SemanticVersion.parse(compatibleVersion.asString());
                 return new Compatibility(newVersion, oldVersion, mode);
             });
         }

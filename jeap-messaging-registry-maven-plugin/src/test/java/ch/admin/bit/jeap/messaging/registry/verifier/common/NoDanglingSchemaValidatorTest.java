@@ -1,14 +1,14 @@
 package ch.admin.bit.jeap.messaging.registry.verifier.common;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -50,7 +50,7 @@ class NoDanglingSchemaValidatorTest {
                         "Schema file Dangling_v2.0.0.avdl is not referenced");
     }
 
-    private static JsonNode createDescriptor() throws IOException {
+    private static JsonNode createDescriptor() throws JacksonException {
         ObjectMapper objectMapper = JsonMapper.builder().build();
         return objectMapper.readTree("""
                         {

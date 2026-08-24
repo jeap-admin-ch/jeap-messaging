@@ -1,10 +1,10 @@
 package ch.admin.bit.jeap.messaging.registry.verifier.common;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.SneakyThrows;
+import tools.jackson.databind.JsonNode;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -63,7 +63,7 @@ public class NoDanglingSchemaValidator {
     private static String getField(JsonNode object, String fieldName) {
         JsonNode field = object.get(fieldName);
         if (field != null) {
-            return field.asText();
+            return field.asString();
         }
         return null;
     }

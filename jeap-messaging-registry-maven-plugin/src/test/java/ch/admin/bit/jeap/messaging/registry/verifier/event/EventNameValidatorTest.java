@@ -2,15 +2,15 @@ package ch.admin.bit.jeap.messaging.registry.verifier.event;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import java.io.File;
 import java.util.Map;
@@ -39,7 +39,7 @@ class EventNameValidatorTest {
 
     @Test
     void notSameInFilename() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("eventName", TextNode.valueOf("SomethingElseEvent")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("eventName", StringNode.valueOf("SomethingElseEvent")));
         ValidationContext validationContext = ValidationContext.builder()
                 .systemName("system")
                 .messageTypeName("SystemTestEvent")
@@ -53,7 +53,7 @@ class EventNameValidatorTest {
 
     @Test
     void valid() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("eventName", TextNode.valueOf("SystemTestEvent")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("eventName", StringNode.valueOf("SystemTestEvent")));
         ValidationContext validationContext = ValidationContext.builder()
                 .systemName("system")
                 .messageTypeName("SystemTestEvent")
@@ -67,7 +67,7 @@ class EventNameValidatorTest {
 
     @Test
     void sharedEvent() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("eventName", TextNode.valueOf("SharedTestEvent")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("eventName", StringNode.valueOf("SharedTestEvent")));
         ValidationContext validationContext = ValidationContext.builder()
                 .systemName("_shared")
                 .messageTypeName("SharedTestEvent")
@@ -80,7 +80,7 @@ class EventNameValidatorTest {
     }
 
     private JsonNode eventDescriptor() {
-        return new ObjectNode(factory, Map.of("eventName", TextNode.valueOf("SomethingTestEvent")));
+        return new ObjectNode(factory, Map.of("eventName", StringNode.valueOf("SomethingTestEvent")));
     }
 
     private static ValidationContext validationContext(String systemName, String messageTypeName) {

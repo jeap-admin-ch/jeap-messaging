@@ -1,6 +1,5 @@
 package ch.admin.bit.jeap.messaging.contract.plugin.publish;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
@@ -51,7 +50,7 @@ class MessageContractPublishException extends RuntimeException {
                 "consumer/producer application in this project.");
     }
 
-    static MessageContractPublishException contractDeserializationFailure(Path path, IOException exception) {
+    static MessageContractPublishException contractDeserializationFailure(Path path, Throwable exception) {
         return new MessageContractPublishException("Failed to read messaging contract at " + path + ": " + exception.getMessage(), exception);
     }
 

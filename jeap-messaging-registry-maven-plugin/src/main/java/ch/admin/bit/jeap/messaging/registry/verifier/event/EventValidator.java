@@ -8,12 +8,11 @@ import ch.admin.bit.jeap.messaging.registry.verifier.common.AvroImportsValidator
 import ch.admin.bit.jeap.messaging.registry.verifier.common.AvroSchemaValidator;
 import ch.admin.bit.jeap.messaging.registry.verifier.common.DefiningSystemValidator;
 import ch.admin.bit.jeap.messaging.registry.verifier.common.NoDanglingSchemaValidator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -22,9 +21,9 @@ public class EventValidator {
         JsonNode eventDescriptorJson;
         Optional<JsonNode> oldCommandDescriptorJson;
         try {
-            eventDescriptorJson = JsonLoader.fromFile(validationContext.getDescriptorFile());
+            eventDescriptorJson = ValidatorUtils.loadJson(validationContext.getDescriptorFile());
             oldCommandDescriptorJson = ValidatorUtils.loadOldDescriptorIfExists(validationContext);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             String message = String.format("File '%s' is not a valid JSON-File: %s",
                     validationContext.getDescriptorFile().getAbsolutePath(), e.getMessage());
             return ValidationResult.fail(message);

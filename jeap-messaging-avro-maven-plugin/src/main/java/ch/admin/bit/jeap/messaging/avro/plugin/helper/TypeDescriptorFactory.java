@@ -3,23 +3,19 @@ package ch.admin.bit.jeap.messaging.avro.plugin.helper;
 import ch.admin.bit.jeap.messaging.avro.plugin.registry.CommandDescriptor;
 import ch.admin.bit.jeap.messaging.avro.plugin.registry.EventDescriptor;
 import ch.admin.bit.jeap.messaging.avro.plugin.registry.TypeDescriptor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.maven.plugin.MojoExecutionException;
-import com.fasterxml.jackson.core.JacksonException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 public class TypeDescriptorFactory {
 
-    private static final ObjectMapper OBJECT_MAPPER;
-
-    static {
-        OBJECT_MAPPER = new JsonMapper();
-        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
+    private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
 
     public static TypeDescriptor getTypeDescriptor(Path descriptor) throws MojoExecutionException {
         try {
@@ -30,7 +26,7 @@ public class TypeDescriptorFactory {
             } else {
                 throw new MojoExecutionException("Unknown descriptor type: " + descriptor);
             }
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new MojoExecutionException("Cannot read value from json: " + e.getMessage(), e);
         }
     }

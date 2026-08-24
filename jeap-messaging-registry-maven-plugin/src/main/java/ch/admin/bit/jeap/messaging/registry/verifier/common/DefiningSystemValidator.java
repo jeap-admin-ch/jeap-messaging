@@ -2,8 +2,8 @@ package ch.admin.bit.jeap.messaging.registry.verifier.common;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.JsonNode;
 
 @RequiredArgsConstructor
 public class DefiningSystemValidator {
@@ -26,10 +26,10 @@ public class DefiningSystemValidator {
 
         JsonNode definingSystemNode = messageTypeDescriptorJson.get("definingSystem");
         if (definingSystemNode != null) {
-            return definingSystemNode.asText();
+            return definingSystemNode.asString();
         }
         //One of both must be given
         JsonNode publishingSystem = messageTypeDescriptorJson.get("publishingSystem");
-        return publishingSystem == null ? null : publishingSystem.asText();
+        return publishingSystem == null ? null : publishingSystem.asString();
     }
 }

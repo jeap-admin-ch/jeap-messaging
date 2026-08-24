@@ -3,9 +3,9 @@ package ch.admin.bit.jeap.messaging.registry.verifier.command;
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidatorUtils;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.JsonNode;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,7 +68,7 @@ class CommandNameValidator {
         if (jsonNode == null) {
             return ValidationResult.ok();
         }
-        String asText = jsonNode.asText();
+        String asText = jsonNode.asString();
         if (commandName.equals(asText)) {
             return ValidationResult.ok();
         }

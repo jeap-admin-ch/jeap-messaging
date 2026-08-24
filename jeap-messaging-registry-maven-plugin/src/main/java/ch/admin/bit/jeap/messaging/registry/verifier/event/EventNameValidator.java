@@ -3,9 +3,9 @@ package ch.admin.bit.jeap.messaging.registry.verifier.event;
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidatorUtils;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.JsonNode;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,7 +68,7 @@ class EventNameValidator {
         if (jsonNode == null) {
             return ValidationResult.ok();
         }
-        String asText = jsonNode.asText();
+        String asText = jsonNode.asString();
         if (eventName.equals(asText)) {
             return ValidationResult.ok();
         }

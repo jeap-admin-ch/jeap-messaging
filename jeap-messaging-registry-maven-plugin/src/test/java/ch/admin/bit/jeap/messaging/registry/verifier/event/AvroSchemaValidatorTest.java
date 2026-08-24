@@ -6,16 +6,16 @@ import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.helper.MessagingType;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
 import ch.admin.bit.jeap.messaging.registry.verifier.common.AvroSchemaValidator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.IntNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,9 +40,9 @@ class AvroSchemaValidatorTest {
     private static JsonNode versionsWithoutKey(String... versions) {
         return Arrays.stream(versions)
                 .map(i -> new ObjectNode(factory, Map.of(
-                        "version", TextNode.valueOf(i),
-                        "compatibilityMode", TextNode.valueOf("BACKWARD"),
-                        "valueSchema", TextNode.valueOf("value_" + i + ".avdl"))))
+                        "version", StringNode.valueOf(i),
+                        "compatibilityMode", StringNode.valueOf("BACKWARD"),
+                        "valueSchema", StringNode.valueOf("value_" + i + ".avdl"))))
                 .reduce(new ArrayNode(factory), ArrayNode::add, ArrayNode::addAll);
     }
 
@@ -50,10 +50,10 @@ class AvroSchemaValidatorTest {
     private static JsonNode versionsWithKey(String... versions) {
         return Arrays.stream(versions)
                 .map(i -> new ObjectNode(factory, Map.of(
-                        "version", TextNode.valueOf(i),
-                        "compatibilityMode", TextNode.valueOf("BACKWARD"),
-                        "keySchema", TextNode.valueOf("key_" + i + ".avdl"),
-                        "valueSchema", TextNode.valueOf("value_" + i + ".avdl"))))
+                        "version", StringNode.valueOf(i),
+                        "compatibilityMode", StringNode.valueOf("BACKWARD"),
+                        "keySchema", StringNode.valueOf("key_" + i + ".avdl"),
+                        "valueSchema", StringNode.valueOf("value_" + i + ".avdl"))))
                 .reduce(new ArrayNode(factory), ArrayNode::add, ArrayNode::addAll);
     }
 
@@ -206,9 +206,9 @@ class AvroSchemaValidatorTest {
 
         ArrayNode versions = new ArrayNode(factory);
         versions.add(new ObjectNode(factory, Map.of(
-                "version", TextNode.valueOf("1.1.0"),
-                "valueSchema", TextNode.valueOf("TestTestEvent_v1.1.0.avdl"),
-                "keySchema", TextNode.valueOf("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestTestKey.avdl"))));
+                "version", StringNode.valueOf("1.1.0"),
+                "valueSchema", StringNode.valueOf("TestTestEvent_v1.1.0.avdl"),
+                "keySchema", StringNode.valueOf("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestTestKey.avdl"))));
         JsonNode jsonNode = new ObjectNode(factory, Map.of(
                 "versions", versions));
 
@@ -235,8 +235,8 @@ class AvroSchemaValidatorTest {
         ArrayNode versions = new ArrayNode(factory);
         versions.add(new ObjectNode(factory, Map.of(
                 "version", new IntNode(1),
-                "valueSchema", TextNode.valueOf("TestTestEvent_v1.avdl"),
-                "keySchema", TextNode.valueOf("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestTestKey.avdl"))));
+                "valueSchema", StringNode.valueOf("TestTestEvent_v1.avdl"),
+                "keySchema", StringNode.valueOf("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestTestKey.avdl"))));
         JsonNode jsonNode = new ObjectNode(factory, Map.of(
                 "versions", versions));
 
@@ -270,8 +270,8 @@ class AvroSchemaValidatorTest {
 
         ArrayNode versions = new ArrayNode(factory);
         versions.add(new ObjectNode(factory, Map.of(
-                "version", TextNode.valueOf("1.1.0"),
-                "valueSchema", TextNode.valueOf("TestTestEvent_v1.avdl"))));
+                "version", StringNode.valueOf("1.1.0"),
+                "valueSchema", StringNode.valueOf("TestTestEvent_v1.avdl"))));
         JsonNode jsonNode = new ObjectNode(factory, Map.of(
                 "versions", versions));
 
@@ -297,7 +297,7 @@ class AvroSchemaValidatorTest {
         ArrayNode versions = new ArrayNode(factory);
         versions.add(new ObjectNode(factory, Map.of(
                 "version", new IntNode(1),
-                "valueSchema", TextNode.valueOf("TestTestEvent_v1.avdl"))));
+                "valueSchema", StringNode.valueOf("TestTestEvent_v1.avdl"))));
         JsonNode jsonNode = new ObjectNode(factory, Map.of(
                 "versions", versions));
 

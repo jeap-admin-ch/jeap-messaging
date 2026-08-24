@@ -1,14 +1,17 @@
 package ch.admin.bit.jeap.messaging.registry.verifier;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
+import com.networknt.schema.Error;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Optional;
 
 public class ValidatorUtils {
+    private static final JsonMapper JSON_MAPPER = JsonMapper.builder().build();
+
     /**
      * System name in descriptor for shared messages
      */
@@ -27,11 +30,22 @@ public class ValidatorUtils {
         return systemNameCamelCase;
     }
 
-    public static Optional<JsonNode> loadOldDescriptorIfExists(ValidationContext validationContext) throws IOException {
+    public static JsonNode loadJson(File file) throws JacksonException {
+        return JSON_MAPPER.readTree(file);
+    }
+
+    public static String formatSchemaError(Error error) {
+        if ("additionalProperties".equals(error.getKeyword()) && error.getProperty() != null) {
+            return "object instance has properties which are not allowed by the schema: [\"" + error.getProperty() + "\"]";
+        }
+        return error.toString();
+    }
+
+    public static Optional<JsonNode> loadOldDescriptorIfExists(ValidationContext validationContext) throws JacksonException {
         String absoluteFile = validationContext.getDescriptorFile().getAbsolutePath();
         String absoluteDescriptorDir = validationContext.getDescriptorDir().getAbsolutePath();
         String relativeDescriptorFile = absoluteFile.replace(absoluteDescriptorDir, "");
         File oldDescriptorFile = new File(validationContext.getOldDescriptorDir(), relativeDescriptorFile);
-        return oldDescriptorFile.exists() ? Optional.of(JsonLoader.fromFile(oldDescriptorFile)) : Optional.empty();
+        return oldDescriptorFile.exists() ? Optional.of(loadJson(oldDescriptorFile)) : Optional.empty();
     }
 }

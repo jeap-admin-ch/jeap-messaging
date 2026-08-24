@@ -11,17 +11,16 @@ import ch.admin.bit.jeap.messaging.registry.helper.SemanticVersionList;
 import ch.admin.bit.jeap.messaging.registry.helper.VersionCompatibility;
 import ch.admin.bit.jeap.messaging.registry.helper.VersionCompatibility.Compatibility;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
+import tools.jackson.databind.JsonNode;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toCollection;
 
@@ -72,9 +71,9 @@ public class AvroSchemaValidator {
         if (versions == null) {
             return SemanticVersionList.empty();
         }
-        List<SemanticVersion> semanticVersions = StreamSupport.stream(versions.spliterator(), false)
+        List<SemanticVersion> semanticVersions = versions.valueStream()
                 .map(n -> n.get("version"))
-                .map(JsonNode::asText)
+                .map(JsonNode::asString)
                 .map(SemanticVersion::parse)
                 .toList();
         return new SemanticVersionList(semanticVersions);
@@ -85,7 +84,7 @@ public class AvroSchemaValidator {
         if (versions == null) {
             return VersionCompatibility.empty();
         }
-        List<Compatibility> compatibilities = StreamSupport.stream(versions.spliterator(), false)
+        List<Compatibility> compatibilities = versions.valueStream()
                 .map((JsonNode versionNode) -> Compatibility.parseIfDefined(versionNode, semanticVersionList))
                 .filter(Optional::isPresent).map(Optional::get).toList();
         return new VersionCompatibility(compatibilities);
@@ -135,7 +134,7 @@ public class AvroSchemaValidator {
         recordCollections = new HashMap<>();
         getVersions().forEach(versionNode -> {
             if (versionNode.get(type) != null) {
-                loadSchema(versionNode.get(type).asText(), versionNode.get("version").asText());
+                loadSchema(versionNode.get(type).asString(), versionNode.get("version").asString());
             }
         });
     }
@@ -201,7 +200,7 @@ public class AvroSchemaValidator {
         if (versionsNode == null) {
             return Stream.of();
         }
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(versionsNode.elements(), 0), false);
+        return versionsNode.valueStream();
     }
 
     private ValidationResult validateMessageType(String version, RecordCollection recordCollection) {
@@ -218,5 +217,3 @@ public class AvroSchemaValidator {
         return ValidationResult.merge(schemaValidationResult, messageTypeContainedInSchemaResult);
     }
 }
-
-

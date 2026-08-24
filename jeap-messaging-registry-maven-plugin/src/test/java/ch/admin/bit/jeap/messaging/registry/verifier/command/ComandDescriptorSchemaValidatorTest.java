@@ -14,7 +14,10 @@ class ComandDescriptorSchemaValidatorTest {
     @Test
     void validSchema(@TempDir File tmpDir) throws IOException {
         File file = new File(tmpDir, "test");
-        FileUtils.write(file, "{\"commandName\":\"TestTestCommand\", \"description\":\"test\",\"definingSystem\":\"TEST\",\"scope\":\"public\"}");
+        FileUtils.write(file, """
+                {"commandName":"TestTestCommand", "description":"test", "definingSystem":"TEST", "scope":"public",
+                 "versions":[{"version":"1.0.0", "valueSchema":"TestTestCommand_v1.0.0.avdl"}]}
+                """);
         ValidationContext validationContext = ValidationContext.builder()
                 .descriptorFile(file)
                 .build();

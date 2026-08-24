@@ -5,9 +5,9 @@ import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.dto.DescriptorDto;
 import ch.admin.bit.jeap.messaging.registry.dto.VersionDto;
 import ch.admin.bit.jeap.messaging.registry.helper.MessagingType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.apache.commons.io.FileUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -148,7 +148,7 @@ public class FileNotChangedValidator {
     }
 
     private static ValidationResult alreadyDefinedVersionInDescriptorFileNotChanged(File oldFile, File newFile){
-        final var objectMapper = new JsonMapper();
+        final var objectMapper = JsonMapper.builder().build();
 
         try {
             final List<VersionDto> oldVersions = objectMapper.readValue(oldFile, DescriptorDto.class).getVersions();
@@ -160,7 +160,7 @@ public class FileNotChangedValidator {
                 }
             }
 
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             return ValidationResult.fail(String.format("Could not parse file: %s", e.getMessage()));
         }
 

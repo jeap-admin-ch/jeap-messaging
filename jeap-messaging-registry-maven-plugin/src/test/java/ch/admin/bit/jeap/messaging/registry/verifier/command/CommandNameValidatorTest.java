@@ -2,15 +2,15 @@ package ch.admin.bit.jeap.messaging.registry.verifier.command;
 
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.verifier.ValidationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 import java.io.File;
 import java.util.Map;
@@ -39,7 +39,7 @@ class CommandNameValidatorTest {
 
     @Test
     void notSameInFilename() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("commandName", TextNode.valueOf("SomethingElseCommand")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("commandName", StringNode.valueOf("SomethingElseCommand")));
         ValidationContext validationContext = ValidationContext.builder()
                 .systemName("system")
                 .messageTypeName("SystemTestCommand")
@@ -53,7 +53,7 @@ class CommandNameValidatorTest {
 
     @Test
     void valid() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("commandName", TextNode.valueOf("SystemTestCommand")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("commandName", StringNode.valueOf("SystemTestCommand")));
         ValidationContext validationContext = ValidationContext.builder()
                 .systemName("system")
                 .messageTypeName("SystemTestCommand")
@@ -67,7 +67,7 @@ class CommandNameValidatorTest {
 
     @Test
     void sharedSystem() {
-        JsonNode jsonNode = new ObjectNode(factory, Map.of("commandName", TextNode.valueOf("SharedTestCommand")));
+        JsonNode jsonNode = new ObjectNode(factory, Map.of("commandName", StringNode.valueOf("SharedTestCommand")));
         ValidationContext validationContext = ValidationContext.builder()
                 .systemName("_shared")
                 .messageTypeName("SharedTestCommand")
@@ -80,7 +80,7 @@ class CommandNameValidatorTest {
     }
 
     private JsonNode commandDescriptor() {
-        return new ObjectNode(factory, Map.of("commandName", TextNode.valueOf("SomethingTestCommand")));
+        return new ObjectNode(factory, Map.of("commandName", StringNode.valueOf("SomethingTestCommand")));
     }
 
     private static ValidationContext validationContext(String systemName, String messageTypeName) {
