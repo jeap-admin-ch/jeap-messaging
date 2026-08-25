@@ -37,6 +37,7 @@ Apache License Version 2.0
  * jme-simple-test-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * jme-simple-test-v2-event - [ch.admin.bit.jeap.messaging.test.messagetype.jme:jme-simple-test-v2-event](https://github.com/jeap-admin-ch/jeap-test-message-type-registry/tree/main)
  * com.dynatrace.hash4j:hash4j - [com.dynatrace.hash4j:hash4j](https://github.com/dynatrace-oss/hash4j)
+ * Internet Time Utility - [com.ethlo.time:itu](https://github.com/ethlo/itu)
  * Jackson-annotations - [com.fasterxml.jackson.core:jackson-annotations](https://github.com/FasterXML/jackson)
  * Jackson-core - [com.fasterxml.jackson.core:jackson-core](https://github.com/FasterXML/jackson-core)
  * jackson-databind - [com.fasterxml.jackson.core:jackson-databind](https://github.com/FasterXML/jackson)
@@ -48,13 +49,6 @@ Apache License Version 2.0
  * docker-java-api - [com.github.docker-java:docker-java-api](https://github.com/docker-java/docker-java)
  * docker-java-transport - [com.github.docker-java:docker-java-transport](https://github.com/docker-java/docker-java)
  * docker-java-transport-zerodep - [com.github.docker-java:docker-java-transport-zerodep](https://github.com/docker-java/docker-java)
- * btf - [com.github.java-json-tools:btf](https://github.com/java-json-tools/btf)
- * jackson-coreutils - [com.github.java-json-tools:jackson-coreutils](https://github.com/java-json-tools/jackson-coreutils)
- * jackson-coreutils-equivalence - [com.github.java-json-tools:jackson-coreutils-equivalence](https://github.com/java-json-tools/jackson-coreutils)
- * json-schema-core - [com.github.java-json-tools:json-schema-core](https://github.com/java-json-tools/json-schema-core)
- * json-schema-validator - [com.github.java-json-tools:json-schema-validator](https://github.com/java-json-tools/json-schema-validator)
- * msg-simple - [com.github.java-json-tools:msg-simple](https://github.com/java-json-tools/msg-simple)
- * uri-template - [com.github.java-json-tools:uri-template](https://github.com/java-json-tools/uri-template)
  * proto-google-common-protos - [com.google.api.grpc:proto-google-common-protos](https://github.com/googleapis/java-iam/proto-google-common-protos)
  * FindBugs-jsr305 - [com.google.code.findbugs:jsr305](http://findbugs.sourceforge.net/)
  * Gson - [com.google.code.gson:gson](https://github.com/google/gson)
@@ -73,8 +67,8 @@ Apache License Version 2.0
  * J2ObjC Annotations - [com.google.j2objc:j2objc-annotations](https://github.com/google/j2objc/)
  * Jimfs - [com.google.jimfs:jimfs](https://github.com/google/jimfs/jimfs)
  * JavaEWAH - [com.googlecode.javaewah:JavaEWAH](https://github.com/lemire/javaewah)
- * libphonenumber - [com.googlecode.libphonenumber:libphonenumber](https://github.com/google/libphonenumber/)
  * json-path - [com.jayway.jsonpath:json-path](https://github.com/jayway/JsonPath)
+ * JsonSchemaValidator - [com.networknt:json-schema-validator](https://github.com/networknt/json-schema-validator)
  * okhttp - [com.squareup.okhttp3:okhttp-jvm](https://square.github.io/okhttp/)
  * okio - [com.squareup.okio:okio-jvm](https://github.com/square/okio/)
  * scala-logging - [com.typesafe.scala-logging:scala-logging_2.13](https://github.com/lightbend/scala-logging)
@@ -131,7 +125,6 @@ Apache License Version 2.0
  * Prometheus Metrics Tracer Common - [io.prometheus:prometheus-metrics-tracer-common](http://github.com/prometheus/client_java/client_java/prometheus-metrics-tracer/prometheus-metrics-tracer-common)
  * Jakarta Dependency Injection - [jakarta.inject:jakarta.inject-api](https://github.com/eclipse-ee4j/injection-api)
  * javax.inject - [javax.inject:javax.inject](http://code.google.com/p/atinject/)
- * Joda-Time - [joda-time:joda-time](https://www.joda.org/joda-time/)
  * Byte Buddy (without dependencies) - [net.bytebuddy:byte-buddy](https://bytebuddy.net/byte-buddy)
  * Byte Buddy agent - [net.bytebuddy:byte-buddy-agent](https://bytebuddy.net/byte-buddy-agent)
  * Java Native Access - [net.java.dev.jna:jna](https://github.com/java-native-access/jna)
@@ -235,6 +228,7 @@ Apache License Version 2.0
  * Scala Library - [org.scala-lang:scala-library](https://www.scala-lang.org/)
  * Scala Reflect - [org.scala-lang:scala-reflect](https://www.scala-lang.org/)
  * JSONassert - [org.skyscreamer:jsonassert](https://github.com/skyscreamer/JSONassert)
+ * SnakeYAML Engine - [org.snakeyaml:snakeyaml-engine](https://bitbucket.org/snakeyaml/snakeyaml-engine)
  * Spring AOP - [org.springframework:spring-aop](https://github.com/spring-projects/spring-framework)
  * Spring Aspects - [org.springframework:spring-aspects](https://github.com/spring-projects/spring-framework)
  * Spring Beans - [org.springframework:spring-beans](https://github.com/spring-projects/spring-framework)
@@ -355,6 +349,7 @@ Apache License Version 2.0
  * Amazon MSK Library for AWS Identity and Access Management - [software.amazon.msk:aws-msk-iam-auth](https://docs.aws.amazon.com/msk/latest/developerguide/iam-access-control.html)
  * Jackson-core - [tools.jackson.core:jackson-core](https://github.com/FasterXML/jackson-core)
  * jackson-databind - [tools.jackson.core:jackson-databind](https://github.com/FasterXML/jackson)
+ * Jackson-dataformat-YAML - [tools.jackson.dataformat:jackson-dataformat-yaml](https://github.com/FasterXML/jackson-dataformats-text)
 
 BSD 2-Clause License
 -------------------------------
@@ -378,11 +373,6 @@ Bouncy Castle Licence
 -------------------------------
 
  * Bouncy Castle Provider - [org.bouncycastle:bcprov-jdk18on](https://www.bouncycastle.org/download/bouncy-castle-java/)
-
-CDDL/GPLv2+CE
--------------------------------
-
- * JavaMail API (no providers) - [com.sun.mail:mailapi](http://javaee.github.io/javamail/mailapi)
 
 EPL-2.0
 -------------------------------
@@ -459,17 +449,6 @@ LGPL-2.1-or-later
 
  * Java Native Access - [net.java.dev.jna:jna](https://github.com/java-native-access/jna)
 
-Lesser General Public License, version 3 or greater
--------------------------------
-
- * btf - [com.github.java-json-tools:btf](https://github.com/java-json-tools/btf)
- * jackson-coreutils - [com.github.java-json-tools:jackson-coreutils](https://github.com/java-json-tools/jackson-coreutils)
- * jackson-coreutils-equivalence - [com.github.java-json-tools:jackson-coreutils-equivalence](https://github.com/java-json-tools/jackson-coreutils)
- * json-schema-core - [com.github.java-json-tools:json-schema-core](https://github.com/java-json-tools/json-schema-core)
- * json-schema-validator - [com.github.java-json-tools:json-schema-validator](https://github.com/java-json-tools/json-schema-validator)
- * msg-simple - [com.github.java-json-tools:msg-simple](https://github.com/java-json-tools/msg-simple)
- * uri-template - [com.github.java-json-tools:uri-template](https://github.com/java-json-tools/uri-template)
-
 MIT License
 -------------------------------
 
@@ -505,7 +484,6 @@ Mozilla Public License, Version 2.0
 -------------------------------
 
  * H2 Database Engine - [com.h2database:h2](https://h2database.com)
- * Mozilla Rhino - [org.mozilla:rhino](https://developer.mozilla.org/en/Rhino)
 
 Public Domain
 -------------------------------
