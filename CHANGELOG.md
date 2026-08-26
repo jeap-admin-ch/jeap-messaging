@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [18.2.1] - 2026-08-26
 
+### Changed
+- update jeap-crypto from 10.19.0 to 10.19.2
+
 ### Fixed
 - Exclude the AWS SDK Apache 5 HTTP client when using the URL connection client.
 
