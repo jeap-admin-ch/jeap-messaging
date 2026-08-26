@@ -143,6 +143,7 @@ Apache License Version 2.0
  * Apache Commons Lang - [org.apache.commons:commons-lang3](https://commons.apache.org/proper/commons-lang/)
  * Apache Commons Math - [org.apache.commons:commons-math3](http://commons.apache.org/proper/commons-math/)
  * Apache Commons Text - [org.apache.commons:commons-text](https://commons.apache.org/proper/commons-text)
+ * Apache HttpCore - [org.apache.httpcomponents:httpcore](http://hc.apache.org/httpcomponents-core-ga)
  * Apache HttpClient - [org.apache.httpcomponents.client5:httpclient5](https://hc.apache.org/httpcomponents-client-5.6.x/5.6.4/httpclient5/)
  * Apache HttpComponents Core HTTP/1.1 - [org.apache.httpcomponents.core5:httpcore5](https://hc.apache.org/httpcomponents-core-5.4.x/5.4.3/httpcore5/)
  * Apache HttpComponents Core HTTP/2 - [org.apache.httpcomponents.core5:httpcore5-h2](https://hc.apache.org/httpcomponents-core-5.4.x/5.4.3/httpcore5-h2/)

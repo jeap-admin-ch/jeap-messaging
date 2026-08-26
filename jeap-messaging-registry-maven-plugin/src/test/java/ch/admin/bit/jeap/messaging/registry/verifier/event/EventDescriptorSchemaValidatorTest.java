@@ -9,6 +9,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 class EventDescriptorSchemaValidatorTest {
     @Test
@@ -57,7 +58,7 @@ class EventDescriptorSchemaValidatorTest {
     @Test
     void invalidSharedSchemaFields(@TempDir File tmpDir) throws IOException {
         File file = new File(tmpDir, "test");
-        FileUtils.write(file, """
+        Files.writeString(file.toPath(), """
                 {"eventName":"TestTestEvent", "description":"test", "definingSystem":"TEST", "scope":"public",
                  "documentationUrl":"not-a-url",
                  "versions":[{"version":"invalid", "valueSchema":"not-an-avro-schema"}]}
