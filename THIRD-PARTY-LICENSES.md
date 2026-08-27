@@ -311,7 +311,6 @@ Apache License Version 2.0
  * SnakeYAML - [org.yaml:snakeyaml](https://bitbucket.org/snakeyaml/snakeyaml)
  * AWS Java SDK :: Annotations - [software.amazon.awssdk:annotations](https://aws.amazon.com/sdkforjava/core/annotations)
  * AWS Java SDK :: HTTP Clients :: Apache - [software.amazon.awssdk:apache-client](https://aws.amazon.com/sdkforjava/http-clients/apache-client)
- * AWS Java SDK :: HTTP Clients :: Apache5 - [software.amazon.awssdk:apache5-client](https://aws.amazon.com/sdkforjava/http-clients/apache5-client)
  * AWS Java SDK :: Arns - [software.amazon.awssdk:arns](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: Auth - [software.amazon.awssdk:auth](https://aws.amazon.com/sdkforjava)
  * AWS Java SDK :: AWS Core - [software.amazon.awssdk:aws-core](https://aws.amazon.com/sdkforjava)
