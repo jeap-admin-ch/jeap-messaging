@@ -27,7 +27,7 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>18.6.0-SNAPSHOT</version>
+    <version>18.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -60,7 +60,7 @@
     </modules>
 
     <properties>
-        <jeap-crypto.version>10.23.0</jeap-crypto.version>
+        <jeap-crypto.version>10.24.0</jeap-crypto.version>
         <jeap-spring-boot-roles-anywhere-starter.version>3.35.0</jeap-spring-boot-roles-anywhere-starter.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
     </properties>
