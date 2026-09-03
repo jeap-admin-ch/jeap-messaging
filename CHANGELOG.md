@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [18.9.0] - 2026-09-03
+### Changed
+- update jeap-crypto from 10.25.0 to 10.26.0
+- update jeap-spring-boot-vault-starter from 24.27.0 to 24.28.0
+- Error responses from paths handled by `jeap-spring-boot-web-config-starter` now use
+  `Cache-Control: no-store` instead of inheriting long-lived caching based on the request suffix.
+  Cacheable responses now also emit standards-compliant HTTP dates in the `Expires` header.
+- Resolve the built-in introspection conditions' fallback with `BindResult.orElseGet` instead of `orElse` so that the
+  unboxed result is non-null by contract, addressing a SonarQube null-pointer finding. No behavior change.
+
 ## [18.8.0] - 2026-09-03
 
 ### Changed
