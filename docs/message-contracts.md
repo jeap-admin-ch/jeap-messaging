@@ -19,6 +19,10 @@ Service during the build: an annotation processor generates a JSON contract file
 pipeline uploads. At runtime a Kafka client interceptor validates that a contract exists for each
 produced and consumed type; without a matching contract, producing or consuming is denied.
 
+Framework-owned infrastructure messages, such as error-handling events produced internally by jEAP
+components, can be exempt from producer validation. This does not relax contract validation for
+application-owned business messages.
+
 ## Declaring contracts
 
 Four annotations come from `jeap-messaging-contract-annotations`, normally brought in transitively via

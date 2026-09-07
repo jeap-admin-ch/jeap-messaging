@@ -54,10 +54,11 @@ class DefaultContractsValidatorContractsTests {
                .doesNotThrowAnyException();
    }
 
-    @Test
-    void test_whenPublishingSharedEvent_thenNoException() {
+    @ParameterizedTest
+    @CsvSource({"MessageProcessingFailedEvent", "ModulithPublicationProcessingFailedEvent"})
+    void test_whenPublishingSharedEvent_thenNoException(String messageTypeName) {
         MessageType messageType = AvroDomainEventType.newBuilder()
-                .setName("MessageProcessingFailedEvent")
+                .setName(messageTypeName)
                 .setVersion("1.2.3")
                 .build();
 

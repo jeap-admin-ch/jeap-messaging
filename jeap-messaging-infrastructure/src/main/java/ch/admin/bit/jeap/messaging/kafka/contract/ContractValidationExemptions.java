@@ -10,7 +10,8 @@ import java.util.Set;
 public class ContractValidationExemptions {
 
     private static final Collection<String> SHARED_MESSAGES_ALLOWED_TO_SEND =
-            Set.of("MessageProcessingFailedEvent", "ReactionIdentifiedEvent", "ReactionsObservedEvent");
+            Set.of("MessageProcessingFailedEvent", "ModulithPublicationProcessingFailedEvent",
+                    "ReactionIdentifiedEvent", "ReactionsObservedEvent");
 
     public static boolean isExemptedFromSenderValidation(MessageType messageType) {
         return SHARED_MESSAGES_ALLOWED_TO_SEND.contains(messageType.getName());
