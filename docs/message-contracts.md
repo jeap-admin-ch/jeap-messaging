@@ -23,6 +23,12 @@ Framework-owned infrastructure messages, such as error-handling events produced 
 components, can be exempt from producer validation. This does not relax contract validation for
 application-owned business messages.
 
+`ModulithPublicationProcessingFailedEvent`, published by the Modulith error handling starter through
+the transactional outbox, is exempt from producer validation. Source applications still declare
+consumer contracts for `RetryModulithPublicationCommand` and `DiscardModulithPublicationCommand` on
+their configured topics; the enabled starter checks them at startup. This producer exemption does
+not disable command-consumer validation.
+
 ## Declaring contracts
 
 Four annotations come from `jeap-messaging-contract-annotations`, normally brought in transitively via

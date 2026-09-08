@@ -9,6 +9,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Exempt the framework-owned `ModulithPublicationProcessingFailedEvent` from producer contract validation.
+- Clarify that source microservices still require retry/discard consumer contracts, checked by the enabled starter
+  at startup.
 
 ## [18.10.0] - 2026-09-05
 
