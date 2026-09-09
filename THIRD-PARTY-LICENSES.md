@@ -457,6 +457,7 @@ MIT License
  * JOpt Simple - [net.sf.jopt-simple:jopt-simple](http://jopt-simple.github.io/jopt-simple)
  * argparse4j - [net.sourceforge.argparse4j:argparse4j](http://argparse4j.github.io)
  * Checker Qual - [org.checkerframework:checker-qual](https://checkerframework.org/)
+ * Checker Qual - [org.checkerframework:checker-qual](https://checkerframework.org/)
  * mockito-core - [org.mockito:mockito-core](https://github.com/mockito/mockito)
  * mockito-junit-jupiter - [org.mockito:mockito-junit-jupiter](https://github.com/mockito/mockito)
  * PCollections - [org.pcollections:pcollections](https://github.com/hrldcpr/pcollections)
