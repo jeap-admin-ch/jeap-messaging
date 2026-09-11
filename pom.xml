@@ -61,7 +61,7 @@
 
     <properties>
         <jeap-crypto.version>11.0.0</jeap-crypto.version>
-        <jeap-spring-boot-roles-anywhere-starter.version>3.40.0</jeap-spring-boot-roles-anywhere-starter.version>
+        <jeap-spring-boot-roles-anywhere-starter.version>3.41.0</jeap-spring-boot-roles-anywhere-starter.version>
         <maven.javadoc.skip>false</maven.javadoc.skip>
     </properties>
 
