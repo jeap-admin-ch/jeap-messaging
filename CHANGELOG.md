@@ -8,9 +8,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [19.5.0] - 2026-09-17
 
 ### Changed
-
 - Update parent from 9.6.2 to 9.7.1
 - Update parent from 9.6.2 to 9.7.0
+- update jeap-spring-boot-roles-anywhere-starter from 3.44.0 to 3.46.0
 
 ## [19.4.0] - 2026-09-15
 
