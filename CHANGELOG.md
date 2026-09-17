@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Update parent from 9.6.2 to 9.7.1
 - Update parent from 9.6.2 to 9.7.0
 
 ## [19.4.0] - 2026-09-15

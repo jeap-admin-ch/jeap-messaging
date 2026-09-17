@@ -33,7 +33,7 @@
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>9.7.0</version>
+        <version>9.7.1</version>
     </parent>
 
     <modules>
