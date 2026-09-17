@@ -11,6 +11,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Update parent from 9.6.2 to 9.7.1
 - Update parent from 9.6.2 to 9.7.0
 - update jeap-spring-boot-roles-anywhere-starter from 3.44.0 to 3.46.0
+- update jeap-crypto from 11.4.0 to 11.6.0
+- Update parent from 9.7.0 to 9.7.1
+- update jeap-spring-boot-vault-starter from 25.5.0 to 25.6.0
+- Configure the AWS JDBC Wrapper's HikariCP exception override so recoverable failover connections are not evicted.
 
 ## [19.4.0] - 2026-09-15
 
