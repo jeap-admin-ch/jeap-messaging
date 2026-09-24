@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [19.8.0] - 2026-09-24
+### Changed
+- update jeap-crypto from 11.9.0 to 11.10.0
+- update jeap-spring-boot-vault-starter from 25.9.0 to 25.10.0
+- Add configurable transaction retries for AWS JDBC Wrapper `FailoverSuccessSQLException` errors with SQL state
+  `08S02`. Applications can opt in individual methods with `@RetryOnAwsJdbcFailover` or enable retries globally;
+  every retryable top-level invocation gets a new transaction per attempt, existing `REQUIRED` transactions retain
+  their atomicity, and unknown transaction outcomes are not retried.
+- Retry failover errors only after observed rollback or transaction-begin failure; exclude committed attempts
+  and uncertain completion outcomes, preserving checked-exception and `noRollbackFor` semantics.
+- Preserve the original database failure when failover retry backoff is interrupted, attaching the interruption
+  as a suppressed exception and retaining the thread's interrupt flag.
+- Use the transaction context stack instead of a redundant nesting-depth counter.
+
 ## [19.7.0] - 2026-09-22
 
 ### Changed
