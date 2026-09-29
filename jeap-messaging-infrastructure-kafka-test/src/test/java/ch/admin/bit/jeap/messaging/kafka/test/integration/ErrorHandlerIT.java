@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -114,6 +115,56 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
         Assertions.assertEquals("stack", resultingError.getOptionalPayload().get().getStackTrace());
         Assertions.assertNull(resultingError.getOptionalPayload().get().getOriginalKey());
         Assertions.assertNotNull(resultingError.getOptionalPayload().get().getOriginalMessage());
+    }
+
+    @Test
+    void transientExceptionWhileEventHandlingIsClassifiedAsTemporary() {
+        Mockito.doThrow(new TimeoutException("timeout"))
+                .when(testEventProcessor).receive(Mockito.any());
+
+        AvroMessage message = JmeDeclarationCreatedEventBuilder.create().idempotenceId("idempotenceId").message("message").build();
+        sendSync(TestEventConsumer.TOPIC_NAME, message);
+        MessageProcessingFailedEvent resultingError = expectError();
+
+        Assertions.assertEquals("UNKNOWN_EXCEPTION", resultingError.getReferences().getErrorType().getCode());
+        Assertions.assertEquals("TEMPORARY", resultingError.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
+    void wrappedTransientExceptionWhileEventHandlingIsNotClassifiedAsTemporary() {
+        Mockito.doThrow(new RuntimeException("wrapper", new TimeoutException("timeout")))
+                .when(testEventProcessor).receive(Mockito.any());
+
+        AvroMessage message = JmeDeclarationCreatedEventBuilder.create().idempotenceId("idempotenceId").message("message").build();
+        sendSync(TestEventConsumer.TOPIC_NAME, message);
+        MessageProcessingFailedEvent resultingError = expectError();
+
+        Assertions.assertEquals("UNKNOWN_EXCEPTION", resultingError.getReferences().getErrorType().getCode());
+        Assertions.assertEquals("UNKNOWN", resultingError.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
+    void specificExceptionWithUnknownTemporalityAndTransientCauseKeepsItsDetails() {
+        SpecificException exception = SpecificException.builder()
+                .description("desc")
+                .errorCode("code")
+                .message("msg")
+                .temporality(MessageHandlerExceptionInformation.Temporality.UNKNOWN)
+                .stackTraceAsString("stack")
+                .build();
+        exception.initCause(new TimeoutException("timeout"));
+        Mockito.doThrow(exception).when(testEventProcessor).receive(Mockito.any());
+
+        AvroMessage message = JmeDeclarationCreatedEventBuilder.create().idempotenceId("idempotenceId").message("message").build();
+        sendSync(TestEventConsumer.TOPIC_NAME, message);
+        MessageProcessingFailedEvent resultingError = expectError();
+
+        Assertions.assertEquals("code", resultingError.getReferences().getErrorType().getCode());
+        Assertions.assertEquals("UNKNOWN", resultingError.getReferences().getErrorType().getTemporality());
+        Assertions.assertTrue(resultingError.getOptionalPayload().isPresent());
+        Assertions.assertEquals("desc", resultingError.getOptionalPayload().get().getErrorDescription());
+        Assertions.assertEquals("msg", resultingError.getOptionalPayload().get().getErrorMessage());
+        Assertions.assertEquals("stack", resultingError.getOptionalPayload().get().getStackTrace());
     }
 
     @Test

@@ -2,12 +2,7 @@ package ch.admin.bit.jeap.messaging.kafka.errorhandling;
 
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerException;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerMessageExceptionInformation;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEventBuilder;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedMessageKey;
+import ch.admin.bit.jeap.messaging.avro.errorevent.*;
 import ch.admin.bit.jeap.messaging.kafka.crypto.JeapKafkaAvroSerdeCryptoConfig;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.signature.SignatureHeaders;
@@ -33,10 +28,10 @@ import static net.logstash.logback.argument.StructuredArguments.keyValue;
 /**
  * A simple handler that can be used together with {@link org.springframework.kafka.listener.DefaultErrorHandler}.
  * <p>
- * As you can read multiple events from Kafka at once, it make sense to store the offsets for the last successfully
+ * As you can read multiple events from Kafka at once, it makes sense to store the offsets for the last successfully
  * handled event. This will be done by {@link org.springframework.kafka.listener.DefaultErrorHandler}.
  * {@link org.springframework.kafka.listener.DefaultErrorHandler} could also retry handling an event, however we are not using this feature (retry is done with error handling service).
- * Afterwards {@link org.springframework.kafka.listener.DefaultErrorHandler} will call this class with the failed event who will send it to the
+ * Afterward {@link org.springframework.kafka.listener.DefaultErrorHandler} will call this class with the failed event who will send it to the
  * error handling service. If this call does not throw an exception (or terminate the application context) the
  * {@link KafkaMessageListenerContainer} will then acknowledge the event in doInvokeRecordListener
  * as it has been handled by this class already
@@ -50,10 +45,19 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
     private final TracerBridge tracerBridge;
     private final JeapKafkaBeanNames jeapKafkaBeanNames;
     private final StackTraceHasher stackTraceHasher;
+    private final ExceptionTemporalityResolver exceptionTemporalityResolver;
 
     public ErrorServiceSender(BeanFactory beanFactory, KafkaProperties kafkaProperties,
                               ErrorServiceFailedHandler errorServiceFailedHandler, BackOff backOff,
                               TracerBridge tracerBridge, StackTraceHasher stackTraceHasher) {
+        this(beanFactory, kafkaProperties, errorServiceFailedHandler, backOff, tracerBridge, stackTraceHasher,
+                new DefaultExceptionTemporalityResolver());
+    }
+
+    public ErrorServiceSender(BeanFactory beanFactory, KafkaProperties kafkaProperties,
+                              ErrorServiceFailedHandler errorServiceFailedHandler, BackOff backOff,
+                              TracerBridge tracerBridge, StackTraceHasher stackTraceHasher,
+                              ExceptionTemporalityResolver exceptionTemporalityResolver) {
         this.beanFactory = beanFactory;
         this.kafkaProperties = kafkaProperties;
         this.errorServiceFailedHandler = errorServiceFailedHandler;
@@ -61,6 +65,7 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         this.tracerBridge = tracerBridge;
         this.jeapKafkaBeanNames = new JeapKafkaBeanNames(kafkaProperties.getDefaultClusterName());
         this.stackTraceHasher = stackTraceHasher;
+        this.exceptionTemporalityResolver = exceptionTemporalityResolver;
     }
 
     @Override
@@ -69,7 +74,7 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         // been closed, so no current tracing context is active here. We re-extract the trace context from the record's
         // propagation headers (still intact — Micrometer/OTel read headers without mutating them) and open a child
         // span so the produced MessageProcessingFailedEvent is correlated back to the originating message's trace.
-        try (TracerBridge.Scope _ = tracerBridge.getSpan(consumerRecord, "jeap-messaging.error-scope")) {
+        try (var _ = tracerBridge.getSpan(consumerRecord, "jeap-messaging.error-scope")) {
             createAndSendMessageProcessingFailedEvent(consumerRecord, exception);
         }
     }
@@ -121,10 +126,8 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         Object recordValue = consumerRecord.value();
         if (recordValue instanceof Message message) {
             return message;
-        } else if (recordValue instanceof ErrorSerializedMessageHolder serializedMessageHolder) {
-            if (serializedMessageHolder.getCause() instanceof MessageHandlerMessageExceptionInformation exception) {
-                return exception.getMessagingMessage();
-            }
+        } else if (recordValue instanceof ErrorSerializedMessageHolder serializedMessageHolder && serializedMessageHolder.getCause() instanceof MessageHandlerMessageExceptionInformation exception) {
+            return exception.getMessagingMessage();
         }
         return null;
     }
@@ -142,7 +145,7 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         try {
             Message message = (Message) originalMessage.value();
             key = message.getIdentity().getId();
-        } catch (Exception ex) {
+        } catch (Exception _) {
             // The error service sender must be as resilient as possible against any kind of issue causing the message
             // failed event to be produced (i.e. invalid original message, ...).
             // For resilience reasons, if the ID of the causing event cannot be determined, the idempotence ID of the
@@ -168,23 +171,23 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
                 future.get();
                 log.debug("Successfully sent error event using cluster {}", clusterName);
                 return;
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 //In case of an interrupt finish current thread ASAP
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Error sending interrupted");
             } catch (Exception e) {
                 long nextBackOff = backOffExecution.nextBackOff();
                 if (nextBackOff == BackOffExecution.STOP) {
-                    log.error("Could not send error message to error handling service (" + attempt + ") and do not retry any more", e);
+                    log.error("Could not send error message to error handling service ({}) and do not retry any more", attempt, e);
                     errorServiceFailedHandler.handle(e);
                     return;
                 }
 
                 //Sleep for one back off
-                log.error("Could not send error message to error handling service (" + attempt + "), retry", e);
+                log.error("Could not send error message to error handling service ({}), retry", attempt, e);
                 try {
                     Thread.sleep(nextBackOff);
-                } catch (InterruptedException e2) {
+                } catch (InterruptedException _) {
                     //In case of an interrupt finish current thread ASAP
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("Error sending interrupted");
@@ -215,18 +218,16 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
             return MessageHandlerException.builder()
                     .description(null)
                     .errorCode(MessageHandlerExceptionInformation.StandardErrorCodes.UNKNOWN_EXCEPTION.name())
-                    .temporality(MessageHandlerExceptionInformation.Temporality.UNKNOWN)
+                    .temporality(resolveTemporality(exception))
                     .cause(exception)
                     .build();
         }
 
         //Check if this was because it could not deserialize message
-        if (consumerRecord.key() instanceof ErrorSerializedMessageHolder) {
-            ErrorSerializedMessageHolder errorSerializedMessageHolder = (ErrorSerializedMessageHolder) consumerRecord.key();
+        if (consumerRecord.key() instanceof ErrorSerializedMessageHolder errorSerializedMessageHolder) {
             return createSerializationExceptionInformation(errorSerializedMessageHolder, "Could not deserialize key");
         }
-        if (consumerRecord.value() instanceof ErrorSerializedMessageHolder) {
-            ErrorSerializedMessageHolder errorSerializedMessageHolder = (ErrorSerializedMessageHolder) consumerRecord.value();
+        if (consumerRecord.value() instanceof ErrorSerializedMessageHolder errorSerializedMessageHolder) {
             return createSerializationExceptionInformation(errorSerializedMessageHolder, "Could not deserialize value");
         }
 
@@ -251,15 +252,23 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         if (!(cause instanceof MessageHandlerExceptionInformation inf)) {
             return MessageHandlerException.builder()
                     .errorCode(MessageHandlerExceptionInformation.StandardErrorCodes.UNKNOWN_EXCEPTION.name())
-                    .temporality(MessageHandlerExceptionInformation.Temporality.UNKNOWN)
+                    .temporality(resolveTemporality(cause))
                     .cause(cause)
                     .build();
         }
 
         //Otherwise check if information is valid
-        if (inf.getErrorCode() != null && inf.getMessage() != null && inf.getTemporality() != null) {
-            log.debug("errorCode {}, message {}, temporality {} set, returning exception to builder", inf.getErrorCode(), inf.getMessage(), inf.getTemporality());
-            return inf;
+        MessageHandlerExceptionInformation.Temporality temporality = inf.getTemporality();
+        if (temporality == null || temporality == MessageHandlerExceptionInformation.Temporality.UNKNOWN) {
+            temporality = resolveTemporality(cause);
+        }
+        if (inf.getErrorCode() != null && inf.getMessage() != null && temporality != null) {
+            log.debug("errorCode {}, message {}, temporality {} set, returning exception to builder", inf.getErrorCode(), inf.getMessage(), temporality);
+            if (temporality == inf.getTemporality()) {
+                return inf;
+            }
+            // Only the temporality is overridden, message, stack trace etc. are reported as provided by the exception
+            return new TemporalityOverridingExceptionInformation(inf, temporality);
         }
 
         log.error("Got an invalid exception information. Please fix your code!");
@@ -269,21 +278,77 @@ public class ErrorServiceSender implements ConsumerRecordRecoverer {
         return MessageHandlerException.builder()
                 .description(inf.getDescription())
                 .errorCode(inf.getErrorCode() != null ? inf.getErrorCode() : MessageHandlerExceptionInformation.StandardErrorCodes.INVALID_EXCEPTION.name())
-                .temporality(inf.getTemporality() != null ? inf.getTemporality() : MessageHandlerExceptionInformation.Temporality.UNKNOWN)
+                .temporality(temporality != null ? temporality : MessageHandlerExceptionInformation.Temporality.UNKNOWN)
                 .cause(cause)
                 .build();
     }
 
-    private static MessageHandlerExceptionInformation createSerializationExceptionInformation(ErrorSerializedMessageHolder errorSerializedMessageHolder, String errorMessage) {
+    private MessageHandlerExceptionInformation.Temporality resolveTemporality(Throwable cause) {
+        if (cause == null) {
+            return MessageHandlerExceptionInformation.Temporality.UNKNOWN;
+        }
+        return exceptionTemporalityResolver.resolve(cause)
+                .orElse(MessageHandlerExceptionInformation.Temporality.UNKNOWN);
+    }
+
+    private MessageHandlerExceptionInformation createSerializationExceptionInformation(ErrorSerializedMessageHolder errorSerializedMessageHolder, String errorMessage) {
         Throwable cause = new Exception(errorMessage, errorSerializedMessageHolder.getCause());
-        MessageHandlerExceptionInformation.Temporality temporality = MessageHandlerExceptionInformation.Temporality.PERMANENT;
-        if(errorSerializedMessageHolder.getCause() instanceof MessageHandlerExceptionInformation exception) {
-            temporality = exception.getTemporality();
+        Throwable deserializationCause = errorSerializedMessageHolder.getCause();
+        MessageHandlerExceptionInformation.Temporality temporality =
+                deserializationCause == null
+                        ? MessageHandlerExceptionInformation.Temporality.PERMANENT
+                        : exceptionTemporalityResolver.resolve(deserializationCause)
+                                .orElseGet(() -> getSerializationCauseTemporality(deserializationCause));
+        if (errorSerializedMessageHolder.getCause() instanceof MessageHandlerExceptionInformation exception) {
+            MessageHandlerExceptionInformation.Temporality explicitTemporality = exception.getTemporality();
+            if (explicitTemporality != null && explicitTemporality != MessageHandlerExceptionInformation.Temporality.UNKNOWN) {
+                temporality = explicitTemporality;
+            }
         }
         return MessageHandlerException.builder()
                 .errorCode(MessageHandlerExceptionInformation.StandardErrorCodes.DESERIALIZATION_FAILED.name())
                 .temporality(temporality)
                 .cause(cause)
                 .build();
+    }
+
+    private MessageHandlerExceptionInformation.Temporality getSerializationCauseTemporality(Throwable deserializationCause) {
+        if (deserializationCause instanceof MessageHandlerExceptionInformation exception) {
+            MessageHandlerExceptionInformation.Temporality temporality = exception.getTemporality();
+            if (temporality != null) {
+                return temporality;
+            }
+        }
+        return MessageHandlerExceptionInformation.Temporality.PERMANENT;
+    }
+
+    private record TemporalityOverridingExceptionInformation(MessageHandlerExceptionInformation delegate,
+                                                             Temporality temporality)
+            implements MessageHandlerExceptionInformation {
+
+        @Override
+        public String getErrorCode() {
+            return delegate.getErrorCode();
+        }
+
+        @Override
+        public String getDescription() {
+            return delegate.getDescription();
+        }
+
+        @Override
+        public Temporality getTemporality() {
+            return temporality;
+        }
+
+        @Override
+        public String getMessage() {
+            return delegate.getMessage();
+        }
+
+        @Override
+        public String getStackTraceAsString() {
+            return delegate.getStackTraceAsString();
+        }
     }
 }

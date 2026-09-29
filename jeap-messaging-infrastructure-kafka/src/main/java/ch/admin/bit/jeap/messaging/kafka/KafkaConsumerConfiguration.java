@@ -1,7 +1,9 @@
 package ch.admin.bit.jeap.messaging.kafka;
 
+import ch.admin.bit.jeap.messaging.kafka.errorhandling.DefaultExceptionTemporalityResolver;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.ErrorServiceFailedHandler;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.ErrorServiceSender;
+import ch.admin.bit.jeap.messaging.kafka.errorhandling.ExceptionTemporalityResolver;
 import ch.admin.bit.jeap.messaging.kafka.errorhandling.StackTraceHasher;
 import ch.admin.bit.jeap.messaging.kafka.filter.ErrorHandlingTargetFilter;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
@@ -26,11 +28,18 @@ public class KafkaConsumerConfiguration {
     private final Optional<TracerBridge> tracerBridge; // Only available if jeap-monitoring has been activated
 
     @Bean
-    ErrorServiceSender errorServiceSender(BeanFactory beanFactory) {
+    @ConditionalOnMissingBean(ExceptionTemporalityResolver.class)
+    ExceptionTemporalityResolver exceptionTemporalityResolver() {
+        return new DefaultExceptionTemporalityResolver();
+    }
+
+    @Bean
+    ErrorServiceSender errorServiceSender(BeanFactory beanFactory, ExceptionTemporalityResolver exceptionTemporalityResolver) {
         BackOff retrySendingError = new FixedBackOff(properties.getErrorServiceRetryIntervalMs(), properties.getErrorServiceRetryAttempts());
         TracerBridge tracerBridgeOrNoop = tracerBridge.orElse(TracerBridge.NOOP);
         StackTraceHasher stackTraceHasher = new StackTraceHasher(properties);
-        return new ErrorServiceSender(beanFactory, properties, errorServiceFailedHandler, retrySendingError, tracerBridgeOrNoop, stackTraceHasher);
+        return new ErrorServiceSender(beanFactory, properties, errorServiceFailedHandler, retrySendingError,
+                tracerBridgeOrNoop, stackTraceHasher, exceptionTemporalityResolver);
     }
 
     @Bean

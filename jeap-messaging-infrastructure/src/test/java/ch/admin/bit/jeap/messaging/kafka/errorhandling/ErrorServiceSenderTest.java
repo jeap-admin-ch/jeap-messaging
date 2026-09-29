@@ -5,17 +5,13 @@ import ch.admin.bit.jeap.domainevent.avro.AvroDomainEventIdentity;
 import ch.admin.bit.jeap.messaging.avro.AvroMessage;
 import ch.admin.bit.jeap.messaging.avro.AvroMessageKey;
 import ch.admin.bit.jeap.messaging.avro.SerializedMessageHolder;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerException;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageHandlerExceptionInformation;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedEvent;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedMessageKey;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedPayload;
-import ch.admin.bit.jeap.messaging.avro.errorevent.MessageProcessingFailedReferences;
+import ch.admin.bit.jeap.messaging.avro.errorevent.*;
 import ch.admin.bit.jeap.messaging.avro.security.AvroClassSecurity;
 import ch.admin.bit.jeap.messaging.kafka.properties.KafkaProperties;
 import ch.admin.bit.jeap.messaging.kafka.tracing.TracerBridge;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,12 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -44,10 +35,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.only;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ErrorServiceSenderTest {
@@ -66,6 +54,8 @@ class ErrorServiceSenderTest {
     private CompletableFuture<SendResult<Void, MessageProcessingFailedEvent>> completableFuture;
     @Mock
     private BeanFactory beanFactory;
+    @Mock
+    private KafkaProperties kafkaProperties;
     @Captor
     private ArgumentCaptor<AvroDomainEvent> eventCaptor;
     @Captor
@@ -107,7 +97,7 @@ class ErrorServiceSenderTest {
     }
 
     @BeforeEach
-    void init(@Mock KafkaProperties kafkaProperties) {
+    void init() {
         when(key.getSerializedMessage()).thenReturn(new byte[]{0, 1});
         when(value.getSerializedMessage()).thenReturn(new byte[]{1, 1});
         when(kafkaProperties.getDefaultClusterName()).thenReturn(KafkaProperties.DEFAULT_CLUSTER);
@@ -151,10 +141,111 @@ class ErrorServiceSenderTest {
     }
 
     @Test
+    void sendToErrorTopic_serializationFailure_usesResolverWhenCauseTemporalityUnknown() {
+        // The cause reports UNKNOWN, so the resolver's classification must be used instead of being
+        // unconditionally overwritten with the cause's UNKNOWN temporality.
+        ExceptionTemporalityResolver resolver = exception -> java.util.Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY);
+        target = new ErrorServiceSender(beanFactory, kafkaProperties, null, new ExponentialBackOff(),
+                TracerBridge.NOOP, new StackTraceHasher(kafkaProperties), resolver);
+
+        MessageHandlerExceptionInformationException unknownTemporalityCause =
+                new MessageHandlerExceptionInformationException(MessageHandlerExceptionInformation.Temporality.UNKNOWN);
+        ErrorSerializedMessageHolder errorSerializedMessageHolder = new ErrorSerializedMessageHolder(new byte[]{1, 2, 3}, unknownTemporalityCause);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, errorSerializedMessageHolder);
+
+        target.accept(consumerRecord, new ListenerExecutionFailedException("gugu", unknownTemporalityCause));
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+
+        assertEquals("TEMPORARY", event.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
+    void sendToErrorTopic_serializationFailure_preservesUnknownWhenResolverCannotClassify() {
+        MessageHandlerExceptionInformationException unknownTemporalityCause =
+                new MessageHandlerExceptionInformationException(MessageHandlerExceptionInformation.Temporality.UNKNOWN);
+        ErrorSerializedMessageHolder errorSerializedMessageHolder = new ErrorSerializedMessageHolder(new byte[]{1, 2, 3}, unknownTemporalityCause);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, errorSerializedMessageHolder);
+
+        target.accept(consumerRecord, new ListenerExecutionFailedException("gugu", unknownTemporalityCause));
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+
+        assertEquals("UNKNOWN", event.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
+    void sendToErrorTopic_marksKnownRetryableExceptionAsTemporary() {
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+
+        target.accept(consumerRecord, new ListenerExecutionFailedException("message", new TimeoutException()));
+
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+
+        assertEquals("TEMPORARY", event.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
+    void sendToErrorTopic_doesNotClassifyKnownExceptionInCauseChain() {
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+        Exception exception = new IllegalStateException("wrapper", new TimeoutException());
+
+        target.accept(consumerRecord, new ListenerExecutionFailedException("message", exception));
+
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+
+        assertEquals("UNKNOWN", event.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
+    void sendToErrorTopic_unknownTemporalityExceptionInformation_reclassifiedKeepingOriginalDetails() {
+        ExceptionTemporalityResolver resolver = exception -> exception instanceof UnknownTemporalityException
+                ? java.util.Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY)
+                : java.util.Optional.empty();
+        target = new ErrorServiceSender(beanFactory, kafkaProperties, null, new ExponentialBackOff(),
+                TracerBridge.NOOP, new StackTraceHasher(kafkaProperties), resolver);
+        UnknownTemporalityException exception = new UnknownTemporalityException(new TimeoutException("timeout"));
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+
+        target.accept(consumerRecord, new ListenerExecutionFailedException("message", exception));
+
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+        MessageProcessingFailedPayload payload = event.getOptionalPayload().orElseThrow();
+
+        assertEquals("TEMPORARY", event.getReferences().getErrorType().getTemporality());
+        assertEquals("CODE", event.getReferences().getErrorType().getCode());
+        assertEquals("description", payload.getErrorDescription());
+        assertEquals("original message", payload.getErrorMessage());
+        assertEquals("original stack trace", payload.getStackTrace());
+    }
+
+    @Test
+    void sendToErrorTopic_usesCustomTemporalityResolver() {
+        ExceptionTemporalityResolver resolver = exception -> exception instanceof IllegalStateException
+                ? java.util.Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY)
+                : java.util.Optional.empty();
+        target = new ErrorServiceSender(beanFactory, kafkaProperties, null, new ExponentialBackOff(),
+                TracerBridge.NOOP, new StackTraceHasher(kafkaProperties), resolver);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
+
+        target.accept(consumerRecord, new IllegalStateException("application-defined temporary error"));
+
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+
+        assertEquals("TEMPORARY", event.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
     void sendToErrorTopic_avroMessageRecord_expectKeyToBeEqualToTheCausingEventId() {
         String causingeventId = "the-id";
-        AvroDomainEvent domainEvent = Mockito.mock(AvroDomainEvent.class);
-        AvroDomainEventIdentity domainEventIdentity = Mockito.mock(AvroDomainEventIdentity.class);
+        AvroDomainEvent domainEvent = mock(AvroDomainEvent.class);
+        AvroDomainEventIdentity domainEventIdentity = mock(AvroDomainEventIdentity.class);
         doReturn(domainEventIdentity).when(domainEvent).getIdentity();
         doReturn(causingeventId).when(domainEventIdentity).getId();
         doReturn(new byte[]{1, 1}).when(domainEvent).getSerializedMessage();
@@ -211,9 +302,33 @@ class ErrorServiceSenderTest {
 
     @Test
     void accept_messageWithoutMessageAndCause_messageSentToErrorTopic() {
+        ExceptionTemporalityResolver resolver = exception -> {
+            java.util.Objects.requireNonNull(exception);
+            return java.util.Optional.empty();
+        };
+        target = new ErrorServiceSender(beanFactory, kafkaProperties, null, new ExponentialBackOff(),
+                TracerBridge.NOOP, new StackTraceHasher(kafkaProperties), resolver);
         ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
         target.accept(consumerRecord, new ListenerExecutionFailedException(null, null));
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), any());
+    }
+
+    @Test
+    void accept_serializationFailureWithoutCause_doesNotPassNullToResolver() {
+        ExceptionTemporalityResolver resolver = exception -> {
+            java.util.Objects.requireNonNull(exception);
+            return java.util.Optional.empty();
+        };
+        target = new ErrorServiceSender(beanFactory, kafkaProperties, null, new ExponentialBackOff(),
+                TracerBridge.NOOP, new StackTraceHasher(kafkaProperties), resolver);
+        ErrorSerializedMessageHolder errorSerializedMessageHolder = new ErrorSerializedMessageHolder(new byte[]{1, 2, 3}, null);
+        ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, errorSerializedMessageHolder);
+
+        target.accept(consumerRecord, new ListenerExecutionFailedException("message", null));
+
+        verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
+        MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
+        assertEquals("PERMANENT", event.getReferences().getErrorType().getTemporality());
     }
 
     @ParameterizedTest
@@ -313,6 +428,33 @@ class ErrorServiceSenderTest {
         @Override
         public String toString() {
             return message;
+        }
+    }
+
+    private static class UnknownTemporalityException extends RuntimeException implements MessageHandlerExceptionInformation {
+
+        UnknownTemporalityException(Throwable cause) {
+            super("original message", cause);
+        }
+
+        @Override
+        public String getErrorCode() {
+            return "CODE";
+        }
+
+        @Override
+        public String getDescription() {
+            return "description";
+        }
+
+        @Override
+        public Temporality getTemporality() {
+            return Temporality.UNKNOWN;
+        }
+
+        @Override
+        public String getStackTraceAsString() {
+            return "original stack trace";
         }
     }
 

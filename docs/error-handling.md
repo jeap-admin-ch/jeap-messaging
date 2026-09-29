@@ -40,6 +40,37 @@ All properties use the prefix `jeap.messaging.kafka`.
 
 See the [Configuration reference](configuration.md).
 
+## Temporary exceptions
+
+The error service sender automatically marks known transient framework errors as `TEMPORARY`, so the
+Error Handling Service can retry them. This includes retryable Kafka errors, transient and recoverable
+Spring data-access errors, transaction timeouts, common Hibernate connection/lock/timeout errors and
+Spring `ResourceAccessException`s (including subclasses). The default resolver checks only the exception
+passed to it, not its cause chain. An explicit `PERMANENT` or `TEMPORARY` temporality declared by that
+exception through `MessageHandlerExceptionInformation` always takes precedence.
+
+Applications can customize this classification by providing a Spring bean of type
+`ExceptionTemporalityResolver`. An application-provided resolver **replaces** the default resolver, so
+delegate to `DefaultExceptionTemporalityResolver` to keep the jEAP defaults:
+
+```java
+@Bean
+ExceptionTemporalityResolver exceptionTemporalityResolver() {
+    var defaults = new DefaultExceptionTemporalityResolver();
+    return exception -> exception instanceof MyTemporaryException
+            ? Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY)
+            : defaults.resolve(exception);
+}
+```
+
+Returning an empty `Optional` keeps the error `UNKNOWN` for message-processing exceptions. Serialization
+failures default to `PERMANENT` only when neither the resolver nor the deserialization cause provides
+temporality information. If that cause implements `MessageHandlerExceptionInformation`, its temporality
+is preserved as before, including `UNKNOWN`, unless the resolver returns a concrete classification.
+Explicit `PERMANENT` or `TEMPORARY` values supplied through `MessageHandlerExceptionInformation` by the
+thrown exception itself remain unchanged; only its temporality is replaced if it is `UNKNOWN` — error
+code, message, description and stack trace are reported as provided.
+
 ## Guidelines
 
 - every message-receiving application must have an Error Handling Service;
