@@ -4,11 +4,16 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import org.apache.avro.Schema;
+import org.apache.avro.specific.AvroGenerated;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +54,32 @@ class AvroSchemaExtractorTest {
         Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement);
 
         assertThat(schemaJson).isEmpty();
+    }
+
+    @Test
+    void isAvroGeneratedType_whenTypeIsAnnotatedWithAvroGenerated_thenTrue() {
+        TypeElement typeElement = mock(TypeElement.class);
+        doReturn(List.of(annotationMirror(AvroGenerated.class))).when(typeElement).getAnnotationMirrors();
+
+        assertThat(AvroSchemaExtractor.isAvroGeneratedType(typeElement)).isTrue();
+    }
+
+    @Test
+    void isAvroGeneratedType_whenTypeDeclaresSchemaField_thenTrue() {
+        TypeElement typeElement = mock(TypeElement.class);
+        doReturn(List.of()).when(typeElement).getAnnotationMirrors();
+        doReturn(List.of(field("SCHEMA$"))).when(typeElement).getEnclosedElements();
+
+        assertThat(AvroSchemaExtractor.isAvroGeneratedType(typeElement)).isTrue();
+    }
+
+    @Test
+    void isAvroGeneratedType_whenTypeIsNeitherAnnotatedNorDeclaresSchemaField_thenFalse() {
+        TypeElement typeElement = mock(TypeElement.class);
+        doReturn(List.of(annotationMirror(SuppressWarnings.class))).when(typeElement).getAnnotationMirrors();
+        doReturn(List.of(field("MESSAGE_TYPE_NAME"))).when(typeElement).getEnclosedElements();
+
+        assertThat(AvroSchemaExtractor.isAvroGeneratedType(typeElement)).isFalse();
     }
 
     @Test
@@ -94,6 +125,27 @@ class AvroSchemaExtractorTest {
         LiteralTree literal = mock(LiteralTree.class);
         when(literal.getValue()).thenReturn(value);
         return literal;
+    }
+
+    private static AnnotationMirror annotationMirror(Class<?> annotationClass) {
+        TypeElement annotationElement = mock(TypeElement.class);
+        Name qualifiedName = mock(Name.class);
+        when(qualifiedName.toString()).thenReturn(annotationClass.getName());
+        when(annotationElement.getQualifiedName()).thenReturn(qualifiedName);
+        DeclaredType annotationType = mock(DeclaredType.class);
+        when(annotationType.asElement()).thenReturn(annotationElement);
+        AnnotationMirror annotationMirror = mock(AnnotationMirror.class);
+        when(annotationMirror.getAnnotationType()).thenReturn(annotationType);
+        return annotationMirror;
+    }
+
+    private static Element field(String simpleName) {
+        Element element = mock(Element.class);
+        Name name = mock(Name.class);
+        when(name.toString()).thenReturn(simpleName);
+        when(element.getSimpleName()).thenReturn(name);
+        when(element.getKind()).thenReturn(ElementKind.FIELD);
+        return element;
     }
 
     @SuppressWarnings("unused")

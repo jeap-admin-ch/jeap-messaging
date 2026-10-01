@@ -57,7 +57,7 @@ public class MessageContracts {
     private List<MessageContractDto> loadContracts(Path contractDirectory) throws IOException {
         try (Stream<Path> pathStream = Files.find(contractDirectory, 1, this::isContractFile)) {
             return pathStream
-                    .flatMap(this::toDtos)
+                    .flatMap(path -> toDtos(contractDirectory, path))
                     .collect(toList());
         }
     }
@@ -66,9 +66,9 @@ public class MessageContracts {
         return path.toString().endsWith(CONTRACT_SUFFIX);
     }
 
-    private Stream<MessageContractDto> toDtos(Path path) {
+    private Stream<MessageContractDto> toDtos(Path contractDirectory, Path path) {
         Contract contract = deserializeContract(path);
-        String schema = readSchema(path.getParent(), contract);
+        String schema = readSchema(contractDirectory, contract);
         Stream<String> topicStream = Arrays.stream(contract.getTopics());
         return topicStream.map(topic ->
                 MessageContractDto.builder()

@@ -15,11 +15,7 @@ import javax.lang.model.element.TypeElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Extracts the avro schema of a message type from the <code>SCHEMA$</code> field of the avro generated class.
@@ -33,25 +29,27 @@ public class AvroSchemaExtractor {
 
     private static final String SCHEMA_FIELD = "SCHEMA$";
     private static final String GET_CLASS_SCHEMA_METHOD = "getClassSchema";
-    private static final Map<String, String> SCHEMA_JSON_BY_CLASS_NAME = new ConcurrentHashMap<>();
-
-    private static URLClassLoader classPathClassLoader;
+    private static final String AVRO_GENERATED_ANNOTATION = "org.apache.avro.specific.AvroGenerated";
 
     private AvroSchemaExtractor() {
     }
 
-    public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {
-        String className = avroGeneratedType.getQualifiedName().toString();
-        String cachedSchemaJson = SCHEMA_JSON_BY_CLASS_NAME.get(className);
-        if (cachedSchemaJson != null) {
-            return Optional.of(cachedSchemaJson);
-        }
-        Optional<String> schemaJson = readSchemaJson(processingEnv, avroGeneratedType, className);
-        schemaJson.ifPresent(json -> SCHEMA_JSON_BY_CLASS_NAME.put(className, json));
-        return schemaJson;
+    /**
+     * Returns true if the given type looks like an avro generated class, i.e. carries the
+     * {@link org.apache.avro.specific.AvroGenerated} annotation or declares a <code>SCHEMA$</code> field. Checked on
+     * the element model only, without loading the class.
+     */
+    public static boolean isAvroGeneratedType(TypeElement typeElement) {
+        boolean avroGenerated = typeElement.getAnnotationMirrors().stream()
+                .map(annotationMirror -> annotationMirror.getAnnotationType().asElement())
+                .filter(TypeElement.class::isInstance)
+                .map(TypeElement.class::cast)
+                .anyMatch(annotationType -> AVRO_GENERATED_ANNOTATION.equals(annotationType.getQualifiedName().toString()));
+        return avroGenerated || schemaField(typeElement).isPresent();
     }
 
-    private static Optional<String> readSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType, String className) {
+    public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {
+        String className = avroGeneratedType.getQualifiedName().toString();
         Optional<String> schemaJson = readSchemaJsonFromClasspath(className);
         if (schemaJson.isPresent()) {
             return schemaJson;
@@ -59,21 +57,39 @@ public class AvroSchemaExtractor {
         return readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType);
     }
 
+    /**
+     * The message type classes are usually visible to the classloader of the annotation processor, as the annotation
+     * processor is loaded from the compile classpath. As a fallback, a classloader for the classpath of the compiling
+     * jvm is used, which is only created if the class could not be loaded otherwise.
+     */
     private static Optional<String> readSchemaJsonFromClasspath(String className) {
-        for (ClassLoader classLoader : classLoaders()) {
-            Optional<String> schemaJson = readSchemaJsonFromClasspath(className, classLoader);
-            if (schemaJson.isPresent()) {
-                return schemaJson;
-            }
+        Optional<String> schemaJson = readSchemaJsonFromClassLoader(className, AvroSchemaExtractor.class.getClassLoader());
+        if (schemaJson.isPresent()) {
+            return schemaJson;
         }
-        return Optional.empty();
+        schemaJson = readSchemaJsonFromClassLoader(className, Thread.currentThread().getContextClassLoader());
+        if (schemaJson.isPresent()) {
+            return schemaJson;
+        }
+        return readSchemaJsonFromClassPath(className);
     }
 
-    private static Optional<String> readSchemaJsonFromClasspath(String className, ClassLoader classLoader) {
+    private static Optional<String> readSchemaJsonFromClassPath(String className) {
+        try (URLClassLoader classPathClassLoader = ClasspathUtils.createExtendedClassLoader()) {
+            return readSchemaJsonFromClassLoader(className, classPathClassLoader);
+        } catch (Exception | LinkageError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<String> readSchemaJsonFromClassLoader(String className, ClassLoader classLoader) {
+        if (classLoader == null) {
+            return Optional.empty();
+        }
         try {
             Class<?> avroGeneratedClass = Class.forName(className, true, classLoader);
             return Optional.of(readSchema(avroGeneratedClass).toString());
-        } catch (Exception | NoClassDefFoundError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
+        } catch (Exception | LinkageError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
             return Optional.empty();
         }
     }
@@ -86,31 +102,6 @@ public class AvroSchemaExtractor {
             Field schemaField = avroGeneratedClass.getDeclaredField(SCHEMA_FIELD);
             return (Schema) schemaField.get(null);
         }
-    }
-
-    /**
-     * The message type classes are usually visible to the classloader of the annotation processor, as the annotation
-     * processor is loaded from the compile classpath. As a fallback, a classloader for the classpath of the compiling
-     * jvm is used.
-     */
-    private static synchronized List<ClassLoader> classLoaders() {
-        List<ClassLoader> classLoaders = new ArrayList<>();
-        classLoaders.add(AvroSchemaExtractor.class.getClassLoader());
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        if (contextClassLoader != null) {
-            classLoaders.add(contextClassLoader);
-        }
-        if (classPathClassLoader == null) {
-            try {
-                classPathClassLoader = ClasspathUtils.createExtendedClassLoader();
-            } catch (Exception ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
-                classPathClassLoader = null;
-            }
-        }
-        if (classPathClassLoader != null) {
-            classLoaders.add(classPathClassLoader);
-        }
-        return classLoaders;
     }
 
     /**
@@ -128,20 +119,25 @@ public class AvroSchemaExtractor {
                 return Optional.empty();
             }
             return Optional.of(new Schema.Parser().parse(schemaJson).toString());
-        } catch (Exception | NoClassDefFoundError ex) { // NOSONAR: the compiler tree api might not be available
+        } catch (Exception | LinkageError ex) { // NOSONAR: the compiler tree api might not be available
             return Optional.empty();
         }
     }
 
     private static VariableTree schemaFieldTree(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {
-        Trees trees = Trees.instance(processingEnv);
-        for (Element enclosedElement : avroGeneratedType.getEnclosedElements()) {
-            if (enclosedElement.getKind() == ElementKind.FIELD && SCHEMA_FIELD.contentEquals(enclosedElement.getSimpleName())) {
-                Tree tree = trees.getTree(enclosedElement);
-                return tree instanceof VariableTree variableTree ? variableTree : null;
-            }
+        Optional<? extends Element> schemaField = schemaField(avroGeneratedType);
+        if (schemaField.isEmpty()) {
+            return null;
         }
-        return null;
+        Tree tree = Trees.instance(processingEnv).getTree(schemaField.get());
+        return tree instanceof VariableTree variableTree ? variableTree : null;
+    }
+
+    private static Optional<? extends Element> schemaField(TypeElement typeElement) {
+        return typeElement.getEnclosedElements().stream()
+                .filter(element -> element.getKind() == ElementKind.FIELD)
+                .filter(element -> SCHEMA_FIELD.equals(element.getSimpleName().toString()))
+                .findFirst();
     }
 
     static String parsedStringLiterals(ExpressionTree initializer) {

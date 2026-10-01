@@ -11,7 +11,9 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static javax.tools.Diagnostic.Kind.NOTE;
@@ -23,7 +25,7 @@ import static javax.tools.Diagnostic.Kind.WARNING;
  */
 class SchemaWriter {
 
-    static final String SCHEMA_JSON = ".avsc";
+    static final String SCHEMA_SUFFIX = ".avsc";
 
     private SchemaWriter() {
     }
@@ -32,14 +34,21 @@ class SchemaWriter {
                                String messageTypeName, String messageTypeVersion) {
         TypeElement messageTypeElement = messageTypeElement(typeRefElement);
         if (messageTypeElement == null) {
-            warnSchemaNotAvailable(processingEnv, annotatedElement, messageTypeName, "no enclosing avro generated class found");
+            // The TypeRef is not declared in an avro generated message type class, i.e. there is no schema to write.
+            // This is not an error: contracts can reference hand-written MessageTypeMetadata implementations.
+            processingEnv.getMessager().printMessage(NOTE,
+                    "No avro schema file generated for the message type " + messageTypeName +
+                    ": no avro generated class declaring a SCHEMA$ field found", annotatedElement);
             return;
         }
 
         Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, messageTypeElement);
         if (schemaJson.isEmpty()) {
-            warnSchemaNotAvailable(processingEnv, annotatedElement, messageTypeName,
-                    "unable to read the field " + messageTypeElement.getQualifiedName() + ".SCHEMA$");
+            processingEnv.getMessager().printMessage(WARNING,
+                    "No avro schema file generated for the message type " + messageTypeName +
+                    " (unable to read the field " + messageTypeElement.getQualifiedName() + ".SCHEMA$). " +
+                    "The message contract service will read the schema from the message type registry instead.",
+                    annotatedElement);
             return;
         }
 
@@ -48,7 +57,9 @@ class SchemaWriter {
 
     private static TypeElement messageTypeElement(TypeElement typeRefElement) {
         Element enclosingElement = typeRefElement.getEnclosingElement();
-        if (enclosingElement instanceof TypeElement enclosingTypeElement && enclosingElement.getKind() == ElementKind.CLASS) {
+        if (enclosingElement instanceof TypeElement enclosingTypeElement
+            && enclosingElement.getKind() == ElementKind.CLASS
+            && AvroSchemaExtractor.isAvroGeneratedType(enclosingTypeElement)) {
             return enclosingTypeElement;
         }
         return null;
@@ -58,7 +69,8 @@ class SchemaWriter {
         Filer filer = processingEnv.getFiler();
         try {
             FileObject schemaFile = filer.createResource(StandardLocation.CLASS_OUTPUT, ContractWriter.CONTRACTS_PACKAGE, fileName, annotatedElement);
-            try (PrintWriter writer = new PrintWriter(schemaFile.openWriter())) {
+            // Written as UTF-8 explicitly, as the schema is read as UTF-8 by the jeap-messaging-contract-maven-plugin
+            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(schemaFile.openOutputStream(), StandardCharsets.UTF_8))) {
                 writer.write(schemaJson);
             }
         } catch (FilerException ex) {
@@ -70,15 +82,7 @@ class SchemaWriter {
         }
     }
 
-    static String getFileName(String messageTypeName, String messageTypeVersion) {
-        return messageTypeName + "-" + messageTypeVersion + SCHEMA_JSON;
-    }
-
-    private static void warnSchemaNotAvailable(ProcessingEnvironment processingEnv, Element annotatedElement,
-                                               String messageTypeName, String reason) {
-        processingEnv.getMessager().printMessage(WARNING,
-                "No avro schema file generated for the message type " + messageTypeName + " (" + reason + "). " +
-                "The message contract service will read the schema from the message type registry instead.",
-                annotatedElement);
+    private static String getFileName(String messageTypeName, String messageTypeVersion) {
+        return messageTypeName + "-" + messageTypeVersion + SCHEMA_SUFFIX;
     }
 }
