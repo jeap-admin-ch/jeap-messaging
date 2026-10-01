@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [19.15.0] - 2026-10-05
+
+### Added
+- The contract annotation processor writes the avro schema of a message type as `<MessageTypeName>-<version>.avsc` next to the message contract, read from the `SCHEMA$` field of the generated message type class. The contract maven plugin uploads the schema together with the contract, so that the message contract service does not have to read it from the message type registry.
+
 ## [19.14.0] - 2026-10-05
 
 ### Added

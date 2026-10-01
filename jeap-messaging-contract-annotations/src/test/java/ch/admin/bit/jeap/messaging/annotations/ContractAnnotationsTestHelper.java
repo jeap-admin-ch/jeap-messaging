@@ -30,4 +30,11 @@ class ContractAnnotationsTestHelper {
         String content = Files.readString(file);
         return new JSONObject(content);
     }
+
+    static String loadSchema(String expectedName) throws IOException {
+        Path workingDir = Path.of(CONTRACTS_PATH);
+        Path file = workingDir.resolve(expectedName);
+        assertTrue(Files.exists(file), "Expected schema file " + file + " to exist");
+        return Files.readString(file);
+    }
 }

@@ -21,7 +21,7 @@ import java.util.Optional;
 import static javax.tools.Diagnostic.Kind.ERROR;
 
 class ContractWriter {
-    private static final String CONTRACTS_PACKAGE = "ch.admin.bit.jeap.messaging.contracts";
+    static final String CONTRACTS_PACKAGE = "ch.admin.bit.jeap.messaging.contracts";
     private static final String CONTRACT_VERSION = "1.0.0";
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
@@ -78,6 +78,8 @@ class ContractWriter {
         } catch (IOException e) {
             throw MessagingAnnotationProcessingException.processingFailed(e);
         }
+
+        SchemaWriter.generateSchema(processingEnv, annotatedElement, typeElement, messageTypeName, messageTypeVersion);
     }
 
     private static FileObject createResource(ProcessingEnvironment processingEnv, Element annotatedElement,

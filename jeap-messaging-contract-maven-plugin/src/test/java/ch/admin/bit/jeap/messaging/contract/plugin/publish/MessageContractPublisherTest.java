@@ -44,7 +44,10 @@ class MessageContractPublisherTest {
                         matchingJsonPath("$.contracts[?(@.topic=='test-producer-topic-2')]"),
                         matchingJsonPath("$.contracts[?(@.topic=='test-producer-topic-encrypted')]"),
                         matchingJsonPath("$.contracts[?(@.topic=='test-producer-topic-not-encrypted')]"),
-                        matchingJsonPath("$.contracts[?(@.topic=='test-consumer-topic')]"))));
+                        matchingJsonPath("$.contracts[?(@.topic=='test-consumer-topic')]"),
+                        // Expect the schema of the message type version with a schema file to be uploaded
+                        matchingJsonPath("$.contracts[?(@.messageTypeVersion=='1.1.0')].schema",
+                                containing("JmeCreateDeclarationCommand")))));
     }
 
     @Test

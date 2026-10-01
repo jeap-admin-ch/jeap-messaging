@@ -1,9 +1,9 @@
 # Message contracts
 
 A message contract states what a microservice consumes or produces: the app name (the Spring
-`spring.application.name`), the message-type name and version, and the topic. The schema itself
-follows from the [Message Type Registry](message-type-registry.md), so a contract only references the
-type — it never duplicates the schema.
+`spring.application.name`), the message-type name and version, and the topic. The message type is
+defined in the [Message Type Registry](message-type-registry.md); the contract references the type and
+is accompanied by the Avro schema of the type, which is uploaded together with the contract.
 
 Contracts serve three goals:
 
@@ -63,6 +63,13 @@ public class Application {
 The `jeap-messaging-contract-annotation-processor` runs at build time and produces the contract JSON,
 which the jEAP build pipeline uploads to the Message Contract Service. Normally just having the
 dependency on the classpath is enough.
+
+Next to each contract file, the processor writes the Avro schema of the message type as
+`<MessageTypeName>-<version>.avsc`, read from the `SCHEMA$` field of the generated message type class.
+The `jeap-messaging-contract-maven-plugin` uploads the schema together with the contract, so that the
+Message Contract Service does not need to read the schema from the message type registry. If the
+schema cannot be determined, the processor emits a warning and the schema is read from the message
+type registry by the Message Contract Service as before.
 
 Only in the special case where `annotationProcessorPaths` is configured explicitly in the
 `maven-compiler-plugin` must you add the processor path explicitly:

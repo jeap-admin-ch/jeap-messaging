@@ -18,4 +18,5 @@ public class MessageContractDto {
     String branch;
     CompatibilityMode compatibilityMode;
     String encryptionKeyId;
+    String schema;
 }

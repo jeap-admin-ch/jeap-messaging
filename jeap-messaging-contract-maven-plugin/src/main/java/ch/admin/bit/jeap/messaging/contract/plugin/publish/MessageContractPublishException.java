@@ -54,6 +54,10 @@ class MessageContractPublishException extends RuntimeException {
         return new MessageContractPublishException("Failed to read messaging contract at " + path + ": " + exception.getMessage(), exception);
     }
 
+    static MessageContractPublishException failedToLoadSchema(Path path, Exception exception) {
+        return new MessageContractPublishException("Failed to read the avro schema at " + path + ": " + exception.getMessage(), exception);
+    }
+
     static MessageContractPublishException badAppName(String appName) {
         return new MessageContractPublishException("Messaging contracts contain an invalid app name: " + appName +
                 " - please check if your messaging contracts contain a valid app name definition.");

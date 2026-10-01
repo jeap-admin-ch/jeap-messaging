@@ -1,0 +1,1 @@
+{"type":"record","name":"JmeCreateDeclarationCommand","namespace":"ch.admin.bit.jme.test","fields":[{"name":"declarationId","type":"string"}]}

@@ -8,6 +8,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import static ch.admin.bit.jeap.messaging.annotations.ConsumerContractByTemplatesAnnotationTest.APP_NAME;
 import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.assertContractFileExists;
 import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadContractJson;
+import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchema;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Maven: Maven configures annotation processors explicitly via the pom.xml file and ensures that all necessary paths and resources are available.
@@ -51,5 +53,17 @@ public class ConsumerContractByTemplatesAnnotationTest {
         JSONAssert.assertEquals("{compatibilityMode:\"" + JeapInitializerSimpleTestEvent.TypeRef.COMPATIBILITY_MODE + "\"}", actual, false);
         JSONAssert.assertEquals("{appName:\"appNameForTest\"}", actual, false);
         JSONAssert.assertEquals("{topics: [ \"topic1\", \"topic2\" ]}", actual, false);
+    }
+
+    /**
+     * Tests if the avro schema of the message type is generated next to the contract
+     */
+    @Test
+    void generatedSchemaFileIsCorrect() throws Exception {
+        String expectedName = EVENT_NAME + "-" + EVENT_VERSION + ".avsc";
+
+        String schema = loadSchema(expectedName);
+
+        assertEquals(JeapInitializerSimpleTestEvent.getClassSchema().toString(), schema);
     }
 }

@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toList;
 public class MessageContracts {
 
     private static final String CONTRACT_SUFFIX = "-contract.json";
+    private static final String SCHEMA_SUFFIX = ".avsc";
 
     private final ObjectMapper objectMapper = JsonMapper.builder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -67,6 +68,7 @@ public class MessageContracts {
 
     private Stream<MessageContractDto> toDtos(Path path) {
         Contract contract = deserializeContract(path);
+        String schema = readSchema(path.getParent(), contract);
         Stream<String> topicStream = Arrays.stream(contract.getTopics());
         return topicStream.map(topic ->
                 MessageContractDto.builder()
@@ -80,8 +82,29 @@ public class MessageContracts {
                         .branch(contract.getRegistryBranch())
                         .commitHash(contract.getRegistryCommit())
                         .encryptionKeyId(contract.getEncryptionKeyId())
+                        .schema(schema)
                         .build()
         );
+    }
+
+    /**
+     * Reads the avro schema of the message type, which the annotation processor writes next to the contract file. If
+     * no schema file is present, the message contract service reads the schema from the message type registry.
+     */
+    private String readSchema(Path contractDirectory, Contract contract) {
+        Path schemaPath = contractDirectory.resolve(schemaFileName(contract));
+        if (!Files.isRegularFile(schemaPath)) {
+            return null;
+        }
+        try {
+            return Files.readString(schemaPath);
+        } catch (IOException ex) {
+            throw MessageContractPublishException.failedToLoadSchema(schemaPath, ex);
+        }
+    }
+
+    private String schemaFileName(Contract contract) {
+        return contract.getMessageTypeName() + "-" + contract.getMessageTypeVersion() + SCHEMA_SUFFIX;
     }
 
     private Contract deserializeContract(Path path) {
