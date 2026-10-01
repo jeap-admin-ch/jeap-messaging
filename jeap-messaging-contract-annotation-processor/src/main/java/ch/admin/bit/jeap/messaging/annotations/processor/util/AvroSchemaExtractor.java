@@ -15,7 +15,11 @@ import javax.lang.model.element.TypeElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import static javax.tools.Diagnostic.Kind.NOTE;
 
 /**
  * Extracts the avro schema of a message type from the <code>SCHEMA$</code> field of the avro generated class.
@@ -50,11 +54,28 @@ public class AvroSchemaExtractor {
 
     public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {
         String className = avroGeneratedType.getQualifiedName().toString();
-        Optional<String> schemaJson = readSchemaJsonFromClasspath(className);
-        if (schemaJson.isPresent()) {
-            return schemaJson;
+        List<Throwable> failures = new ArrayList<>();
+
+        Optional<String> schemaJson = readSchemaJsonFromClasspath(className, failures);
+        if (schemaJson.isEmpty()) {
+            schemaJson = readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType, failures);
         }
-        return readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType);
+        if (schemaJson.isEmpty()) {
+            reportFailures(processingEnv, className, failures);
+        }
+        return schemaJson;
+    }
+
+    /**
+     * Reports why the schema could not be read, as the reason is not obvious: the class might be missing on the
+     * classpath, fail to initialize or be loaded by a classloader with another avro version.
+     */
+    private static void reportFailures(ProcessingEnvironment processingEnv, String className, List<Throwable> failures) {
+        failures.stream()
+                .map(Throwable::toString)
+                .distinct()
+                .forEach(failure -> processingEnv.getMessager().printMessage(NOTE,
+                        "Reading " + className + "." + SCHEMA_FIELD + " failed: " + failure));
     }
 
     /**
@@ -62,27 +83,28 @@ public class AvroSchemaExtractor {
      * processor is loaded from the compile classpath. As a fallback, a classloader for the classpath of the compiling
      * jvm is used, which is only created if the class could not be loaded otherwise.
      */
-    private static Optional<String> readSchemaJsonFromClasspath(String className) {
-        Optional<String> schemaJson = readSchemaJsonFromClassLoader(className, AvroSchemaExtractor.class.getClassLoader());
+    private static Optional<String> readSchemaJsonFromClasspath(String className, List<Throwable> failures) {
+        Optional<String> schemaJson = readSchemaJsonFromClassLoader(className, AvroSchemaExtractor.class.getClassLoader(), failures);
         if (schemaJson.isPresent()) {
             return schemaJson;
         }
-        schemaJson = readSchemaJsonFromClassLoader(className, Thread.currentThread().getContextClassLoader());
+        schemaJson = readSchemaJsonFromClassLoader(className, Thread.currentThread().getContextClassLoader(), failures);
         if (schemaJson.isPresent()) {
             return schemaJson;
         }
-        return readSchemaJsonFromClassPath(className);
+        return readSchemaJsonFromClassPath(className, failures);
     }
 
-    private static Optional<String> readSchemaJsonFromClassPath(String className) {
+    private static Optional<String> readSchemaJsonFromClassPath(String className, List<Throwable> failures) {
         try (URLClassLoader classPathClassLoader = ClasspathUtils.createExtendedClassLoader()) {
-            return readSchemaJsonFromClassLoader(className, classPathClassLoader);
+            return readSchemaJsonFromClassLoader(className, classPathClassLoader, failures);
         } catch (Exception | LinkageError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
+            failures.add(ex);
             return Optional.empty();
         }
     }
 
-    private static Optional<String> readSchemaJsonFromClassLoader(String className, ClassLoader classLoader) {
+    private static Optional<String> readSchemaJsonFromClassLoader(String className, ClassLoader classLoader, List<Throwable> failures) {
         if (classLoader == null) {
             return Optional.empty();
         }
@@ -90,6 +112,7 @@ public class AvroSchemaExtractor {
             Class<?> avroGeneratedClass = Class.forName(className, true, classLoader);
             return Optional.of(readSchema(avroGeneratedClass).toString());
         } catch (Exception | LinkageError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
+            failures.add(ex);
             return Optional.empty();
         }
     }
@@ -108,7 +131,8 @@ public class AvroSchemaExtractor {
      * Reads the schema json from the string literals of the <code>SCHEMA$</code> field initializer, which avro
      * generates as <code>new Schema.Parser().parse("...", "...")</code>.
      */
-    private static Optional<String> readSchemaJsonFromSourceTree(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {
+    private static Optional<String> readSchemaJsonFromSourceTree(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType,
+                                                                 List<Throwable> failures) {
         try {
             VariableTree schemaFieldTree = schemaFieldTree(processingEnv, avroGeneratedType);
             if (schemaFieldTree == null) {
@@ -120,6 +144,7 @@ public class AvroSchemaExtractor {
             }
             return Optional.of(new Schema.Parser().parse(schemaJson).toString());
         } catch (Exception | LinkageError ex) { // NOSONAR: the compiler tree api might not be available
+            failures.add(ex);
             return Optional.empty();
         }
     }

@@ -67,9 +67,16 @@ dependency on the classpath is enough.
 Next to each contract file, the processor writes the Avro schema of the message type as
 `<MessageTypeName>-<version>.avsc`, read from the `SCHEMA$` field of the generated message type class.
 The `jeap-messaging-contract-maven-plugin` uploads the schema together with the contract, so that the
-Message Contract Service does not need to read the schema from the message type registry. If the
-schema cannot be determined, the processor emits a warning and the schema is read from the message
-type registry by the Message Contract Service as before.
+Message Contract Service does not need to read the schema from the message type registry.
+
+The uploaded schema is the schema of the message type artifact the application is actually built
+against, and the Message Contract Service uses it as the schema of that contract. It validates that the
+schema is the Avro record schema of the declared message type and version; the registry coordinates
+(`registryUrl`, `registryBranch`, `registryCommit`) stay in the contract for traceability and for the
+fallback below. Message types referenced by a hand-written `MessageTypeMetadata` implementation have no
+`SCHEMA$` and therefore no schema file. If a schema exists but cannot be read, the processor emits a
+warning (with the reason) — in both cases the Message Contract Service reads the schema from the
+message type registry as before.
 
 Only in the special case where `annotationProcessorPaths` is configured explicitly in the
 `maven-compiler-plugin` must you add the processor path explicitly:

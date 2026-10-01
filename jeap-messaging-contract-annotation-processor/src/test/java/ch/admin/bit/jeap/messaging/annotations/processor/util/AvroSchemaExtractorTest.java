@@ -6,7 +6,9 @@ import com.sun.source.tree.MethodInvocationTree;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.AvroGenerated;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -14,12 +16,16 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.tools.Diagnostic;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AvroSchemaExtractorTest {
@@ -44,16 +50,24 @@ class AvroSchemaExtractorTest {
     }
 
     @Test
-    void extractSchemaJson_whenClassIsNotAvailable_thenReturnsEmpty() {
+    void extractSchemaJson_whenClassIsNotAvailable_thenReturnsEmptyAndReportsTheReason() {
         TypeElement typeElement = mock(TypeElement.class);
         Name qualifiedName = mock(Name.class);
         when(qualifiedName.toString()).thenReturn("ch.admin.bit.jeap.test.NotOnTheClasspathEvent");
         when(typeElement.getQualifiedName()).thenReturn(qualifiedName);
         when(typeElement.getEnclosedElements()).thenReturn(List.of());
+        Messager messager = mock(Messager.class);
+        when(processingEnv.getMessager()).thenReturn(messager);
 
         Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement);
 
         assertThat(schemaJson).isEmpty();
+        ArgumentCaptor<CharSequence> message = ArgumentCaptor.forClass(CharSequence.class);
+        verify(messager, atLeastOnce()).printMessage(eq(Diagnostic.Kind.NOTE), message.capture());
+        assertThat(message.getAllValues())
+                .anySatisfy(reportedFailure -> assertThat(reportedFailure.toString())
+                        .contains("NotOnTheClasspathEvent.SCHEMA$ failed")
+                        .contains("ClassNotFoundException"));
     }
 
     @Test
