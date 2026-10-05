@@ -27,13 +27,13 @@
 
     <artifactId>jeap-messaging</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>19.12.0-SNAPSHOT</version>
+    <version>19.13.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
         <artifactId>jeap-internal-spring-boot-parent</artifactId>
         <groupId>ch.admin.bit.jeap</groupId>
-        <version>11.1.3</version>
+        <version>11.2.0</version>
     </parent>
 
     <modules>
