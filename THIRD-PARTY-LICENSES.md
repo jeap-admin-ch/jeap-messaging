@@ -383,6 +383,7 @@ EPL-2.0
 
  * Logback Classic Module - [ch.qos.logback:logback-classic](http://logback.qos.ch/logback-classic)
  * Logback Core Module - [ch.qos.logback:logback-core](http://logback.qos.ch/logback-core)
+ * Eclipse Compiler for Java(TM) - [org.eclipse.jdt:ecj](https://github.com/eclipse-jdt/eclipse.jdt.core/)
 
 Eclipse Distribution License - v 1.0
 -------------------------------
