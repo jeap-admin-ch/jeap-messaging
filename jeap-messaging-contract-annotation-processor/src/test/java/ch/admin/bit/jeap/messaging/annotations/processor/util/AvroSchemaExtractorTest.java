@@ -16,13 +16,11 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.FileNotFoundException;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.tools.Diagnostic;
 import java.util.List;
 import java.util.Optional;
@@ -120,7 +118,7 @@ public class AvroSchemaExtractorTest {
     @Test
     void isAvroGeneratedType_whenTypeIsAnnotatedWithAvroGenerated_thenTrue() {
         TypeElement typeElement = mock(TypeElement.class);
-        doReturn(List.of(annotationMirror(AvroGenerated.class))).when(typeElement).getAnnotationMirrors();
+        when(typeElement.getAnnotation(AvroGenerated.class)).thenReturn(mock(AvroGenerated.class));
 
         assertThat(AvroSchemaExtractor.isAvroGeneratedType(typeElement)).isTrue();
     }
@@ -128,7 +126,6 @@ public class AvroSchemaExtractorTest {
     @Test
     void isAvroGeneratedType_whenTypeDeclaresSchemaField_thenTrue() {
         TypeElement typeElement = mock(TypeElement.class);
-        doReturn(List.of()).when(typeElement).getAnnotationMirrors();
         doReturn(List.of(field("SCHEMA$"))).when(typeElement).getEnclosedElements();
 
         assertThat(AvroSchemaExtractor.isAvroGeneratedType(typeElement)).isTrue();
@@ -137,7 +134,6 @@ public class AvroSchemaExtractorTest {
     @Test
     void isAvroGeneratedType_whenTypeIsNeitherAnnotatedNorDeclaresSchemaField_thenFalse() {
         TypeElement typeElement = mock(TypeElement.class);
-        doReturn(List.of(annotationMirror(SuppressWarnings.class))).when(typeElement).getAnnotationMirrors();
         doReturn(List.of(field("MESSAGE_TYPE_NAME"))).when(typeElement).getEnclosedElements();
 
         assertThat(AvroSchemaExtractor.isAvroGeneratedType(typeElement)).isFalse();
@@ -188,18 +184,6 @@ public class AvroSchemaExtractorTest {
         return literal;
     }
 
-    private static AnnotationMirror annotationMirror(Class<?> annotationClass) {
-        TypeElement annotationElement = mock(TypeElement.class);
-        Name qualifiedName = mock(Name.class);
-        when(qualifiedName.toString()).thenReturn(annotationClass.getName());
-        when(annotationElement.getQualifiedName()).thenReturn(qualifiedName);
-        DeclaredType annotationType = mock(DeclaredType.class);
-        when(annotationType.toString()).thenReturn(annotationClass.getName());
-        when(annotationType.asElement()).thenReturn(annotationElement);
-        AnnotationMirror annotationMirror = mock(AnnotationMirror.class);
-        when(annotationMirror.getAnnotationType()).thenReturn(annotationType);
-        return annotationMirror;
-    }
 
     private static Element field(String simpleName) {
         Element element = mock(Element.class);

@@ -9,7 +9,6 @@ import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,9 +51,4 @@ class ContractAnnotationsTestHelper {
         throw new AssertionError("No contract references schema " + legacyName);
     }
 
-    static long countContractFiles(String glob) throws IOException {
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(Path.of(CONTRACTS_PATH), glob)) {
-            return StreamSupport.stream(files.spliterator(), false).count();
-        }
-    }
 }

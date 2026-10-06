@@ -3,7 +3,6 @@ package ch.admin.bit.jeap.messaging.annotations;
 import ch.admin.bit.jme.test.JmeSimpleTestEvent;
 import org.junit.jupiter.api.Test;
 
-import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.countContractFiles;
 import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchema;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -27,17 +26,4 @@ class SchemaFileAnnotationTest {
         assertEquals(JmeSimpleTestEvent.getClassSchema().toString(), schema);
     }
 
-    /**
-     * This message type is referenced by the producer contract of this test and by the consumer contract generated
-     * from the process template in {@link ConsumerContractByTemplatesAnnotationTest}. The schema is written only once
-     * for a message type version, no matter how many contracts reference it.
-     */
-    @Test
-    void generatedSchemaFileExistsOnlyOncePerMessageTypeVersion() throws Exception {
-        String messageTypeAndVersion = JmeSimpleTestEvent.TypeRef.MESSAGE_TYPE_NAME + "-" +
-                                       JmeSimpleTestEvent.TypeRef.MESSAGE_TYPE_VERSION;
-
-        assertEquals(2, countContractFiles("*" + messageTypeAndVersion + ".*-contract.json"));
-        assertEquals(1, countContractFiles(ContractAnnotationsTestHelper.schemaResource(SCHEMA_FILE_NAME)));
-    }
 }

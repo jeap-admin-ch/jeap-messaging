@@ -7,6 +7,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.Trees;
 import org.apache.avro.Schema;
+import org.apache.avro.specific.AvroGenerated;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -33,7 +34,6 @@ public class AvroSchemaExtractor {
 
     private static final String SCHEMA_FIELD = "SCHEMA$";
     private static final String GET_CLASS_SCHEMA_METHOD = "getClassSchema";
-    private static final String AVRO_GENERATED_ANNOTATION = "org.apache.avro.specific.AvroGenerated";
 
     private AvroSchemaExtractor() {
     }
@@ -44,9 +44,7 @@ public class AvroSchemaExtractor {
      * the element model only, without loading the class.
      */
     public static boolean isAvroGeneratedType(TypeElement typeElement) {
-        boolean avroGenerated = typeElement.getAnnotationMirrors().stream()
-                .anyMatch(annotation -> AVRO_GENERATED_ANNOTATION.equals(annotation.getAnnotationType().toString()));
-        return avroGenerated || schemaField(typeElement).isPresent();
+        return typeElement.getAnnotation(AvroGenerated.class) != null || schemaField(typeElement).isPresent();
     }
 
     public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {

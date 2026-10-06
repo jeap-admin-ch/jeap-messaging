@@ -52,6 +52,10 @@ class SchemaWriter {
             return null;
         }
 
+        String fileName = SchemaResources.fileName(processingEnv.getElementUtils().getBinaryName(messageTypeElement).toString(), contract);
+        if (alreadyWritten(processingEnv, fileName)) {
+            return fileName;
+        }
         Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, messageTypeElement, typeRefElement);
         if (schemaJson.isEmpty()) {
             processingEnv.getMessager().printMessage(WARNING,
@@ -62,9 +66,13 @@ class SchemaWriter {
             return null;
         }
 
-        String fileName = SchemaResources.fileName(processingEnv.getElementUtils().getBinaryName(messageTypeElement).toString(), contract);
         writeSchemaFile(processingEnv, annotatedElement, fileName, schemaJson.get());
         return fileName;
+    }
+
+    private static synchronized boolean alreadyWritten(ProcessingEnvironment env, String fileName) {
+        Map<String, String> written = COMPILATIONS.get(env);
+        return written != null && written.containsKey(fileName);
     }
 
     private static TypeElement messageTypeElement(TypeElement typeRefElement) {
