@@ -34,6 +34,11 @@ import static javax.tools.Diagnostic.Kind.NOTE;
  * as artifacts. If the class is not available as bytecode because it is compiled in the same compilation run as the
  * annotated class, the schema json is read from the string literals of the <code>SCHEMA$</code> field initializer
  * using the compiler tree api.
+ * <p>
+ * Extraction belongs to contract annotation processing so existing message artifacts need no rebuild.
+ * One isolated loader/worker per compilation keeps Avro thread-local state off compiler threads, while
+ * Filer requests stay on the compiler thread. Completion, processor failure and a Cleaner release the
+ * worker. Origin detection (including optional JPS/ECJ adapters) rejects uncertain or stale bytecode.
  */
 public class AvroSchemaExtractor {
 
@@ -218,7 +223,6 @@ public class AvroSchemaExtractor {
             // Avro/logging stack merely to normalize it. MCS validates the uploaded schema.
             return Optional.of(schemaJson);
         } catch (Exception | LinkageError ex) { // NOSONAR: the compiler tree api might not be available
-            processingOver(processingEnv);
             failures.add("Source initializer inspection unavailable; refusing potentially stale bytecode: " + ex);
             return Optional.empty();
         } catch (Error fatal) {

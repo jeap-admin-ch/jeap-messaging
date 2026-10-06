@@ -73,26 +73,18 @@ compilation; conflicting schema content fails the build.
 The `jeap-messaging-contract-maven-plugin` uploads the schema together with the contract, so that the
 Message Contract Service does not need to read the schema from the message type registry.
 
-Compiled message types and their dependencies are loaded from the compiler's classpath, independently
-of `annotationProcessorPaths`. Their `TypeRef` constants are checked against the compiler model.
-Compiled message types in a compilation share one classloader and a dedicated schema-extraction thread.
-The thread is stopped and joined and the loader released when processing finishes or a contract
-processor fails. A cleaner also releases abandoned compilation workers once their compiler environment
-becomes unreachable. Avro thread-local state is kept off the compiler thread; compiler resource access
-stays on the compiler thread.
-For message types compiled in the same javac run, the processor copies the JSON string literals from the
-schema initializer as UTF-8, without re-parsing them with Avro or initializing application logging.
-Both direct and template-based contracts use this
-schema generation path. JPS environments are unwrapped for source-tree access. If the processor cannot
-determine whether a type is current source or a binary, it reports the reason and omits the schema
-instead of loading potentially stale bytecode. Nonfatal class-initialization failures also use the
-registry fallback; fatal VM errors still propagate.
+Both direct and template-based contracts support message types from the compiler's classpath,
+including isolated `annotationProcessorPaths` and Eclipse ECJ. Types compiled in the same run require
+javac's Trees API; their schema literals are copied without initializing Avro or application logging.
+Unknown source origins and unreadable schemas are omitted rather than replaced with stale bytecode.
+Binary extraction has a 30-second timeout per schema. On timeout or interruption, further binary
+schemas in that compilation are omitted, with NOTE diagnostics and registry fallback. Shutdown waits
+at most one second; an initializer that ignores interruption may continue on a daemon thread until
+it returns or the compiler JVM exits. Fatal VM errors still propagate.
 
-Binary dependency extraction is also tested with Eclipse ECJ 3.43. Source roots are recognized without
-Trees; other types use compiler file-origin information (including an optional ECJ adapter). Absence
-from round roots alone is not treated as proof of a binary dependency. Same-run source extraction
-requires javac's Trees API: on compilers without it, the processor omits the schema and emits a NOTE
-explaining the limitation. It never substitutes old classpath bytecode for a known source type.
+Generation deliberately remains in the contract processor: existing message artifacts work without
+being rebuilt to include schema resources. Source and binary extraction can produce differently
+formatted JSON; consumers must parse schemas rather than compare their text.
 
 The uploaded schema is the schema of the message type artifact the application is actually built
 against, and the Message Contract Service uses it as the schema of that contract. It validates that the

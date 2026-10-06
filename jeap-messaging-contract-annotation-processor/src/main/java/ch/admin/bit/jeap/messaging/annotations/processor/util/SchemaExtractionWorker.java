@@ -3,6 +3,7 @@ package ch.admin.bit.jeap.messaging.annotations.processor.util;
 import javax.annotation.processing.Filer;
 import javax.tools.StandardLocation;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -19,8 +20,11 @@ final class SchemaExtractionWorker implements Runnable {
     private record Resource(String packageName, String fileName, CompletableFuture<byte[]> bytes) { }
 
     private final BlockingQueue<Resource> resources = new LinkedBlockingQueue<>();
-    private CompilerClasspathLoader loader = new CompilerClasspathLoader(this::readClass);
-    private Thread thread;
+    private volatile CompilerClasspathLoader loader = new CompilerClasspathLoader(this::readClass);
+    private volatile Thread thread;
+    private volatile boolean stopped;
+    private final Duration extractionTimeout;
+    private final Duration shutdownTimeout;
     private final ExecutorService executor = Executors.newSingleThreadExecutor(task -> {
         thread = new Thread(null, task, "jeap-schema-extraction", 0, false);
         thread.setContextClassLoader(ClassLoader.getPlatformClassLoader());
@@ -28,14 +32,33 @@ final class SchemaExtractionWorker implements Runnable {
         return thread;
     });
 
+    SchemaExtractionWorker() {
+        this(Duration.ofSeconds(30), Duration.ofSeconds(1));
+    }
+
+    SchemaExtractionWorker(Duration extractionTimeout, Duration shutdownTimeout) {
+        this.extractionTimeout = extractionTimeout;
+        this.shutdownTimeout = shutdownTimeout;
+    }
+
     Result extract(Filer filer, String className, String metadataName, Map<String, String> constants) {
         return execute(filer, () -> reflect(className, metadataName, constants));
     }
 
-    private Result execute(Filer filer, Callable<Result> operation) {
+    Result execute(Filer filer, Callable<Result> operation) {
+        if (stopped) {
+            return new Result(null, "Schema extraction worker stopped; skipping further binary schemas in this compilation");
+        }
         var result = executor.submit(operation);
+        long started = System.nanoTime();
         try {
             while (!result.isDone()) {
+                if (System.nanoTime() - started >= extractionTimeout.toNanos()) {
+                    result.cancel(true);
+                    run();
+                    return new Result(null, "Schema extraction timed out after " + extractionTimeout.toSeconds() +
+                            " seconds; worker stopped and further binary schemas will be omitted");
+                }
                 Resource resource = resources.poll(10, TimeUnit.MILLISECONDS);
                 if (resource != null) {
                     // javac's Filer/file manager is not thread safe. Only the calling compiler thread uses it.
@@ -49,17 +72,24 @@ final class SchemaExtractionWorker implements Runnable {
             }
             return result.get();
         } catch (InterruptedException ex) {
+            result.cancel(true);
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted extracting schema", ex);
+            run();
+            return new Result(null, "Interrupted extracting schema; worker stopped");
         } catch (ExecutionException ex) {
             CompilerTrees.rethrowFatal(ex.getCause());
-            throw new IllegalStateException("Unexpected worker failure: " + ex.getCause());
+            throw new IllegalStateException("Unexpected worker failure", ex.getCause());
         }
     }
 
     private byte[] readClass(String packageName, String fileName) throws IOException {
         var bytes = new CompletableFuture<byte[]>();
-        resources.add(new Resource(packageName, fileName, bytes));
+        Resource resource = new Resource(packageName, fileName, bytes);
+        resources.add(resource);
+        if (stopped) {
+            resources.remove(resource);
+            throw new IOException("Schema worker stopped");
+        }
         try {
             return bytes.get();
         } catch (InterruptedException ex) {
@@ -71,16 +101,17 @@ final class SchemaExtractionWorker implements Runnable {
     }
 
     private Result reflect(String className, String metadataName, Map<String, String> constants) {
+        CompilerClasspathLoader extractionLoader = loader;
         try {
             if (metadataName != null) {
-                Class<?> metadata = Class.forName(metadataName, true, loader);
+                Class<?> metadata = Class.forName(metadataName, true, extractionLoader);
                 for (var constant : constants.entrySet()) {
                     if (!constant.getValue().equals(metadata.getField(constant.getKey()).get(null))) {
                         throw new IllegalStateException("Compiled TypeRef metadata differs from compiler model: " + constant.getKey());
                     }
                 }
             }
-            Class<?> message = Class.forName(className, true, loader);
+            Class<?> message = Class.forName(className, true, extractionLoader);
             Object schema;
             try {
                 schema = message.getMethod("getClassSchema").invoke(null);
@@ -108,25 +139,23 @@ final class SchemaExtractionWorker implements Runnable {
     /** Also usable as a Cleaner action: contains no environment, Filer or element references. */
     @Override
     public synchronized void run() {
+        stopped = true;
         executor.shutdownNow();
-        boolean interrupted = false;
-        if (thread != null) {
-            while (thread.isAlive()) {
-                try {
-                    thread.join();
-                } catch (InterruptedException ex) {
-                    interrupted = true;
-                }
+        if (thread != null && thread != Thread.currentThread()) {
+            try {
+                thread.join(shutdownTimeout);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
             }
         }
         if (loader != null) {
             loader.close();
             loader = null;
         }
-        resources.clear();
-        thread = null;
-        if (interrupted) {
-            Thread.currentThread().interrupt();
+        Resource resource;
+        while ((resource = resources.poll()) != null) {
+            resource.bytes().completeExceptionally(new IOException("Schema worker stopped"));
         }
+        thread = null;
     }
 }
