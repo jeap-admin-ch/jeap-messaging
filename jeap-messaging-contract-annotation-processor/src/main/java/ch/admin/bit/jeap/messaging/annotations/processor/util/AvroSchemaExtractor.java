@@ -13,6 +13,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.tools.JavaFileObject;
 import java.lang.ref.Cleaner;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
@@ -85,7 +86,7 @@ public class AvroSchemaExtractor {
         List<String> failures = new ArrayList<>();
 
         // Never use stale bytecode for a type being compiled in this run.
-        Origin origin = origin(processingEnv, avroGeneratedType);
+        Origin origin = origin(processingEnv, avroGeneratedType, failures);
         Optional<String> schemaJson = switch (origin) {
             case SOURCE -> readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType, failures);
             case BINARY -> readSchemaJsonFromClasspath(processingEnv, className, typeRef, failures);
@@ -102,25 +103,49 @@ public class AvroSchemaExtractor {
 
     private enum Origin { SOURCE, BINARY, UNAVAILABLE }
 
-    private static Origin origin(ProcessingEnvironment env, TypeElement type) {
+    private static Origin origin(ProcessingEnvironment env, TypeElement type, List<String> failures) {
+        synchronized (AvroSchemaExtractor.class) {
+            Compilation compilation = COMPILATIONS.get(env);
+            for (Element enclosing = type; enclosing instanceof TypeElement current; enclosing = enclosing.getEnclosingElement()) {
+                if (compilation != null && compilation.sourceRoots.contains(current.getQualifiedName().toString())) {
+                    return Origin.SOURCE;
+                }
+            }
+        }
         try {
             Trees trees = CompilerTrees.trees(env);
             if (trees.getPath(type) != null) {
                 return Origin.SOURCE;
             }
-            synchronized (AvroSchemaExtractor.class) {
-                Compilation compilation = COMPILATIONS.get(env);
-                for (Element enclosing = type; enclosing instanceof TypeElement current; enclosing = enclosing.getEnclosingElement()) {
-                    if (compilation != null && compilation.sourceRoots.contains(current.getQualifiedName().toString())) {
-                        return Origin.UNAVAILABLE;
-                    }
-                }
-            }
             // A working Trees API and a compiler-owned element with no path denotes a binary.
             return env.getElementUtils().getTypeElement(type.getQualifiedName()) == type ? Origin.BINARY : Origin.UNAVAILABLE;
         } catch (RuntimeException | LinkageError ex) {
-            return Origin.UNAVAILABLE;
+            failures.add("Compiler Trees API unavailable: " + ex);
         }
+        try {
+            JavaFileObject file = env.getElementUtils().getFileObjectOf(type);
+            if (file != null) {
+                if (file.getKind() == JavaFileObject.Kind.CLASS) return Origin.BINARY;
+                if (file.getKind() == JavaFileObject.Kind.SOURCE) return Origin.SOURCE;
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            failures.add("Compiler file origin unavailable: " + ex);
+        }
+        // ECJ 3.43 does not implement Elements.getFileObjectOf yet. Its element exposes the
+        // binding's actual file, including implicitly loaded source; absence from round roots alone
+        // is NOT proof of a binary. Keep this optional adapter separate from compiler dependencies.
+        if (type.getClass().getName().equals("org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl")) {
+            try {
+                Object file = type.getClass().getMethod("getFileName").invoke(type);
+                if (file instanceof String name) {
+                    if (name.endsWith(".class")) return Origin.BINARY;
+                    if (name.endsWith(".java")) return Origin.SOURCE;
+                }
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+                failures.add("Eclipse file origin unavailable: " + ex);
+            }
+        }
+        return Origin.UNAVAILABLE;
     }
 
     /**
@@ -189,15 +214,12 @@ public class AvroSchemaExtractor {
                 failures.add("Missing or unsupported SCHEMA$ initializer: expected parse with string literals");
                 return Optional.empty();
             }
-            // Avro's own parser also uses thread locals, even when reading current source literals.
-            var result = worker(processingEnv).normalizeSource(schemaJson);
-            if (result.diagnostic() != null) {
-                failures.add(result.diagnostic());
-            }
-            return Optional.ofNullable(result.schema());
+            // This is already the JSON supplied to SCHEMA$. Do not initialize the processor's
+            // Avro/logging stack merely to normalize it. MCS validates the uploaded schema.
+            return Optional.of(schemaJson);
         } catch (Exception | LinkageError ex) { // NOSONAR: the compiler tree api might not be available
             processingOver(processingEnv);
-            failures.add(ex.toString());
+            failures.add("Source initializer inspection unavailable; refusing potentially stale bytecode: " + ex);
             return Optional.empty();
         } catch (Error fatal) {
             processingOver(processingEnv);

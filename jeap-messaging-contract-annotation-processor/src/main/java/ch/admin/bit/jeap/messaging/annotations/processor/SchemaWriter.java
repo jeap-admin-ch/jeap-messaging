@@ -21,13 +21,14 @@ import java.util.Optional;
 import java.util.WeakHashMap;
 
 import static javax.tools.Diagnostic.Kind.NOTE;
-import static javax.tools.Diagnostic.Kind.WARNING;
 
 /**
  * Writes the avro schema of a message type as a file next to the message contract files. The schema is uploaded
  * together with the contracts by the jeap-messaging-contract-maven-plugin.
  */
 class SchemaWriter {
+
+    static final String GENERATION_ENABLED = "messageContractSchemaGenerationEnabled";
 
     // Weak keys also release aborted compilations. Values never retain the environment or its elements.
     private static final Map<ProcessingEnvironment, Map<String, String>> COMPILATIONS = new WeakHashMap<>();
@@ -42,6 +43,9 @@ class SchemaWriter {
 
     static String generateSchema(ProcessingEnvironment processingEnv, Element annotatedElement, TypeElement typeRefElement,
                                  Contract contract) {
+        if ("false".equalsIgnoreCase(processingEnv.getOptions().get(GENERATION_ENABLED))) {
+            return null;
+        }
         String messageTypeName = contract.getMessageTypeName();
         TypeElement messageTypeElement = messageTypeElement(typeRefElement);
         if (messageTypeElement == null) {
@@ -59,9 +63,9 @@ class SchemaWriter {
         }
         Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, messageTypeElement, typeRefElement);
         if (schemaJson.isEmpty()) {
-            processingEnv.getMessager().printMessage(WARNING,
+            processingEnv.getMessager().printMessage(NOTE,
                     "No avro schema file generated for the message type " + messageTypeName +
-                    " (unable to read the field " + messageTypeElement.getQualifiedName() + ".SCHEMA$). " +
+                    " (schema extraction unavailable; see diagnostics above). " +
                     "The message contract service will read the schema from the message type registry instead.",
                     annotatedElement);
             return null;

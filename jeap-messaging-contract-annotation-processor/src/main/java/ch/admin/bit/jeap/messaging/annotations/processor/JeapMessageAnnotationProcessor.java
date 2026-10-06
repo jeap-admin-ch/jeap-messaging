@@ -6,6 +6,7 @@ import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroSchemaExtracto
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 import static ch.admin.bit.jeap.messaging.annotations.processor.ContractWriter.generateContract;
 
+@SupportedOptions(SchemaWriter.GENERATION_ENABLED)
 @SupportedAnnotationTypes({
         "ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContract",
         "ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContractContainer",

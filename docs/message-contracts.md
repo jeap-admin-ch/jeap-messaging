@@ -75,17 +75,24 @@ Message Contract Service does not need to read the schema from the message type 
 
 Compiled message types and their dependencies are loaded from the compiler's classpath, independently
 of `annotationProcessorPaths`. Their `TypeRef` constants are checked against the compiler model.
-All message types in a compilation share one classloader and a dedicated schema-extraction thread.
+Compiled message types in a compilation share one classloader and a dedicated schema-extraction thread.
 The thread is stopped and joined and the loader released when processing finishes or a contract
 processor fails. A cleaner also releases abandoned compilation workers once their compiler environment
 becomes unreachable. Avro thread-local state is kept off the compiler thread; compiler resource access
 stays on the compiler thread.
-For message types compiled in the same run, the processor reads the schema initializer from the
-source tree instead of potentially stale bytecode. Both direct and template-based contracts use this
+For message types compiled in the same javac run, the processor copies the JSON string literals from the
+schema initializer as UTF-8, without re-parsing them with Avro or initializing application logging.
+Both direct and template-based contracts use this
 schema generation path. JPS environments are unwrapped for source-tree access. If the processor cannot
 determine whether a type is current source or a binary, it reports the reason and omits the schema
 instead of loading potentially stale bytecode. Nonfatal class-initialization failures also use the
 registry fallback; fatal VM errors still propagate.
+
+Binary dependency extraction is also tested with Eclipse ECJ 3.43. Source roots are recognized without
+Trees; other types use compiler file-origin information (including an optional ECJ adapter). Absence
+from round roots alone is not treated as proof of a binary dependency. Same-run source extraction
+requires javac's Trees API: on compilers without it, the processor omits the schema and emits a NOTE
+explaining the limitation. It never substitutes old classpath bytecode for a known source type.
 
 The uploaded schema is the schema of the message type artifact the application is actually built
 against, and the Message Contract Service uses it as the schema of that contract. It validates that the
@@ -93,7 +100,7 @@ schema is the Avro record schema of the declared message type and version; the r
 (`registryUrl`, `registryBranch`, `registryCommit`) stay in the contract for traceability and for the
 fallback below. Message types referenced by a hand-written `MessageTypeMetadata` implementation have no
 `SCHEMA$` and therefore no schema file. If a schema exists but cannot be read, the processor emits a
-warning (with the reason) — in both cases the Message Contract Service reads the schema from the
+NOTE (with the reason), not a compiler warning — in both cases the Message Contract Service reads the schema from the
 message type registry as before.
 
 An empty `schemaResource` explicitly marks a schema as unavailable and prevents stale files from
@@ -141,6 +148,22 @@ the registry, pass `-DmessageContractSchemaUploadEnabled=false` to the
 
 This switch ignores all schema files, including stale files from previous builds. The annotation
 processor still generates schemas during compilation.
+
+To disable generation as well, pass `-AmessageContractSchemaGenerationEnabled=false` to the Java
+compiler. Both contract processors recognize this option. They continue to generate contract JSON,
+mark schemas explicitly unavailable, and perform no schema extraction or schema-related class initialization.
+For the Maven compiler plugin:
+
+```xml
+<configuration>
+    <compilerArgs>
+        <arg>-AmessageContractSchemaGenerationEnabled=false</arg>
+    </compilerArgs>
+</configuration>
+```
+
+Recompile annotated sources after changing this option. The upload switch above independently ignores
+schema files even when using existing build output. Neither switch changes contracts already stored in MCS.
 
 For relaxing contract enforcement during development and testing, see `publishWithoutContractAllowed` and
 `consumeWithoutContractAllowed` in the [Configuration reference](configuration.md). To suppress only the log

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.nio.file.Files;
@@ -23,6 +24,90 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class IsolatedProcessorCompilationTest {
     @TempDir
     Path directory;
+
+    @Test
+    void eclipseReadsJarSchemaWithoutTreesOrWarnings() throws Exception {
+        Path dependency = directory.resolve("dependency");
+        compile(dependency, List.of(source("fixture/Outer.java", eventSource("fields", "registry"))), List.of("-proc:none"));
+        Path jar = jar(dependency);
+        Path output = directory.resolve("eclipse");
+        String diagnostics = compile(new org.eclipse.jdt.internal.compiler.tool.EclipseCompiler(), output,
+                List.of(source("Consumer.java", consumerSource())), processorOptions(jar));
+        assertSchemas(output, "fields");
+        assertThat(diagnostics).doesNotContain("No avro schema", "Source origin unavailable");
+        assertNoWorkers();
+    }
+
+    @Test
+    void eclipseSourceWithStaleBinaryOmitsSchemaWithoutWarning() throws Exception {
+        Path dependency = directory.resolve("dependency");
+        Path event = source("fixture/Outer.java", eventSource("stale", "registry"));
+        compile(dependency, List.of(event), List.of("-proc:none"));
+        Files.writeString(event, eventSource("current", "registry"));
+        Path output = directory.resolve("eclipse");
+        String diagnostics = compile(new org.eclipse.jdt.internal.compiler.tool.EclipseCompiler(), output,
+                List.of(event, source("Consumer.java", consumerSource())), processorOptions(jar(dependency)));
+        assertNoSchemas(output);
+        assertThat(diagnostics).contains("Source initializer inspection unavailable", "refusing potentially stale");
+        assertNoWorkers();
+    }
+
+    @Test
+    void disabledGenerationDoesNotInitializeMessageOrCreateWorker() throws Exception {
+        Path dependency = directory.resolve("dependency");
+        String broken = eventSource("fields", "registry").replace("public static class Event {", """
+                public static class Event {
+                    static { if (System.nanoTime() != 0) throw new AssertionError("must not initialize"); }
+                """);
+        compile(dependency, List.of(source("fixture/Outer.java", broken)), List.of("-proc:none"));
+        var options = new ArrayList<>(processorOptions(dependency));
+        options.add("-AmessageContractSchemaGenerationEnabled=false");
+        options.add("-Werror");
+        Path output = directory.resolve("disabled");
+        String diagnostics = compile(output, List.of(source("Consumer.java", consumerSource())), options);
+        assertThat(diagnostics).doesNotContain("No avro schema", "must not initialize", "not recognized");
+        assertNoSchemas(output);
+        assertNoWorkers();
+    }
+
+    @Test
+    void sourceLiteralDoesNotInitializeAvroOrApplicationLogging() throws Exception {
+        Path config = directory.resolve("logback.xml");
+        Path applicationLog = directory.resolve("application.log");
+        Files.writeString(config, """
+                <configuration>
+                    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+                        <file>%s</file>
+                        <encoder><pattern>%%msg%%n</pattern></encoder>
+                    </appender>
+                    <root level="INFO"><appender-ref ref="FILE"/></root>
+                </configuration>
+                """.formatted(applicationLog));
+        Path log = directory.resolve("source.log");
+        Process process = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
+                "-Dlogback.configurationFile=" + config, "-Xlog:class+init=info", "-cp", classpath(),
+                getClass().getName(), directory.toString(), "source")
+                .redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        boolean finished = process.waitFor(60, TimeUnit.SECONDS);
+        if (!finished) process.destroyForcibly().waitFor();
+        assertThat(finished).isTrue();
+        assertThat(process.exitValue()).as(Files.readString(log)).isZero();
+        assertThat(applicationLog).doesNotExist();
+        assertThat(Files.readString(log))
+                .doesNotContain("Initializing 'org/apache/avro/Schema", "No SLF4J providers", "Initializing 'org/slf4j/LoggerFactory");
+    }
+
+    private Path jar(Path dependency) throws Exception {
+        Path jar = directory.resolve("messages.jar");
+        try (var output = new JarOutputStream(Files.newOutputStream(jar)); var paths = Files.walk(dependency)) {
+            for (Path path : paths.filter(Files::isRegularFile).toList()) {
+                output.putNextEntry(new JarEntry(dependency.relativize(path).toString()));
+                Files.copy(path, output);
+                output.closeEntry();
+            }
+        }
+        return jar;
+    }
 
     @Test
     void isolatedProcessorReadsNestedApplicationClassAndAvroFromCompilerClasspath() throws Exception {
@@ -215,7 +300,7 @@ class IsolatedProcessorCompilationTest {
         if (supported) {
             assertSchemas(output, "current");
         } else {
-            assertThat(diagnostics).contains("Source origin unavailable", "refusing potentially stale");
+            assertThat(diagnostics).contains("Source initializer inspection unavailable", "refusing potentially stale");
             assertNoSchemas(output);
         }
     }
@@ -267,7 +352,27 @@ class IsolatedProcessorCompilationTest {
     public static void main(String[] args) throws Exception {
         var test = new IsolatedProcessorCompilationTest();
         test.directory = Path.of(args[0]);
-        test.manyJarTypes();
+        if (args.length > 1 && args[1].equals("source")) {
+            Path output = test.directory.resolve("source-output");
+            test.compile(output, List.of(test.source("fixture/Outer.java", test.eventSource("fields", "registry").replace("{\\\"type\\\"", "{ \\\"type\\\"")),
+                    test.source("Consumer.java", test.consumerSource())), test.processorOptions(test.directory.resolve("absent")));
+            test.assertSchemas(output, "fields");
+            try (var files = Files.list(test.contracts(output))) {
+                for (Path schema : files.filter(path -> path.toString().endsWith(".avsc")).toList()) {
+                    assertThat(Files.readString(schema)).startsWith("{ \"type\"");
+                }
+            }
+            // No isolated processor path: this is the setup where an application's logging
+            // configuration used to be initialized by source normalization.
+            Path defaultOutput = test.directory.resolve("default-processor-path");
+            test.compile(defaultOutput, List.of(test.source("fixture/Outer.java", test.eventSource("fields", "registry")),
+                    test.source("Consumer.java", test.consumerSource())),
+                    List.of("-processor", JeapMessageAnnotationProcessor.class.getName()));
+            test.assertSchemas(defaultOutput, "fields");
+            assertNoWorkers();
+        } else {
+            test.manyJarTypes();
+        }
     }
 
     private void manyJarTypes() throws Exception {
@@ -327,8 +432,11 @@ class IsolatedProcessorCompilationTest {
     }
 
     private String compile(Path output, List<Path> sources, List<String> extraOptions) throws Exception {
+        return compile(ToolProvider.getSystemJavaCompiler(), output, sources, extraOptions);
+    }
+
+    private String compile(JavaCompiler compiler, Path output, List<Path> sources, List<String> extraOptions) throws Exception {
         Files.createDirectories(output);
-        var compiler = ToolProvider.getSystemJavaCompiler();
         var diagnostics = new DiagnosticCollector<JavaFileObject>();
         try (var manager = compiler.getStandardFileManager(diagnostics, null, null)) {
             List<String> options = new ArrayList<>(List.of("-d", output.toString(), "-classpath", classpath()));
@@ -336,7 +444,10 @@ class IsolatedProcessorCompilationTest {
             boolean success = compiler.getTask(null, manager, diagnostics, options, null,
                     manager.getJavaFileObjectsFromPaths(sources)).call();
             assertThat(success).as(diagnostics.getDiagnostics().toString()).isTrue();
-            return diagnostics.getDiagnostics().toString();
+            assertThat(diagnostics.getDiagnostics()).noneMatch(d -> d.getKind() == javax.tools.Diagnostic.Kind.WARNING
+                    || d.getKind() == javax.tools.Diagnostic.Kind.MANDATORY_WARNING);
+            return diagnostics.getDiagnostics().stream().map(d -> d.getMessage(java.util.Locale.ROOT))
+                    .collect(java.util.stream.Collectors.joining("\n"));
         }
     }
 

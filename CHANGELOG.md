@@ -12,6 +12,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Set `messageContractSchemaUploadEnabled=false` to disable schema upload, including stale schema files. Legacy contracts remain supported.
 
 ### Fixed
+- Copy source schema literals without initializing Avro/logging, support binary schema extraction with Eclipse ECJ, and report optional extraction limitations as notes. Add `-AmessageContractSchemaGenerationEnabled=false` to disable extraction during compilation.
 - Scope schema extraction to one classloader and worker thread per compilation, with cleanup on completion and processor failure. Fall back on nonfatal initializer errors and omit schemas when source detection is unavailable, including unsupported compiler wrappers.
 
 ## [19.14.0] - 2026-10-05

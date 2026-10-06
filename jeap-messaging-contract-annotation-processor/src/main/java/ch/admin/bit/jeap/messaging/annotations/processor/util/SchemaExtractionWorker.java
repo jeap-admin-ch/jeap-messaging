@@ -32,17 +32,6 @@ final class SchemaExtractionWorker implements Runnable {
         return execute(filer, () -> reflect(className, metadataName, constants));
     }
 
-    Result normalizeSource(String json) {
-        return execute(null, () -> {
-            try {
-                return new Result(new org.apache.avro.Schema.Parser().parse(json).toString(), null);
-            } catch (Throwable failure) {
-                CompilerTrees.rethrowFatal(failure);
-                return new Result(null, describe(failure));
-            }
-        });
-    }
-
     private Result execute(Filer filer, Callable<Result> operation) {
         var result = executor.submit(operation);
         try {
