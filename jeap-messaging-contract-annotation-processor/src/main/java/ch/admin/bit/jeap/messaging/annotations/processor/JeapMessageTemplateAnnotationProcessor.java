@@ -23,7 +23,7 @@ import static ch.admin.bit.jeap.messaging.annotations.processor.ContractWriter.g
 @SupportedAnnotationTypes("ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContractsByTemplates")
 public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
 
-    private static boolean alreadyProcessed = false;
+    private boolean alreadyProcessed = false;
     private AvroClassFinder avroClassFinder;
     private TemplatePathResolver templatePathResolver;
     private TemplateMessageCollector templateMessageCollector;
@@ -37,8 +37,11 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
     }
 
     @Override
-    @SuppressWarnings("java:S2696")
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (roundEnv.processingOver()) {
+            SchemaWriter.processingOver(processingEnv);
+            return false;
+        }
         if (alreadyProcessed) {
             return false;
         }

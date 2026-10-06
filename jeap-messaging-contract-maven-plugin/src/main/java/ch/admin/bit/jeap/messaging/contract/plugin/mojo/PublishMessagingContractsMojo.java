@@ -31,6 +31,9 @@ public class PublishMessagingContractsMojo extends AbstractMojo {
     @Parameter(property = "messageContractTransactionId", readonly = true)
     String transactionId;
 
+    @Parameter(property = "messageContractSchemaUploadEnabled", defaultValue = "true")
+    boolean messageContractSchemaUploadEnabled = true;
+
     @Override
     public void execute() throws MojoFailureException {
         String username = getProperty("MESSAGE_CONTRACT_SERVICE_USERNAME");
@@ -44,7 +47,7 @@ public class PublishMessagingContractsMojo extends AbstractMojo {
                 new MessageContractServiceClient(messageContractServiceBaseUri, getLog(), username, password);
         MessageContractPublisher messageContractPublisher = new MessageContractPublisher(messageContractServiceClient, getLog());
         String appVersion = project.getVersion();
-        messageContractPublisher.publishMessageContracts(contractPath.toPath(), appVersion, transactionId);
+        messageContractPublisher.publishMessageContracts(contractPath.toPath(), appVersion, transactionId, messageContractSchemaUploadEnabled);
     }
 
     /**

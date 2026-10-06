@@ -1,9 +1,10 @@
 package ch.admin.bit.jeap.messaging.annotations.processor;
 
 import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroSchemaExtractor;
+import ch.admin.bit.jeap.messaging.contract.v2.Contract;
+import ch.admin.bit.jeap.messaging.contract.v2.SchemaResources;
 
 import javax.annotation.processing.Filer;
-import javax.annotation.processing.FilerException;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -12,9 +13,12 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.WeakHashMap;
 
 import static javax.tools.Diagnostic.Kind.NOTE;
 import static javax.tools.Diagnostic.Kind.WARNING;
@@ -25,13 +29,19 @@ import static javax.tools.Diagnostic.Kind.WARNING;
  */
 class SchemaWriter {
 
-    static final String SCHEMA_SUFFIX = ".avsc";
+    // Weak keys also release aborted compilations. Values never retain the environment or its elements.
+    private static final Map<ProcessingEnvironment, Map<String, String>> COMPILATIONS = new WeakHashMap<>();
+
+    static synchronized void processingOver(ProcessingEnvironment env) {
+        COMPILATIONS.remove(env);
+    }
 
     private SchemaWriter() {
     }
 
-    static void generateSchema(ProcessingEnvironment processingEnv, Element annotatedElement, TypeElement typeRefElement,
-                               String messageTypeName, String messageTypeVersion) {
+    static String generateSchema(ProcessingEnvironment processingEnv, Element annotatedElement, TypeElement typeRefElement,
+                                 Contract contract) {
+        String messageTypeName = contract.getMessageTypeName();
         TypeElement messageTypeElement = messageTypeElement(typeRefElement);
         if (messageTypeElement == null) {
             // The TypeRef is not declared in an avro generated message type class, i.e. there is no schema to write.
@@ -39,20 +49,22 @@ class SchemaWriter {
             processingEnv.getMessager().printMessage(NOTE,
                     "No avro schema file generated for the message type " + messageTypeName +
                     ": no avro generated class declaring a SCHEMA$ field found", annotatedElement);
-            return;
+            return null;
         }
 
-        Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, messageTypeElement);
+        Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, messageTypeElement, typeRefElement);
         if (schemaJson.isEmpty()) {
             processingEnv.getMessager().printMessage(WARNING,
                     "No avro schema file generated for the message type " + messageTypeName +
                     " (unable to read the field " + messageTypeElement.getQualifiedName() + ".SCHEMA$). " +
                     "The message contract service will read the schema from the message type registry instead.",
                     annotatedElement);
-            return;
+            return null;
         }
 
-        writeSchemaFile(processingEnv, annotatedElement, getFileName(messageTypeName, messageTypeVersion), schemaJson.get());
+        String fileName = SchemaResources.fileName(processingEnv.getElementUtils().getBinaryName(messageTypeElement).toString(), contract);
+        writeSchemaFile(processingEnv, annotatedElement, fileName, schemaJson.get());
+        return fileName;
     }
 
     private static TypeElement messageTypeElement(TypeElement typeRefElement) {
@@ -65,24 +77,25 @@ class SchemaWriter {
         return null;
     }
 
-    private static void writeSchemaFile(ProcessingEnvironment processingEnv, Element annotatedElement, String fileName, String schemaJson) {
+    static synchronized void writeSchemaFile(ProcessingEnvironment processingEnv, Element annotatedElement, String fileName, String schemaJson) {
+        Map<String, String> written = COMPILATIONS.computeIfAbsent(processingEnv, ignored -> new HashMap<>());
+        String previous = written.get(fileName);
+        if (previous != null) {
+            if (!previous.equals(schemaJson)) {
+                throw MessagingAnnotationProcessingException.processingFailed(new IOException("Conflicting schemas for " + fileName));
+            }
+            return;
+        }
         Filer filer = processingEnv.getFiler();
         try {
             FileObject schemaFile = filer.createResource(StandardLocation.CLASS_OUTPUT, ContractWriter.CONTRACTS_PACKAGE, fileName, annotatedElement);
             // Written as UTF-8 explicitly, as the schema is read as UTF-8 by the jeap-messaging-contract-maven-plugin
-            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(schemaFile.openOutputStream(), StandardCharsets.UTF_8))) {
+            try (Writer writer = new OutputStreamWriter(schemaFile.openOutputStream(), StandardCharsets.UTF_8)) {
                 writer.write(schemaJson);
             }
-        } catch (FilerException ex) {
-            // The schema has already been written for this message type version, i.e. by a contract for another role
-            // or another app name - one schema file per message type version is sufficient.
-            processingEnv.getMessager().printMessage(NOTE, "Schema file " + fileName + " has already been generated");
+            written.put(fileName, schemaJson);
         } catch (IOException ex) {
             throw MessagingAnnotationProcessingException.processingFailed(ex);
         }
-    }
-
-    private static String getFileName(String messageTypeName, String messageTypeVersion) {
-        return messageTypeName + "-" + messageTypeVersion + SCHEMA_SUFFIX;
     }
 }

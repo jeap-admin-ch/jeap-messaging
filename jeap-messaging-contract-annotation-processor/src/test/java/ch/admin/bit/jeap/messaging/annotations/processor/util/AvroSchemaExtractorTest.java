@@ -6,15 +6,22 @@ import com.sun.source.tree.MethodInvocationTree;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.AvroGenerated;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.Filer;
+import javax.lang.model.util.Elements;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+import java.io.FileNotFoundException;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.tools.Diagnostic;
 import java.util.List;
@@ -22,18 +29,42 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class AvroSchemaExtractorTest {
+public class AvroSchemaExtractorTest {
 
     private static final String SCHEMA_JSON = """
             {"type":"record","name":"TestMessage","namespace":"ch.admin.bit.jeap.test","fields":[{"name":"field","type":"string"}]}""";
 
     private final ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
+
+    @BeforeEach
+    void compilerClasspath() throws Exception {
+        Elements elements = mock(Elements.class);
+        when(processingEnv.getElementUtils()).thenReturn(elements);
+        when(elements.getBinaryName(any())).thenAnswer(call -> ((TypeElement) call.getArgument(0)).getQualifiedName());
+        Filer filer = mock(Filer.class);
+        when(processingEnv.getFiler()).thenReturn(filer);
+        when(filer.getResource(eq(StandardLocation.CLASS_PATH), anyString(), anyString())).thenAnswer(call -> {
+            String resource = call.<String>getArgument(1).replace('.', '/') + "/" + call.<String>getArgument(2);
+            FileObject file = mock(FileObject.class);
+            when(file.openInputStream()).thenAnswer(ignored -> {
+                var stream = getClass().getClassLoader().getResourceAsStream(resource);
+                if (stream == null) {
+                    throw new FileNotFoundException(resource);
+                }
+                return stream;
+            });
+            return file;
+        });
+        when(processingEnv.getMessager()).thenReturn(mock(Messager.class));
+    }
 
     @Test
     void extractSchemaJson_whenClassOnClasspathProvidesGetClassSchema_thenReadsSchemaFromClass() {
@@ -68,6 +99,22 @@ class AvroSchemaExtractorTest {
                 .anySatisfy(reportedFailure -> assertThat(reportedFailure.toString())
                         .contains("NotOnTheClasspathEvent.SCHEMA$ failed")
                         .contains("ClassNotFoundException"));
+    }
+
+    @Test
+    void inconsistentCompiledMetadataPreventsUploadingWrongSchema() {
+        TypeElement metadata = typeElement(MessageTypeWithClassSchema.TypeRef.class);
+        VariableElement constant = mock(VariableElement.class);
+        Name name = mock(Name.class);
+        when(name.toString()).thenReturn("MESSAGE_TYPE_VERSION");
+        when(constant.getSimpleName()).thenReturn(name);
+        when(constant.getConstantValue()).thenReturn("different compiler metadata");
+        doReturn(List.of(constant)).when(metadata).getEnclosedElements();
+
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(MessageTypeWithClassSchema.class), metadata)).isEmpty();
+        ArgumentCaptor<CharSequence> message = ArgumentCaptor.forClass(CharSequence.class);
+        verify(processingEnv.getMessager(), atLeastOnce()).printMessage(eq(Diagnostic.Kind.NOTE), message.capture());
+        assertThat(message.getAllValues()).anySatisfy(diagnostic -> assertThat(diagnostic.toString()).contains("metadata differs"));
     }
 
     @Test
@@ -147,6 +194,7 @@ class AvroSchemaExtractorTest {
         when(qualifiedName.toString()).thenReturn(annotationClass.getName());
         when(annotationElement.getQualifiedName()).thenReturn(qualifiedName);
         DeclaredType annotationType = mock(DeclaredType.class);
+        when(annotationType.toString()).thenReturn(annotationClass.getName());
         when(annotationType.asElement()).thenReturn(annotationElement);
         AnnotationMirror annotationMirror = mock(AnnotationMirror.class);
         when(annotationMirror.getAnnotationType()).thenReturn(annotationType);
@@ -163,15 +211,19 @@ class AvroSchemaExtractorTest {
     }
 
     @SuppressWarnings("unused")
-    static class MessageTypeWithClassSchema {
+    public static class MessageTypeWithClassSchema {
         public static final Schema SCHEMA$ = new Schema.Parser().parse(SCHEMA_JSON);
 
         public static Schema getClassSchema() {
             return SCHEMA$;
         }
+
+        public static class TypeRef {
+            public static final String MESSAGE_TYPE_VERSION = "1";
+        }
     }
 
-    static class MessageTypeWithSchemaFieldOnly {
+    public static class MessageTypeWithSchemaFieldOnly {
         public static final Schema SCHEMA$ = new Schema.Parser().parse(SCHEMA_JSON);
     }
 }

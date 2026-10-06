@@ -64,10 +64,20 @@ The `jeap-messaging-contract-annotation-processor` runs at build time and produc
 which the jEAP build pipeline uploads to the Message Contract Service. Normally just having the
 dependency on the classpath is enough.
 
-Next to each contract file, the processor writes the Avro schema of the message type as
-`<MessageTypeName>-<version>.avsc`, read from the `SCHEMA$` field of the generated message type class.
+Next to the contract files, the processor writes the Avro schema of the message type as
+`schema-<identity-hash>.avsc`, read from the `SCHEMA$` field of the generated message type class.
+Each contract's `schemaResource` points to its schema file. The identity includes the binary class
+name, system, message type, version and registry coordinates, preventing collisions between types
+with the same simple name and version. Contracts sharing that identity share one resource within a
+compilation; conflicting schema content fails the build.
 The `jeap-messaging-contract-maven-plugin` uploads the schema together with the contract, so that the
 Message Contract Service does not need to read the schema from the message type registry.
+
+Compiled message types and their dependencies are loaded from the compiler's classpath, independently
+of `annotationProcessorPaths`. Their `TypeRef` constants are checked against the compiler model.
+For message types compiled in the same run, the processor reads the schema initializer from the
+source tree instead of potentially stale bytecode. Both direct and template-based contracts use this
+schema generation path.
 
 The uploaded schema is the schema of the message type artifact the application is actually built
 against, and the Message Contract Service uses it as the schema of that contract. It validates that the
@@ -77,6 +87,12 @@ fallback below. Message types referenced by a hand-written `MessageTypeMetadata`
 `SCHEMA$` and therefore no schema file. If a schema exists but cannot be read, the processor emits a
 warning (with the reason) — in both cases the Message Contract Service reads the schema from the
 message type registry as before.
+
+An empty `schemaResource` explicitly marks a schema as unavailable and prevents stale files from
+being uploaded. Older contracts without this field still use `<MessageTypeName>-<version>.avsc`
+when the contracts in the publication have unambiguous system/registry coordinates for that filename.
+Schema files are read only once per publication; the service API continues to receive a `schema`
+string on each contract.
 
 Only in the special case where `annotationProcessorPaths` is configured explicitly in the
 `maven-compiler-plugin` must you add the processor path explicitly:
@@ -104,6 +120,19 @@ and Process Archive Service to auto-generate consumer contracts from template JS
 separate services and are out of scope here.
 
 ## Configuration
+
+Schema upload is enabled by default. To make the Message Contract Service obtain all schemas from
+the registry, pass `-DmessageContractSchemaUploadEnabled=false` to the
+`publish-messaging-contracts` goal, or configure the contract Maven plugin:
+
+```xml
+<configuration>
+    <messageContractSchemaUploadEnabled>false</messageContractSchemaUploadEnabled>
+</configuration>
+```
+
+This switch ignores all schema files, including stale files from previous builds. The annotation
+processor still generates schemas during compilation.
 
 For relaxing contract enforcement during development and testing, see `publishWithoutContractAllowed` and
 `consumeWithoutContractAllowed` in the [Configuration reference](configuration.md). To suppress only the log

@@ -53,4 +53,22 @@ class PublishMessagingContractsMojoTest {
     void execute_noCredentials_shouldFail(PublishMessagingContractsMojo mojo) {
         assertThrows(MojoFailureException.class, mojo::execute);
     }
+
+    @Test
+    @Basedir("src/test/resources/mojoTest")
+    @InjectMojo(goal = "publish-messaging-contracts")
+    void executeWithSchemaUploadDisabled(PublishMessagingContractsMojo mojo) throws Exception {
+        wireMock.stubFor(put(RESOURCE_PATH).willReturn(created()));
+        project.getProperties().setProperty("MESSAGE_CONTRACT_SERVICE_USERNAME", "user");
+        project.getProperties().setProperty("MESSAGE_CONTRACT_SERVICE_PASSWORD", "secret");
+        project.setVersion("1.0.0-SNAPSHOT");
+        mojo.contractPath = new java.io.File("src/test/resources/validContracts");
+        mojo.messageContractSchemaUploadEnabled = false;
+
+        mojo.execute();
+
+        wireMock.verify(putRequestedFor(urlEqualTo(RESOURCE_PATH))
+                .withRequestBody(matchingJsonPath("$.contracts.length()", equalTo("5")))
+                .withRequestBody(matchingJsonPath("$.contracts[?(@.schema != null)]", absent())));
+    }
 }

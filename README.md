@@ -35,7 +35,7 @@ Start with [Getting started](docs/getting-started.md), then follow the links bel
 | Consuming messages                                      | [docs/consuming-messages.md](docs/consuming-messages.md)                         |
 | Kafka how-to (integrate Kafka into a service)           | [docs/kafka-how-to.md](docs/kafka-how-to.md)                                     |
 | Kafka topics & client configuration                     | [docs/kafka-topics-and-configuration.md](docs/kafka-topics-and-configuration.md) |
-| Message contracts                                       | [docs/message-contracts.md](docs/message-contracts.md)                           |
+| Message contracts & schema upload                       | [docs/message-contracts.md](docs/message-contracts.md)                           |
 | Idempotent message handler                              | [docs/idempotent-message-handler.md](docs/idempotent-message-handler.md)         |
 | Error handling                                          | [docs/error-handling.md](docs/error-handling.md)                                 |
 | Confluent Schema Registry                               | [docs/schema-registry-confluent.md](docs/schema-registry-confluent.md)           |

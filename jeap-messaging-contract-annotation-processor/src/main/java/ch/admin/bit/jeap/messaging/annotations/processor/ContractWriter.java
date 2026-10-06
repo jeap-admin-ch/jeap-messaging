@@ -14,7 +14,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +58,7 @@ class ContractWriter {
         String fileName = getFileName(appName, contractRole, messageTypeName, messageTypeVersion);
         FileObject contractFile = createResource(processingEnv, annotatedElement, fileName, messageTypeName);
 
-        Contract contract = Contract.builder()
+        Contract.ContractBuilder builder = Contract.builder()
                 .contractVersion(CONTRACT_VERSION)
                 .role(contractRole.name().toLowerCase())
                 .systemName(getAttributeValue(typeElement, SYSTEM_NAME))
@@ -70,16 +70,15 @@ class ContractWriter {
                 .compatibilityMode(getAttributeValue(typeElement, COMPATIBILITY_MODE))
                 .appName(appName)
                 .topics(getTopics(annotatedElement, topics, typeElement))
-                .encryptionKeyId(encryptionKeyId)
-                .build();
+                .encryptionKeyId(encryptionKeyId);
+        String schemaResource = SchemaWriter.generateSchema(processingEnv, annotatedElement, typeElement, builder.build());
+        Contract contract = builder.schemaResource(schemaResource == null ? "" : schemaResource).build();
 
-        try (PrintWriter writer = new PrintWriter(contractFile.openWriter())) {
-            GSON.toJson(contract, writer);
+        try (Writer writer = contractFile.openWriter()) {
+            writer.write(GSON.toJson(contract));
         } catch (IOException e) {
             throw MessagingAnnotationProcessingException.processingFailed(e);
         }
-
-        SchemaWriter.generateSchema(processingEnv, annotatedElement, typeElement, messageTypeName, messageTypeVersion);
     }
 
     private static FileObject createResource(ProcessingEnvironment processingEnv, Element annotatedElement,

@@ -38,6 +38,6 @@ class SchemaFileAnnotationTest {
                                        JmeSimpleTestEvent.TypeRef.MESSAGE_TYPE_VERSION;
 
         assertEquals(2, countContractFiles("*" + messageTypeAndVersion + ".*-contract.json"));
-        assertEquals(1, countContractFiles(SCHEMA_FILE_NAME));
+        assertEquals(1, countContractFiles(ContractAnnotationsTestHelper.schemaResource(SCHEMA_FILE_NAME)));
     }
 }

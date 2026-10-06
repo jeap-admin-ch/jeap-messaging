@@ -5,6 +5,7 @@ import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.CreateMessageCont
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractDto;
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractRole;
 import ch.admin.bit.jeap.messaging.contract.v2.Contract;
+import ch.admin.bit.jeap.messaging.contract.v2.SchemaResources;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
@@ -15,8 +16,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -24,11 +29,18 @@ import static java.util.stream.Collectors.toList;
 public class MessageContracts {
 
     private static final String CONTRACT_SUFFIX = "-contract.json";
-    private static final String SCHEMA_SUFFIX = ".avsc";
-
+    private final boolean schemaUploadEnabled;
     private final ObjectMapper objectMapper = JsonMapper.builder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build();
+
+    public MessageContracts() {
+        this(true);
+    }
+
+    public MessageContracts(boolean schemaUploadEnabled) {
+        this.schemaUploadEnabled = schemaUploadEnabled;
+    }
 
     Optional<CreateMessageContractsDto> loadAll(Path contractPath) {
         if (Files.exists(contractPath)) {
@@ -56,8 +68,13 @@ public class MessageContracts {
 
     private List<MessageContractDto> loadContracts(Path contractDirectory) throws IOException {
         try (Stream<Path> pathStream = Files.find(contractDirectory, 1, this::isContractFile)) {
-            return pathStream
-                    .flatMap(path -> toDtos(contractDirectory, path))
+            List<Contract> contracts = pathStream.map(this::deserializeContract).toList();
+            Map<String, Set<String>> legacyIdentities = contracts.stream().collect(Collectors.groupingBy(
+                    SchemaResources::legacyFileName,
+                    Collectors.mapping(contract -> SchemaResources.fileName("", contract), Collectors.toSet())));
+            Map<Path, Optional<String>> schemaCache = new HashMap<>();
+            return contracts.stream()
+                    .flatMap(contract -> toDtos(contract, readSchema(contractDirectory, contract, legacyIdentities, schemaCache)))
                     .collect(toList());
         }
     }
@@ -66,9 +83,7 @@ public class MessageContracts {
         return path.toString().endsWith(CONTRACT_SUFFIX);
     }
 
-    private Stream<MessageContractDto> toDtos(Path contractDirectory, Path path) {
-        Contract contract = deserializeContract(path);
-        String schema = readSchema(contractDirectory, contract);
+    private Stream<MessageContractDto> toDtos(Contract contract, String schema) {
         Stream<String> topicStream = Arrays.stream(contract.getTopics());
         return topicStream.map(topic ->
                 MessageContractDto.builder()
@@ -91,8 +106,29 @@ public class MessageContracts {
      * Reads the avro schema of the message type, which the annotation processor writes next to the contract file. If
      * no schema file is present, the message contract service reads the schema from the message type registry.
      */
-    private String readSchema(Path contractDirectory, Contract contract) {
-        Path schemaPath = contractDirectory.resolve(schemaFileName(contract));
+    private String readSchema(Path contractDirectory, Contract contract, Map<String, Set<String>> legacyIdentities,
+                              Map<Path, Optional<String>> schemaCache) {
+        if (!schemaUploadEnabled) {
+            return null;
+        }
+        String resource = contract.getSchemaResource();
+        if ("".equals(resource)) {
+            return null; // Explicitly unavailable: do not pick up stale legacy output.
+        }
+        if (resource == null) {
+            resource = SchemaResources.legacyFileName(contract);
+            if (legacyIdentities.get(resource).size() != 1) {
+                return null; // An old filename cannot distinguish these registries/systems.
+            }
+        }
+        if (resource.contains("/") || resource.contains("\\") || !resource.endsWith(".avsc")) {
+            throw new IllegalArgumentException("Invalid schema resource: " + resource);
+        }
+        Path schemaPath = contractDirectory.resolve(resource);
+        return schemaCache.computeIfAbsent(schemaPath, path -> Optional.ofNullable(readSchemaFile(path))).orElse(null);
+    }
+
+    String readSchemaFile(Path schemaPath) {
         if (!Files.isRegularFile(schemaPath)) {
             return null;
         }
@@ -101,10 +137,6 @@ public class MessageContracts {
         } catch (IOException ex) {
             throw MessageContractPublishException.failedToLoadSchema(schemaPath, ex);
         }
-    }
-
-    private String schemaFileName(Contract contract) {
-        return contract.getMessageTypeName() + "-" + contract.getMessageTypeVersion() + SCHEMA_SUFFIX;
     }
 
     private Contract deserializeContract(Path path) {

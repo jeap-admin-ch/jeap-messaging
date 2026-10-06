@@ -47,8 +47,6 @@ class JeapMessageTemplateAnnotationProcessorTest {
         setPrivateField(processor, "templatePathResolver", templatePathResolver);
         setPrivateField(processor, "templateMessageCollector", templateMessageCollector);
 
-        // Reset the static variable
-        setStaticField();
     }
 
     private void setPrivateField(Object target, String fieldName, Object value) throws Exception {
@@ -57,10 +55,18 @@ class JeapMessageTemplateAnnotationProcessorTest {
         field.set(target, value);
     }
 
-    private void setStaticField() throws Exception {
-        Field field = JeapMessageTemplateAnnotationProcessor.class.getDeclaredField("alreadyProcessed");
-        field.setAccessible(true);
-        field.set(null, false);
+    @Test
+    void processingStateIsNotSharedBetweenCompilations() {
+        processor.process(Set.of(), roundEnv);
+        processor.process(Set.of(), roundEnv);
+        verify(roundEnv, times(1)).getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class);
+
+        ProcessingEnvironment secondEnv = mock(ProcessingEnvironment.class);
+        when(secondEnv.getMessager()).thenReturn(messager);
+        JeapMessageTemplateAnnotationProcessor second = new JeapMessageTemplateAnnotationProcessor();
+        second.init(secondEnv);
+        second.process(Set.of(), roundEnv);
+        verify(roundEnv, times(2)).getElementsAnnotatedWith(JeapMessageConsumerContractsByTemplates.class);
     }
 
     @Test

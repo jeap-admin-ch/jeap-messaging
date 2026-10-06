@@ -12,9 +12,9 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,25 +45,39 @@ public class AvroSchemaExtractor {
      */
     public static boolean isAvroGeneratedType(TypeElement typeElement) {
         boolean avroGenerated = typeElement.getAnnotationMirrors().stream()
-                .map(annotationMirror -> annotationMirror.getAnnotationType().asElement())
-                .filter(TypeElement.class::isInstance)
-                .map(TypeElement.class::cast)
-                .anyMatch(annotationType -> AVRO_GENERATED_ANNOTATION.equals(annotationType.getQualifiedName().toString()));
+                .anyMatch(annotation -> AVRO_GENERATED_ANNOTATION.equals(annotation.getAnnotationType().toString()));
         return avroGenerated || schemaField(typeElement).isPresent();
     }
 
     public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {
-        String className = avroGeneratedType.getQualifiedName().toString();
+        return extractSchemaJson(processingEnv, avroGeneratedType, null);
+    }
+
+    public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType,
+                                                     TypeElement typeRef) {
+        String className = processingEnv.getElementUtils().getBinaryName(avroGeneratedType).toString();
         List<Throwable> failures = new ArrayList<>();
 
-        Optional<String> schemaJson = readSchemaJsonFromClasspath(className, failures);
+        // Never use stale bytecode for a type being compiled in this run.
+        boolean sourceAvailable = hasSourceTree(processingEnv, avroGeneratedType);
+        Optional<String> schemaJson = sourceAvailable
+                ? readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType, failures)
+                : readSchemaJsonFromClasspath(processingEnv, className, typeRef, failures);
         if (schemaJson.isEmpty()) {
-            schemaJson = readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType, failures);
-        }
-        if (schemaJson.isEmpty()) {
+            if (!sourceAvailable) {
+                failures.add(new IllegalStateException("No source tree available for " + className + "; cannot extract its SCHEMA$ initializer"));
+            }
             reportFailures(processingEnv, className, failures);
         }
         return schemaJson;
+    }
+
+    private static boolean hasSourceTree(ProcessingEnvironment env, TypeElement type) {
+        try {
+            return Trees.instance(env).getPath(type) != null;
+        } catch (IllegalArgumentException | LinkageError ex) {
+            return false;
+        }
     }
 
     /**
@@ -72,31 +86,36 @@ public class AvroSchemaExtractor {
      */
     private static void reportFailures(ProcessingEnvironment processingEnv, String className, List<Throwable> failures) {
         failures.stream()
-                .map(Throwable::toString)
+                .map(AvroSchemaExtractor::failureDescription)
                 .distinct()
                 .forEach(failure -> processingEnv.getMessager().printMessage(NOTE,
                         "Reading " + className + "." + SCHEMA_FIELD + " failed: " + failure));
     }
 
-    /**
-     * The message type classes are usually visible to the classloader of the annotation processor, as the annotation
-     * processor is loaded from the compile classpath. As a fallback, a classloader for the classpath of the compiling
-     * jvm is used, which is only created if the class could not be loaded otherwise.
-     */
-    private static Optional<String> readSchemaJsonFromClasspath(String className, List<Throwable> failures) {
-        Optional<String> schemaJson = readSchemaJsonFromClassLoader(className, AvroSchemaExtractor.class.getClassLoader(), failures);
-        if (schemaJson.isPresent()) {
-            return schemaJson;
+    private static String failureDescription(Throwable failure) {
+        StringBuilder description = new StringBuilder(failure.toString());
+        while (failure.getCause() != null && failure.getCause() != failure) {
+            failure = failure.getCause();
+            description.append("; caused by: ").append(failure);
         }
-        schemaJson = readSchemaJsonFromClassLoader(className, Thread.currentThread().getContextClassLoader(), failures);
-        if (schemaJson.isPresent()) {
-            return schemaJson;
-        }
-        return readSchemaJsonFromClassPath(className, failures);
+        return description.toString();
     }
 
-    private static Optional<String> readSchemaJsonFromClassPath(String className, List<Throwable> failures) {
-        try (URLClassLoader classPathClassLoader = ClasspathUtils.createExtendedClassLoader()) {
+    /**
+     * Resolve through the compiler's CLASS_PATH, never through processor dependencies or the Maven JVM classpath.
+     */
+    private static Optional<String> readSchemaJsonFromClasspath(ProcessingEnvironment env, String className,
+                                                               TypeElement typeRef, List<Throwable> failures) {
+        try (CompilerClasspathLoader classPathClassLoader = new CompilerClasspathLoader(env.getFiler())) {
+            if (typeRef != null) {
+                Class<?> metadata = Class.forName(env.getElementUtils().getBinaryName(typeRef).toString(), true, classPathClassLoader);
+                for (Element element : typeRef.getEnclosedElements()) {
+                    if (element instanceof VariableElement field && field.getConstantValue() instanceof String expected
+                            && !expected.equals(metadata.getField(field.getSimpleName().toString()).get(null))) {
+                        throw new IllegalStateException("Compiled TypeRef metadata differs from compiler model: " + field);
+                    }
+                }
+            }
             return readSchemaJsonFromClassLoader(className, classPathClassLoader, failures);
         } catch (Exception | LinkageError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
             failures.add(ex);
@@ -117,13 +136,13 @@ public class AvroSchemaExtractor {
         }
     }
 
-    private static Schema readSchema(Class<?> avroGeneratedClass) throws Exception {
+    private static Object readSchema(Class<?> avroGeneratedClass) throws Exception {
         try {
             Method getClassSchema = avroGeneratedClass.getMethod(GET_CLASS_SCHEMA_METHOD);
-            return (Schema) getClassSchema.invoke(null);
+            return getClassSchema.invoke(null);
         } catch (NoSuchMethodException ex) {
             Field schemaField = avroGeneratedClass.getDeclaredField(SCHEMA_FIELD);
-            return (Schema) schemaField.get(null);
+            return schemaField.get(null);
         }
     }
 
@@ -136,10 +155,12 @@ public class AvroSchemaExtractor {
         try {
             VariableTree schemaFieldTree = schemaFieldTree(processingEnv, avroGeneratedType);
             if (schemaFieldTree == null) {
+                failures.add(new IllegalStateException("No source tree for SCHEMA$ field"));
                 return Optional.empty();
             }
             String schemaJson = parsedStringLiterals(schemaFieldTree.getInitializer());
             if (schemaJson == null) {
+                failures.add(new IllegalStateException("Missing or unsupported SCHEMA$ initializer: expected parse with string literals"));
                 return Optional.empty();
             }
             return Optional.of(new Schema.Parser().parse(schemaJson).toString());

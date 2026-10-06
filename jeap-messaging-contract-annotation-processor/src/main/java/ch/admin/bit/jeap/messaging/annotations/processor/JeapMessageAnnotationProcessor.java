@@ -27,6 +27,10 @@ public class JeapMessageAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (roundEnv.processingOver()) {
+            SchemaWriter.processingOver(processingEnv);
+            return false;
+        }
 
         // When more than one Annotation is given, they come inside the Container
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(JeapMessageConsumerContractContainer.class)) {

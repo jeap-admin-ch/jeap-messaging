@@ -25,7 +25,11 @@ public class MessageContractPublisher {
     }
 
     public void publishMessageContracts(Path contractPath, String appVersion, String transactionId) {
-        MessageContracts messageContracts = new MessageContracts();
+        publishMessageContracts(contractPath, appVersion, transactionId, true);
+    }
+
+    public void publishMessageContracts(Path contractPath, String appVersion, String transactionId, boolean schemaUploadEnabled) {
+        MessageContracts messageContracts = new MessageContracts(schemaUploadEnabled);
         Optional<CreateMessageContractsDto> maybeDto = messageContracts.loadAll(contractPath);
         maybeDto.ifPresent(dto -> publishMessageContracts(dto, appVersion, transactionId));
     }
