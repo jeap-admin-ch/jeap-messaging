@@ -16,6 +16,7 @@ import javax.lang.model.element.VariableElement;
 import javax.tools.JavaFileObject;
 import java.lang.ref.Cleaner;
 import java.lang.ref.Reference;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import static javax.tools.Diagnostic.Kind.NOTE;
+import static javax.tools.Diagnostic.Kind.WARNING;
 
 /**
  * Extracts the avro schema of a message type from the <code>SCHEMA$</code> field of the avro generated class.
@@ -42,6 +44,8 @@ import static javax.tools.Diagnostic.Kind.NOTE;
  */
 public class AvroSchemaExtractor {
 
+    public static final String EXTRACTION_TIMEOUT_SECONDS = "messageContractSchemaExtractionTimeoutSeconds";
+
     private static final String SCHEMA_FIELD = "SCHEMA$";
     private static final Cleaner CLEANER = Cleaner.create();
     // Values must never retain compiler objects: those would keep the weak keys alive.
@@ -51,6 +55,8 @@ public class AvroSchemaExtractor {
         final Set<String> sourceRoots = new HashSet<>();
         SchemaExtractionWorker worker;
         Cleaner.Cleanable cleanup;
+        boolean replacementUsed;
+        Duration extractionTimeout;
     }
 
     public static synchronized void round(ProcessingEnvironment env, Set<? extends Element> roots) {
@@ -181,7 +187,12 @@ public class AvroSchemaExtractor {
         }
         try {
             var result = worker(env).extract(env.getFiler(), className, metadataName, Map.copyOf(constants));
-            if (result.diagnostic() != null) {
+            if (result.timedOut()) {
+                env.getMessager().printMessage(WARNING, "Reading " + className + "." + SCHEMA_FIELD +
+                        " failed: " + result.diagnostic() + ". Increase -A" + EXTRACTION_TIMEOUT_SECONDS +
+                        " if necessary. One replacement worker is allowed per compilation; " +
+                        "after a second timeout further binary schemas are omitted.");
+            } else if (result.diagnostic() != null) {
                 failures.add(result.diagnostic());
             }
             return Optional.ofNullable(result.schema());
@@ -195,11 +206,36 @@ public class AvroSchemaExtractor {
 
     private static synchronized SchemaExtractionWorker worker(ProcessingEnvironment env) {
         Compilation compilation = COMPILATIONS.computeIfAbsent(env, ignored -> new Compilation());
+        if (compilation.worker != null && compilation.worker.timedOut() && !compilation.replacementUsed) {
+            compilation.cleanup.clean();
+            compilation.worker = null;
+            compilation.replacementUsed = true;
+        }
         if (compilation.worker == null) {
-            compilation.worker = new SchemaExtractionWorker();
+            if (compilation.extractionTimeout == null) {
+                compilation.extractionTimeout = extractionTimeout(env);
+            }
+            compilation.worker = new SchemaExtractionWorker(compilation.extractionTimeout, Duration.ofSeconds(1));
             compilation.cleanup = CLEANER.register(env, compilation.worker);
         }
         return compilation.worker;
+    }
+
+    private static Duration extractionTimeout(ProcessingEnvironment env) {
+        String configured = env.getOptions().get(EXTRACTION_TIMEOUT_SECONDS);
+        if (configured != null) {
+            try {
+                int seconds = Integer.parseInt(configured);
+                if (seconds > 0) {
+                    return Duration.ofSeconds(seconds);
+                }
+            } catch (NumberFormatException ignored) {
+                // Report invalid configuration once per compilation and use the default.
+            }
+            env.getMessager().printMessage(WARNING, "Invalid -A" + EXTRACTION_TIMEOUT_SECONDS + "=" + configured +
+                    ": expected a positive integer (seconds); using 30 seconds");
+        }
+        return Duration.ofSeconds(30);
     }
 
     /**

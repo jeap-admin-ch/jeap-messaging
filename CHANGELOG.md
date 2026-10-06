@@ -10,7 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - The contract annotation processor generates collision-safe Avro schema resources referenced by each contract, including with isolated processor paths and same-run message sources. The contract Maven plugin uploads these schemas so the message contract service does not have to read them from the registry.
 - Disable upload with `messageContractSchemaUploadEnabled=false` or compilation-time extraction with `-AmessageContractSchemaGenerationEnabled=false`. Legacy contracts remain supported.
-- Support binary extraction with Eclipse ECJ and bounded extraction/shutdown waits. Unavailable schemas fall back to the registry with NOTE diagnostics.
+- Support binary extraction with Eclipse ECJ, configurable extraction timeouts and bounded shutdown waits. Timeouts emit warnings and allow one replacement worker; other unavailable schemas fall back to the registry with NOTE diagnostics.
 
 ## [19.14.0] - 2026-10-05
 

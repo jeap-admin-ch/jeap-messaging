@@ -16,13 +16,18 @@ import java.util.concurrent.TimeUnit;
 
 /** No compiler objects are retained here or accessed by the worker. */
 final class SchemaExtractionWorker implements Runnable {
-    record Result(String schema, String diagnostic) { }
+    record Result(String schema, String diagnostic, boolean timedOut) {
+        Result(String schema, String diagnostic) {
+            this(schema, diagnostic, false);
+        }
+    }
     private record Resource(String packageName, String fileName, CompletableFuture<byte[]> bytes) { }
 
     private final BlockingQueue<Resource> resources = new LinkedBlockingQueue<>();
     private volatile CompilerClasspathLoader loader = new CompilerClasspathLoader(this::readClass);
     private volatile Thread thread;
     private volatile boolean stopped;
+    private boolean timedOut;
     private final Duration extractionTimeout;
     private final Duration shutdownTimeout;
     private final ExecutorService executor = Executors.newSingleThreadExecutor(task -> {
@@ -41,10 +46,15 @@ final class SchemaExtractionWorker implements Runnable {
         this.shutdownTimeout = shutdownTimeout;
     }
 
+    boolean timedOut() {
+        return timedOut;
+    }
+
     Result extract(Filer filer, String className, String metadataName, Map<String, String> constants) {
         return execute(filer, () -> reflect(className, metadataName, constants));
     }
 
+    // Package-private to exercise cancellation without initializing application classes in unit tests.
     Result execute(Filer filer, Callable<Result> operation) {
         if (stopped) {
             return new Result(null, "Schema extraction worker stopped; skipping further binary schemas in this compilation");
@@ -54,10 +64,11 @@ final class SchemaExtractionWorker implements Runnable {
         try {
             while (!result.isDone()) {
                 if (System.nanoTime() - started >= extractionTimeout.toNanos()) {
+                    timedOut = true;
                     result.cancel(true);
                     run();
-                    return new Result(null, "Schema extraction timed out after " + extractionTimeout.toSeconds() +
-                            " seconds; worker stopped and further binary schemas will be omitted");
+                    return new Result(null, "Schema extraction timed out after " + extractionTimeout +
+                            "; worker stopped", true);
                 }
                 Resource resource = resources.poll(10, TimeUnit.MILLISECONDS);
                 if (resource != null) {

@@ -9,6 +9,9 @@ import org.apache.avro.specific.AvroGenerated;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.ArgumentCaptor;
 
@@ -26,6 +29,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +43,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 public class AvroSchemaExtractorTest {
 
@@ -78,6 +83,46 @@ public class AvroSchemaExtractorTest {
     void closeCompilation() {
         AvroSchemaExtractor.processingOver(processingEnv);
         trees.close();
+    }
+
+    @Test
+    @Timeout(10)
+    void timeoutWarnsAndNextTypeUsesReplacementButReplacementBudgetIsBounded() {
+        when(processingEnv.getOptions()).thenReturn(Map.of(AvroSchemaExtractor.EXTRACTION_TIMEOUT_SECONDS, "1"));
+
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(SlowMessage.class))).isEmpty();
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(FastMessage.class))).contains(SCHEMA_JSON);
+        // The replacement loader initializes the slow type again. A second timeout exhausts the budget.
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(SlowMessage.class))).isEmpty();
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(FastMessage.class))).isEmpty();
+
+        ArgumentCaptor<CharSequence> warnings = ArgumentCaptor.forClass(CharSequence.class);
+        verify(processingEnv.getMessager(), times(2)).printMessage(eq(Diagnostic.Kind.WARNING), warnings.capture());
+        assertThat(warnings.getAllValues()).allSatisfy(warning -> assertThat(warning.toString())
+                .contains("SlowMessage.SCHEMA$", "timed out after PT1S", AvroSchemaExtractor.EXTRACTION_TIMEOUT_SECONDS));
+        assertNoWorker();
+
+        AvroSchemaExtractor.processingOver(processingEnv);
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(FastMessage.class))).contains(SCHEMA_JSON);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1", "invalid", "2147483648"})
+    void invalidTimeoutWarnsOnceAndUsesDefault(String value) {
+        when(processingEnv.getOptions()).thenReturn(Map.of(AvroSchemaExtractor.EXTRACTION_TIMEOUT_SECONDS, value));
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(FastMessage.class))).contains(SCHEMA_JSON);
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(FastMessage.class))).contains(SCHEMA_JSON);
+        ArgumentCaptor<CharSequence> warning = ArgumentCaptor.forClass(CharSequence.class);
+        verify(processingEnv.getMessager()).printMessage(eq(Diagnostic.Kind.WARNING), warning.capture());
+        assertThat(warning.getValue().toString()).contains("Invalid -A", "using 30 seconds");
+    }
+
+    @Test
+    void bothProcessorsRecognizeTimeoutOption() {
+        assertThat(new ch.admin.bit.jeap.messaging.annotations.processor.JeapMessageAnnotationProcessor().getSupportedOptions())
+                .contains(AvroSchemaExtractor.EXTRACTION_TIMEOUT_SECONDS);
+        assertThat(new ch.admin.bit.jeap.messaging.annotations.processor.JeapMessageTemplateAnnotationProcessor().getSupportedOptions())
+                .contains(AvroSchemaExtractor.EXTRACTION_TIMEOUT_SECONDS);
     }
 
     @Test
@@ -265,5 +310,21 @@ public class AvroSchemaExtractorTest {
         public static Object getClassSchema() {
             throw new ThreadDeath();
         }
+    }
+
+    public static class FastMessage {
+        public static final String SCHEMA$ = SCHEMA_JSON;
+    }
+
+    public static class SlowMessage {
+        static {
+            try {
+                Thread.sleep(30_000);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        public static final String SCHEMA$ = SCHEMA_JSON;
     }
 }

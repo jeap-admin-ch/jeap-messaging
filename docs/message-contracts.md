@@ -69,7 +69,7 @@ Next to the contract files, the processor writes the Avro schema of the message 
 Each contract's `schemaResource` points to its schema file. The identity includes the binary class
 name, system, message type, version and registry coordinates, preventing collisions between types
 with the same simple name and version. Contracts sharing that identity share one resource within a
-compilation; conflicting schema content fails the build.
+compilation; repeated contracts reuse the schema already extracted for that identity.
 The `jeap-messaging-contract-maven-plugin` uploads the schema together with the contract, so that the
 Message Contract Service does not need to read the schema from the message type registry.
 
@@ -77,9 +77,14 @@ Both direct and template-based contracts support message types from the compiler
 including isolated `annotationProcessorPaths` and Eclipse ECJ. Types compiled in the same run require
 javac's Trees API; their schema literals are copied without initializing Avro or application logging.
 Unknown source origins and unreadable schemas are omitted rather than replaced with stale bytecode.
-Binary extraction has a 30-second timeout per schema. On timeout or interruption, further binary
-schemas in that compilation are omitted, with NOTE diagnostics and registry fallback. Shutdown waits
-at most one second; an initializer that ignores interruption may continue on a daemon thread until
+Binary extraction has a 30-second timeout per schema, configurable with
+`-AmessageContractSchemaExtractionTimeoutSeconds=60` (a positive integer in seconds).
+A timeout emits a WARNING and omits that schema. The next binary extraction uses a replacement
+worker, allowing later types to succeed. At most one replacement is created per compilation to bound
+abandoned workers: after a second timeout, further binary schemas are omitted with NOTE diagnostics
+and registry fallback. Interruption stops binary extraction without starting a replacement.
+Warnings can fail builds using `-Werror`; invalid timeout values also emit a WARNING and use 30 seconds.
+Shutdown waits at most one second; an initializer that ignores interruption may continue on a daemon thread until
 it returns or the compiler JVM exits. Fatal VM errors still propagate.
 
 Generation deliberately remains in the contract processor: existing message artifacts work without
@@ -92,8 +97,8 @@ schema is the Avro record schema of the declared message type and version; the r
 (`registryUrl`, `registryBranch`, `registryCommit`) stay in the contract for traceability and for the
 fallback below. Message types referenced by a hand-written `MessageTypeMetadata` implementation have no
 `SCHEMA$` and therefore no schema file. If a schema exists but cannot be read, the processor emits a
-NOTE (with the reason), not a compiler warning — in both cases the Message Contract Service reads the schema from the
-message type registry as before.
+NOTE with the reason (or a WARNING for a timeout, as described above). In both cases the Message
+Contract Service reads the schema from the message type registry as before.
 
 An empty `schemaResource` explicitly marks a schema as unavailable and prevents stale files from
 being uploaded. Older contracts without this field still use `<MessageTypeName>-<version>.avsc`

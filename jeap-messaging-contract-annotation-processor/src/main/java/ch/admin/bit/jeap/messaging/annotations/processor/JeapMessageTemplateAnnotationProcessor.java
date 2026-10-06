@@ -22,7 +22,7 @@ import java.util.Set;
 
 import static ch.admin.bit.jeap.messaging.annotations.processor.ContractWriter.generateContract;
 
-@SupportedOptions(SchemaWriter.GENERATION_ENABLED)
+@SupportedOptions({SchemaWriter.GENERATION_ENABLED, AvroSchemaExtractor.EXTRACTION_TIMEOUT_SECONDS})
 @SupportedAnnotationTypes("ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContractsByTemplates")
 public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
 
