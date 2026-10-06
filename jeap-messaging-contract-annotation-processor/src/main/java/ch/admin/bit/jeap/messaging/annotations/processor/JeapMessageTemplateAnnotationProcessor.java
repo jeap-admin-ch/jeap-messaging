@@ -2,6 +2,7 @@ package ch.admin.bit.jeap.messaging.annotations.processor;
 
 import ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContractsByTemplates;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroClassFinder;
+import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroSchemaExtractor;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TemplateMessageCollector;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TemplatePathResolver;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.TypeRefFinder;
@@ -38,6 +39,16 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        try {
+            AvroSchemaExtractor.round(processingEnv, roundEnv.getRootElements());
+            return processRound(annotations, roundEnv);
+        } catch (RuntimeException | Error ex) {
+            SchemaWriter.processingOver(processingEnv);
+            throw ex;
+        }
+    }
+
+    private boolean processRound(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (roundEnv.processingOver()) {
             SchemaWriter.processingOver(processingEnv);
             return false;

@@ -1,17 +1,19 @@
 package ch.admin.bit.jeap.messaging.annotations.processor.util;
 
-import javax.annotation.processing.Filer;
-import javax.tools.StandardLocation;
 import java.io.Closeable;
 import java.io.IOException;
 
 /** Loads the application's classes and dependencies, independently of the processor path. */
 final class CompilerClasspathLoader extends ClassLoader implements Closeable {
-    private Filer filer;
+    interface ClassBytes {
+        byte[] read(String packageName, String fileName) throws IOException;
+    }
 
-    CompilerClasspathLoader(Filer filer) {
+    private ClassBytes classBytes;
+
+    CompilerClasspathLoader(ClassBytes classBytes) {
         super(ClassLoader.getPlatformClassLoader());
-        this.filer = filer;
+        this.classBytes = classBytes;
     }
 
     @Override
@@ -19,8 +21,8 @@ final class CompilerClasspathLoader extends ClassLoader implements Closeable {
         int separator = name.lastIndexOf('.');
         String packageName = separator < 0 ? "" : name.substring(0, separator);
         String fileName = name.substring(separator + 1) + ".class";
-        try (var stream = filer.getResource(StandardLocation.CLASS_PATH, packageName, fileName).openInputStream()) {
-            byte[] bytes = stream.readAllBytes();
+        try {
+            byte[] bytes = classBytes.read(packageName, fileName);
             return defineClass(name, bytes, 0, bytes.length);
         } catch (IOException | IllegalArgumentException ex) {
             throw new ClassNotFoundException(name + " on compiler CLASS_PATH", ex);
@@ -29,6 +31,6 @@ final class CompilerClasspathLoader extends ClassLoader implements Closeable {
 
     @Override
     public void close() {
-        filer = null;
+        classBytes = null;
     }
 }

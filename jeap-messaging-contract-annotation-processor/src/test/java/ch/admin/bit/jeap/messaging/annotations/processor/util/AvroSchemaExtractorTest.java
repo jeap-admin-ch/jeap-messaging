@@ -3,10 +3,13 @@ package ch.admin.bit.jeap.messaging.annotations.processor.util;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.util.Trees;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.AvroGenerated;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.mockito.MockedStatic;
 import org.mockito.ArgumentCaptor;
 
 import javax.annotation.processing.Messager;
@@ -26,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,15 +46,20 @@ public class AvroSchemaExtractorTest {
             {"type":"record","name":"TestMessage","namespace":"ch.admin.bit.jeap.test","fields":[{"name":"field","type":"string"}]}""";
 
     private final ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
+    private MockedStatic<Trees> trees;
 
     @BeforeEach
     void compilerClasspath() throws Exception {
+        trees = mockStatic(Trees.class);
+        trees.when(() -> Trees.instance(processingEnv)).thenReturn(mock(Trees.class));
+        Thread compilerThread = Thread.currentThread();
         Elements elements = mock(Elements.class);
         when(processingEnv.getElementUtils()).thenReturn(elements);
         when(elements.getBinaryName(any())).thenAnswer(call -> ((TypeElement) call.getArgument(0)).getQualifiedName());
         Filer filer = mock(Filer.class);
         when(processingEnv.getFiler()).thenReturn(filer);
         when(filer.getResource(eq(StandardLocation.CLASS_PATH), anyString(), anyString())).thenAnswer(call -> {
+            assertThat(Thread.currentThread()).isSameAs(compilerThread);
             String resource = call.<String>getArgument(1).replace('.', '/') + "/" + call.<String>getArgument(2);
             FileObject file = mock(FileObject.class);
             when(file.openInputStream()).thenAnswer(ignored -> {
@@ -62,6 +72,38 @@ public class AvroSchemaExtractorTest {
             return file;
         });
         when(processingEnv.getMessager()).thenReturn(mock(Messager.class));
+    }
+
+    @AfterEach
+    void closeCompilation() {
+        AvroSchemaExtractor.processingOver(processingEnv);
+        trees.close();
+    }
+
+    @Test
+    void virtualMachineErrorPropagatesAndStopsWorker() {
+        assertThatThrownBy(() -> AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(FatalMessage.class)))
+                .isInstanceOf(OutOfMemoryError.class).hasMessage("fatal fixture");
+        assertNoWorker();
+    }
+
+    @Test
+    void threadDeathPropagatesAndStopsWorker() {
+        assertThatThrownBy(() -> AvroSchemaExtractor.extractSchemaJson(processingEnv, typeElement(ThreadDeathMessage.class)))
+                .isInstanceOf(ThreadDeath.class);
+        assertNoWorker();
+    }
+
+    @Test
+    void sourceRootWithoutTreeNeverLoadsStaleClass() {
+        TypeElement type = typeElement(MessageTypeWithClassSchema.class);
+        AvroSchemaExtractor.round(processingEnv, java.util.Set.of(type));
+        assertThat(AvroSchemaExtractor.extractSchemaJson(processingEnv, type)).isEmpty();
+        org.mockito.Mockito.verifyNoInteractions(processingEnv.getFiler());
+    }
+
+    private static void assertNoWorker() {
+        assertThat(Thread.getAllStackTraces().keySet()).noneMatch(thread -> thread.getName().equals("jeap-schema-extraction"));
     }
 
     @Test
@@ -84,6 +126,7 @@ public class AvroSchemaExtractorTest {
         Name qualifiedName = mock(Name.class);
         when(qualifiedName.toString()).thenReturn("ch.admin.bit.jeap.test.NotOnTheClasspathEvent");
         when(typeElement.getQualifiedName()).thenReturn(qualifiedName);
+        when(processingEnv.getElementUtils().getTypeElement(qualifiedName)).thenReturn(typeElement);
         when(typeElement.getEnclosedElements()).thenReturn(List.of());
         Messager messager = mock(Messager.class);
         when(processingEnv.getMessager()).thenReturn(messager);
@@ -169,6 +212,7 @@ public class AvroSchemaExtractorTest {
         Name qualifiedName = mock(Name.class);
         when(qualifiedName.toString()).thenReturn(messageTypeClass.getName());
         when(typeElement.getQualifiedName()).thenReturn(qualifiedName);
+        when(processingEnv.getElementUtils().getTypeElement(qualifiedName)).thenReturn(typeElement);
         return typeElement;
     }
 
@@ -209,5 +253,17 @@ public class AvroSchemaExtractorTest {
 
     public static class MessageTypeWithSchemaFieldOnly {
         public static final Schema SCHEMA$ = new Schema.Parser().parse(SCHEMA_JSON);
+    }
+
+    public static class FatalMessage {
+        public static Object getClassSchema() {
+            throw new OutOfMemoryError("fatal fixture");
+        }
+    }
+
+    public static class ThreadDeathMessage {
+        public static Object getClassSchema() {
+            throw new ThreadDeath();
+        }
     }
 }

@@ -75,9 +75,17 @@ Message Contract Service does not need to read the schema from the message type 
 
 Compiled message types and their dependencies are loaded from the compiler's classpath, independently
 of `annotationProcessorPaths`. Their `TypeRef` constants are checked against the compiler model.
+All message types in a compilation share one classloader and a dedicated schema-extraction thread.
+The thread is stopped and joined and the loader released when processing finishes or a contract
+processor fails. A cleaner also releases abandoned compilation workers once their compiler environment
+becomes unreachable. Avro thread-local state is kept off the compiler thread; compiler resource access
+stays on the compiler thread.
 For message types compiled in the same run, the processor reads the schema initializer from the
 source tree instead of potentially stale bytecode. Both direct and template-based contracts use this
-schema generation path.
+schema generation path. JPS environments are unwrapped for source-tree access. If the processor cannot
+determine whether a type is current source or a binary, it reports the reason and omits the schema
+instead of loading potentially stale bytecode. Nonfatal class-initialization failures also use the
+registry fallback; fatal VM errors still propagate.
 
 The uploaded schema is the schema of the message type artifact the application is actually built
 against, and the Message Contract Service uses it as the schema of that contract. It validates that the

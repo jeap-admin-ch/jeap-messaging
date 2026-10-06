@@ -1,6 +1,7 @@
 package ch.admin.bit.jeap.messaging.annotations.processor;
 
 import ch.admin.bit.jeap.messaging.annotations.*;
+import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroSchemaExtractor;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -27,6 +28,16 @@ public class JeapMessageAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        try {
+            AvroSchemaExtractor.round(processingEnv, roundEnv.getRootElements());
+            return processRound(annotations, roundEnv);
+        } catch (RuntimeException | Error ex) {
+            SchemaWriter.processingOver(processingEnv);
+            throw ex;
+        }
+    }
+
+    private boolean processRound(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (roundEnv.processingOver()) {
             SchemaWriter.processingOver(processingEnv);
             return false;

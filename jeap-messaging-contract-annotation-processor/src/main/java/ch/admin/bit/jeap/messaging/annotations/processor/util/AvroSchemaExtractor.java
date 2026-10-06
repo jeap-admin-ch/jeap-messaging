@@ -6,7 +6,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.Trees;
-import org.apache.avro.Schema;
 import org.apache.avro.specific.AvroGenerated;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -14,11 +13,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.ref.Cleaner;
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import static javax.tools.Diagnostic.Kind.NOTE;
 
@@ -33,7 +37,31 @@ import static javax.tools.Diagnostic.Kind.NOTE;
 public class AvroSchemaExtractor {
 
     private static final String SCHEMA_FIELD = "SCHEMA$";
-    private static final String GET_CLASS_SCHEMA_METHOD = "getClassSchema";
+    private static final Cleaner CLEANER = Cleaner.create();
+    // Values must never retain compiler objects: those would keep the weak keys alive.
+    private static final Map<ProcessingEnvironment, Compilation> COMPILATIONS = new WeakHashMap<>();
+
+    private static final class Compilation {
+        final Set<String> sourceRoots = new HashSet<>();
+        SchemaExtractionWorker worker;
+        Cleaner.Cleanable cleanup;
+    }
+
+    public static synchronized void round(ProcessingEnvironment env, Set<? extends Element> roots) {
+        Compilation compilation = COMPILATIONS.computeIfAbsent(env, ignored -> new Compilation());
+        for (Element root : roots) {
+            if (root instanceof TypeElement type) {
+                compilation.sourceRoots.add(type.getQualifiedName().toString());
+            }
+        }
+    }
+
+    public static synchronized void processingOver(ProcessingEnvironment env) {
+        Compilation compilation = COMPILATIONS.remove(env);
+        if (compilation != null && compilation.cleanup != null) {
+            compilation.cleanup.clean();
+        }
+    }
 
     private AvroSchemaExtractor() {
     }
@@ -54,27 +82,44 @@ public class AvroSchemaExtractor {
     public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType,
                                                      TypeElement typeRef) {
         String className = processingEnv.getElementUtils().getBinaryName(avroGeneratedType).toString();
-        List<Throwable> failures = new ArrayList<>();
+        List<String> failures = new ArrayList<>();
 
         // Never use stale bytecode for a type being compiled in this run.
-        boolean sourceAvailable = hasSourceTree(processingEnv, avroGeneratedType);
-        Optional<String> schemaJson = sourceAvailable
-                ? readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType, failures)
-                : readSchemaJsonFromClasspath(processingEnv, className, typeRef, failures);
-        if (schemaJson.isEmpty()) {
-            if (!sourceAvailable) {
-                failures.add(new IllegalStateException("No source tree available for " + className + "; cannot extract its SCHEMA$ initializer"));
+        Origin origin = origin(processingEnv, avroGeneratedType);
+        Optional<String> schemaJson = switch (origin) {
+            case SOURCE -> readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType, failures);
+            case BINARY -> readSchemaJsonFromClasspath(processingEnv, className, typeRef, failures);
+            case UNAVAILABLE -> {
+                failures.add("Source origin unavailable; refusing potentially stale CLASS_PATH bytecode");
+                yield Optional.empty();
             }
+        };
+        if (schemaJson.isEmpty()) {
             reportFailures(processingEnv, className, failures);
         }
         return schemaJson;
     }
 
-    private static boolean hasSourceTree(ProcessingEnvironment env, TypeElement type) {
+    private enum Origin { SOURCE, BINARY, UNAVAILABLE }
+
+    private static Origin origin(ProcessingEnvironment env, TypeElement type) {
         try {
-            return Trees.instance(env).getPath(type) != null;
-        } catch (IllegalArgumentException | LinkageError ex) {
-            return false;
+            Trees trees = CompilerTrees.trees(env);
+            if (trees.getPath(type) != null) {
+                return Origin.SOURCE;
+            }
+            synchronized (AvroSchemaExtractor.class) {
+                Compilation compilation = COMPILATIONS.get(env);
+                for (Element enclosing = type; enclosing instanceof TypeElement current; enclosing = enclosing.getEnclosingElement()) {
+                    if (compilation != null && compilation.sourceRoots.contains(current.getQualifiedName().toString())) {
+                        return Origin.UNAVAILABLE;
+                    }
+                }
+            }
+            // A working Trees API and a compiler-owned element with no path denotes a binary.
+            return env.getElementUtils().getTypeElement(type.getQualifiedName()) == type ? Origin.BINARY : Origin.UNAVAILABLE;
+        } catch (RuntimeException | LinkageError ex) {
+            return Origin.UNAVAILABLE;
         }
     }
 
@@ -82,66 +127,49 @@ public class AvroSchemaExtractor {
      * Reports why the schema could not be read, as the reason is not obvious: the class might be missing on the
      * classpath, fail to initialize or be loaded by a classloader with another avro version.
      */
-    private static void reportFailures(ProcessingEnvironment processingEnv, String className, List<Throwable> failures) {
+    private static void reportFailures(ProcessingEnvironment processingEnv, String className, List<String> failures) {
         failures.stream()
-                .map(AvroSchemaExtractor::failureDescription)
                 .distinct()
                 .forEach(failure -> processingEnv.getMessager().printMessage(NOTE,
                         "Reading " + className + "." + SCHEMA_FIELD + " failed: " + failure));
-    }
-
-    private static String failureDescription(Throwable failure) {
-        StringBuilder description = new StringBuilder(failure.toString());
-        while (failure.getCause() != null && failure.getCause() != failure) {
-            failure = failure.getCause();
-            description.append("; caused by: ").append(failure);
-        }
-        return description.toString();
     }
 
     /**
      * Resolve through the compiler's CLASS_PATH, never through processor dependencies or the Maven JVM classpath.
      */
     private static Optional<String> readSchemaJsonFromClasspath(ProcessingEnvironment env, String className,
-                                                               TypeElement typeRef, List<Throwable> failures) {
-        try (CompilerClasspathLoader classPathClassLoader = new CompilerClasspathLoader(env.getFiler())) {
-            if (typeRef != null) {
-                Class<?> metadata = Class.forName(env.getElementUtils().getBinaryName(typeRef).toString(), true, classPathClassLoader);
-                for (Element element : typeRef.getEnclosedElements()) {
-                    if (element instanceof VariableElement field && field.getConstantValue() instanceof String expected
-                            && !expected.equals(metadata.getField(field.getSimpleName().toString()).get(null))) {
-                        throw new IllegalStateException("Compiled TypeRef metadata differs from compiler model: " + field);
-                    }
+                                                               TypeElement typeRef, List<String> failures) {
+        Map<String, String> constants = new HashMap<>();
+        String metadataName = null;
+        if (typeRef != null) {
+            metadataName = env.getElementUtils().getBinaryName(typeRef).toString();
+            for (Element element : typeRef.getEnclosedElements()) {
+                if (element instanceof VariableElement field && field.getConstantValue() instanceof String expected) {
+                    constants.put(field.getSimpleName().toString(), expected);
                 }
             }
-            return readSchemaJsonFromClassLoader(className, classPathClassLoader, failures);
-        } catch (Exception | LinkageError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
-            failures.add(ex);
-            return Optional.empty();
+        }
+        try {
+            var result = worker(env).extract(env.getFiler(), className, metadataName, Map.copyOf(constants));
+            if (result.diagnostic() != null) {
+                failures.add(result.diagnostic());
+            }
+            return Optional.ofNullable(result.schema());
+        } catch (RuntimeException | Error ex) {
+            processingOver(env);
+            throw ex;
+        } finally {
+            Reference.reachabilityFence(env);
         }
     }
 
-    private static Optional<String> readSchemaJsonFromClassLoader(String className, ClassLoader classLoader, List<Throwable> failures) {
-        if (classLoader == null) {
-            return Optional.empty();
+    private static synchronized SchemaExtractionWorker worker(ProcessingEnvironment env) {
+        Compilation compilation = COMPILATIONS.computeIfAbsent(env, ignored -> new Compilation());
+        if (compilation.worker == null) {
+            compilation.worker = new SchemaExtractionWorker();
+            compilation.cleanup = CLEANER.register(env, compilation.worker);
         }
-        try {
-            Class<?> avroGeneratedClass = Class.forName(className, true, classLoader);
-            return Optional.of(readSchema(avroGeneratedClass).toString());
-        } catch (Exception | LinkageError ex) { // NOSONAR: the schema is optional, any failure leads to the fallback
-            failures.add(ex);
-            return Optional.empty();
-        }
-    }
-
-    private static Object readSchema(Class<?> avroGeneratedClass) throws Exception {
-        try {
-            Method getClassSchema = avroGeneratedClass.getMethod(GET_CLASS_SCHEMA_METHOD);
-            return getClassSchema.invoke(null);
-        } catch (NoSuchMethodException ex) {
-            Field schemaField = avroGeneratedClass.getDeclaredField(SCHEMA_FIELD);
-            return schemaField.get(null);
-        }
+        return compilation.worker;
     }
 
     /**
@@ -149,22 +177,33 @@ public class AvroSchemaExtractor {
      * generates as <code>new Schema.Parser().parse("...", "...")</code>.
      */
     private static Optional<String> readSchemaJsonFromSourceTree(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType,
-                                                                 List<Throwable> failures) {
+                                                                 List<String> failures) {
         try {
             VariableTree schemaFieldTree = schemaFieldTree(processingEnv, avroGeneratedType);
             if (schemaFieldTree == null) {
-                failures.add(new IllegalStateException("No source tree for SCHEMA$ field"));
+                failures.add("No source tree for SCHEMA$ field");
                 return Optional.empty();
             }
             String schemaJson = parsedStringLiterals(schemaFieldTree.getInitializer());
             if (schemaJson == null) {
-                failures.add(new IllegalStateException("Missing or unsupported SCHEMA$ initializer: expected parse with string literals"));
+                failures.add("Missing or unsupported SCHEMA$ initializer: expected parse with string literals");
                 return Optional.empty();
             }
-            return Optional.of(new Schema.Parser().parse(schemaJson).toString());
+            // Avro's own parser also uses thread locals, even when reading current source literals.
+            var result = worker(processingEnv).normalizeSource(schemaJson);
+            if (result.diagnostic() != null) {
+                failures.add(result.diagnostic());
+            }
+            return Optional.ofNullable(result.schema());
         } catch (Exception | LinkageError ex) { // NOSONAR: the compiler tree api might not be available
-            failures.add(ex);
+            processingOver(processingEnv);
+            failures.add(ex.toString());
             return Optional.empty();
+        } catch (Error fatal) {
+            processingOver(processingEnv);
+            throw fatal;
+        } finally {
+            Reference.reachabilityFence(processingEnv);
         }
     }
 
@@ -173,7 +212,7 @@ public class AvroSchemaExtractor {
         if (schemaField.isEmpty()) {
             return null;
         }
-        Tree tree = Trees.instance(processingEnv).getTree(schemaField.get());
+        Tree tree = CompilerTrees.trees(processingEnv).getTree(schemaField.get());
         return tree instanceof VariableTree variableTree ? variableTree : null;
     }
 
