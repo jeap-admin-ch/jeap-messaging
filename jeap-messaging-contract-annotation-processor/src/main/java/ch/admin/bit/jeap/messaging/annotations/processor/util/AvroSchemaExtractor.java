@@ -3,31 +3,35 @@ package ch.admin.bit.jeap.messaging.annotations.processor.util;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.Trees;
+import com.sun.source.util.TreePath;
 import org.apache.avro.specific.AvroGenerated;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ExecutableElement;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 import javax.tools.JavaFileObject;
-import java.lang.ref.Cleaner;
 import java.lang.ref.Reference;
-import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 import static javax.tools.Diagnostic.Kind.NOTE;
-import static javax.tools.Diagnostic.Kind.WARNING;
 
 /**
  * Extracts the avro schema of a message type from the <code>SCHEMA$</code> field of the avro generated class.
@@ -38,25 +42,18 @@ import static javax.tools.Diagnostic.Kind.WARNING;
  * using the compiler tree api.
  * <p>
  * Extraction belongs to contract annotation processing so existing message artifacts need no rebuild.
- * One isolated loader/worker per compilation keeps Avro thread-local state off compiler threads, while
- * Filer requests stay on the compiler thread. Completion, processor failure and a Cleaner release the
- * worker. Origin detection (including optional JPS/ECJ adapters) rejects uncertain or stale bytecode.
+ * Binary extraction reads classfile instructions, never executing application initializers. Source
+ * extraction resolves the parser method in the compiler model. Both paths validate JSON record shape
+ * without initializing Avro. Unknown patterns and uncertain source origins fall back to the registry.
  */
 public class AvroSchemaExtractor {
 
-    public static final String EXTRACTION_TIMEOUT_SECONDS = "messageContractSchemaExtractionTimeoutSeconds";
-
     private static final String SCHEMA_FIELD = "SCHEMA$";
-    private static final Cleaner CLEANER = Cleaner.create();
     // Values must never retain compiler objects: those would keep the weak keys alive.
     private static final Map<ProcessingEnvironment, Compilation> COMPILATIONS = new WeakHashMap<>();
 
     private static final class Compilation {
         final Set<String> sourceRoots = new HashSet<>();
-        SchemaExtractionWorker worker;
-        Cleaner.Cleanable cleanup;
-        boolean replacementUsed;
-        Duration extractionTimeout;
     }
 
     public static synchronized void round(ProcessingEnvironment env, Set<? extends Element> roots) {
@@ -69,10 +66,7 @@ public class AvroSchemaExtractor {
     }
 
     public static synchronized void processingOver(ProcessingEnvironment env) {
-        Compilation compilation = COMPILATIONS.remove(env);
-        if (compilation != null && compilation.cleanup != null) {
-            compilation.cleanup.clean();
-        }
+        COMPILATIONS.remove(env);
     }
 
     private AvroSchemaExtractor() {
@@ -88,11 +82,6 @@ public class AvroSchemaExtractor {
     }
 
     public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType) {
-        return extractSchemaJson(processingEnv, avroGeneratedType, null);
-    }
-
-    public static Optional<String> extractSchemaJson(ProcessingEnvironment processingEnv, TypeElement avroGeneratedType,
-                                                     TypeElement typeRef) {
         String className = processingEnv.getElementUtils().getBinaryName(avroGeneratedType).toString();
         List<String> failures = new ArrayList<>();
 
@@ -100,12 +89,16 @@ public class AvroSchemaExtractor {
         Origin origin = origin(processingEnv, avroGeneratedType, failures);
         Optional<String> schemaJson = switch (origin) {
             case SOURCE -> readSchemaJsonFromSourceTree(processingEnv, avroGeneratedType, failures);
-            case BINARY -> readSchemaJsonFromClasspath(processingEnv, className, typeRef, failures);
+            case BINARY -> readSchemaJsonFromClassFile(processingEnv, avroGeneratedType, className, failures);
             case UNAVAILABLE -> {
                 failures.add("Source origin unavailable; refusing potentially stale CLASS_PATH bytecode");
                 yield Optional.empty();
             }
         };
+        if (schemaJson.isPresent() && !SchemaJson.isRecord(schemaJson.get())) {
+            failures.add("SCHEMA$ literals are not a JSON record schema");
+            schemaJson = Optional.empty();
+        }
         if (schemaJson.isEmpty()) {
             reportFailures(processingEnv, className, failures);
         }
@@ -131,7 +124,7 @@ public class AvroSchemaExtractor {
             // A working Trees API and a compiler-owned element with no path denotes a binary.
             return env.getElementUtils().getTypeElement(type.getQualifiedName()) == type ? Origin.BINARY : Origin.UNAVAILABLE;
         } catch (RuntimeException | LinkageError ex) {
-            failures.add("Compiler Trees API unavailable: " + ex);
+            failures.add("Compiler Trees API unavailable: " + describeFailure(ex));
         }
         try {
             JavaFileObject file = env.getElementUtils().getFileObjectOf(type);
@@ -140,7 +133,7 @@ public class AvroSchemaExtractor {
                 if (file.getKind() == JavaFileObject.Kind.SOURCE) return Origin.SOURCE;
             }
         } catch (RuntimeException | LinkageError ex) {
-            failures.add("Compiler file origin unavailable: " + ex);
+            failures.add("Compiler file origin unavailable: " + describeFailure(ex));
         }
         // ECJ 3.43 does not implement Elements.getFileObjectOf yet. Its element exposes the
         // binding's actual file, including implicitly loaded source; absence from round roots alone
@@ -153,15 +146,15 @@ public class AvroSchemaExtractor {
                     if (name.endsWith(".java")) return Origin.SOURCE;
                 }
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
-                failures.add("Eclipse file origin unavailable: " + ex);
+                failures.add("Eclipse file origin unavailable: " + describeFailure(ex));
             }
         }
         return Origin.UNAVAILABLE;
     }
 
     /**
-     * Reports why the schema could not be read, as the reason is not obvious: the class might be missing on the
-     * classpath, fail to initialize or be loaded by a classloader with another avro version.
+     * Reports unavailable compiler classfiles or source trees, unsupported initializers and invalid
+     * schema literals. Wrapped compiler and I/O failures include their complete cause chain.
      */
     private static void reportFailures(ProcessingEnvironment processingEnv, String className, List<String> failures) {
         failures.stream()
@@ -170,72 +163,53 @@ public class AvroSchemaExtractor {
                         "Reading " + className + "." + SCHEMA_FIELD + " failed: " + failure));
     }
 
-    /**
-     * Resolve through the compiler's CLASS_PATH, never through processor dependencies or the Maven JVM classpath.
-     */
-    private static Optional<String> readSchemaJsonFromClasspath(ProcessingEnvironment env, String className,
-                                                               TypeElement typeRef, List<String> failures) {
-        Map<String, String> constants = new HashMap<>();
-        String metadataName = null;
-        if (typeRef != null) {
-            metadataName = env.getElementUtils().getBinaryName(typeRef).toString();
-            for (Element element : typeRef.getEnclosedElements()) {
-                if (element instanceof VariableElement field && field.getConstantValue() instanceof String expected) {
-                    constants.put(field.getSimpleName().toString(), expected);
-                }
+    private static String describeFailure(Throwable failure) {
+        StringBuilder description = new StringBuilder();
+        Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        while (failure != null && seen.add(failure)) {
+            if (!description.isEmpty()) {
+                description.append("; caused by: ");
             }
+            description.append(failure);
+            failure = failure.getCause();
         }
+        return description.toString();
+    }
+
+    /**
+     * Prefer the compiler-owned class file (including JPMS). ECJ lacks getFileObjectOf, so use its
+     * module-aware Filer as a fallback. Never use processor dependencies or the Maven JVM classpath.
+     */
+    private static Optional<String> readSchemaJsonFromClassFile(ProcessingEnvironment env, TypeElement type,
+                                                               String className, List<String> failures) {
         try {
-            var result = worker(env).extract(env.getFiler(), className, metadataName, Map.copyOf(constants));
-            if (result.timedOut()) {
-                env.getMessager().printMessage(WARNING, "Reading " + className + "." + SCHEMA_FIELD +
-                        " failed: " + result.diagnostic() + ". Increase -A" + EXTRACTION_TIMEOUT_SECONDS +
-                        " if necessary. One replacement worker is allowed per compilation; " +
-                        "after a second timeout further binary schemas are omitted.");
-            } else if (result.diagnostic() != null) {
-                failures.add(result.diagnostic());
+            FileObject file = null;
+            try {
+                JavaFileObject origin = env.getElementUtils().getFileObjectOf(type);
+                if (origin != null && origin.getKind() == JavaFileObject.Kind.CLASS) file = origin;
+            } catch (RuntimeException | LinkageError unavailable) {
+                // Optional compiler API; the module-aware Filer fallback below works with ECJ.
             }
-            return Optional.ofNullable(result.schema());
-        } catch (RuntimeException | Error ex) {
-            processingOver(env);
-            throw ex;
+            if (file == null) {
+                int separator = className.lastIndexOf('.');
+                String packageName = separator < 0 ? "" : className.substring(0, separator);
+                String fileName = className.substring(separator + 1) + ".class";
+                var module = env.getElementUtils().getModuleOf(type);
+                boolean named = module != null && !module.isUnnamed();
+                file = env.getFiler().getResource(named ? StandardLocation.MODULE_PATH : StandardLocation.CLASS_PATH,
+                        named ? module.getQualifiedName() + "/" + packageName : packageName, fileName);
+            }
+            try (var input = file.openInputStream()) {
+                var result = SchemaClassFile.read(input.readAllBytes(), className);
+                if (result.isEmpty()) failures.add("Unsupported SCHEMA$ classfile initializer; expected generated Schema.Parser.parse literals");
+                return result;
+            }
+        } catch (Exception | LinkageError ex) {
+            failures.add("Compiler classfile unavailable: " + describeFailure(ex));
+            return Optional.empty();
         } finally {
             Reference.reachabilityFence(env);
         }
-    }
-
-    private static synchronized SchemaExtractionWorker worker(ProcessingEnvironment env) {
-        Compilation compilation = COMPILATIONS.computeIfAbsent(env, ignored -> new Compilation());
-        if (compilation.worker != null && compilation.worker.timedOut() && !compilation.replacementUsed) {
-            compilation.cleanup.clean();
-            compilation.worker = null;
-            compilation.replacementUsed = true;
-        }
-        if (compilation.worker == null) {
-            if (compilation.extractionTimeout == null) {
-                compilation.extractionTimeout = extractionTimeout(env);
-            }
-            compilation.worker = new SchemaExtractionWorker(compilation.extractionTimeout, Duration.ofSeconds(1));
-            compilation.cleanup = CLEANER.register(env, compilation.worker);
-        }
-        return compilation.worker;
-    }
-
-    private static Duration extractionTimeout(ProcessingEnvironment env) {
-        String configured = env.getOptions().get(EXTRACTION_TIMEOUT_SECONDS);
-        if (configured != null) {
-            try {
-                int seconds = Integer.parseInt(configured);
-                if (seconds > 0) {
-                    return Duration.ofSeconds(seconds);
-                }
-            } catch (NumberFormatException ignored) {
-                // Report invalid configuration once per compilation and use the default.
-            }
-            env.getMessager().printMessage(WARNING, "Invalid -A" + EXTRACTION_TIMEOUT_SECONDS + "=" + configured +
-                    ": expected a positive integer (seconds); using 30 seconds");
-        }
-        return Duration.ofSeconds(30);
     }
 
     /**
@@ -250,16 +224,35 @@ public class AvroSchemaExtractor {
                 failures.add("No source tree for SCHEMA$ field");
                 return Optional.empty();
             }
-            String schemaJson = parsedStringLiterals(schemaFieldTree.getInitializer());
+            if (!schemaFieldTree.getModifiers().getFlags().containsAll(Set.of(Modifier.STATIC, Modifier.FINAL))) {
+                failures.add("Unsupported SCHEMA$ field: expected static final");
+                return Optional.empty();
+            }
+            ExpressionTree initializer = schemaFieldTree.getInitializer();
+            Trees trees = CompilerTrees.trees(processingEnv);
+            TreePath path = trees.getPath(schemaField(avroGeneratedType).orElseThrow());
+            String schemaJson = null;
+            if (initializer instanceof MethodInvocationTree call
+                    && call.getMethodSelect() instanceof MemberSelectTree select
+                    && select.getExpression() instanceof NewClassTree allocation
+                    && allocation.getClassBody() == null && allocation.getArguments().isEmpty()
+                    && trees.getElement(TreePath.getPath(path, allocation)) instanceof ExecutableElement constructor
+                    && constructor.getEnclosingElement() instanceof TypeElement parserType
+                    && parserType.getQualifiedName().contentEquals("org.apache.avro.Schema.Parser")
+                    && trees.getElement(TreePath.getPath(path, call.getMethodSelect())) instanceof ExecutableElement method
+                    && method.getSimpleName().contentEquals("parse")
+                    && method.getEnclosingElement() instanceof TypeElement owner
+                    && owner.getQualifiedName().contentEquals("org.apache.avro.Schema.Parser")) {
+                schemaJson = parsedStringLiterals(initializer);
+            }
             if (schemaJson == null) {
                 failures.add("Missing or unsupported SCHEMA$ initializer: expected parse with string literals");
                 return Optional.empty();
             }
-            // This is already the JSON supplied to SCHEMA$. Do not initialize the processor's
-            // Avro/logging stack merely to normalize it. MCS validates the uploaded schema.
+            // Validate JSON separately without initializing the processor's Avro/logging stack.
             return Optional.of(schemaJson);
         } catch (Exception | LinkageError ex) { // NOSONAR: the compiler tree api might not be available
-            failures.add("Source initializer inspection unavailable; refusing potentially stale bytecode: " + ex);
+            failures.add("Source initializer inspection unavailable; refusing potentially stale bytecode: " + describeFailure(ex));
             return Optional.empty();
         } catch (Error fatal) {
             processingOver(processingEnv);
@@ -285,7 +278,7 @@ public class AvroSchemaExtractor {
                 .findFirst();
     }
 
-    static String parsedStringLiterals(ExpressionTree initializer) {
+    private static String parsedStringLiterals(ExpressionTree initializer) {
         if (!(initializer instanceof MethodInvocationTree methodInvocation)) {
             return null;
         }

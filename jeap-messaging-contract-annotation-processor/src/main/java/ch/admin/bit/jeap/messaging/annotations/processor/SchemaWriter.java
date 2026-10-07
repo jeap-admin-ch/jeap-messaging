@@ -2,7 +2,6 @@ package ch.admin.bit.jeap.messaging.annotations.processor;
 
 import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroSchemaExtractor;
 import ch.admin.bit.jeap.messaging.contract.v2.Contract;
-import ch.admin.bit.jeap.messaging.contract.v2.SchemaResources;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -31,6 +30,7 @@ class SchemaWriter {
     static final String GENERATION_ENABLED = "messageContractSchemaGenerationEnabled";
 
     // Weak keys also release aborted compilations. Values never retain the environment or its elements.
+    // A null value remembers an unsuccessful extraction so another contract does not repeat it.
     private static final Map<ProcessingEnvironment, Map<String, String>> COMPILATIONS = new WeakHashMap<>();
 
     static synchronized void processingOver(ProcessingEnvironment env) {
@@ -58,11 +58,12 @@ class SchemaWriter {
         }
 
         String fileName = SchemaResources.fileName(processingEnv.getElementUtils().getBinaryName(messageTypeElement).toString(), contract);
-        if (alreadyWritten(processingEnv, fileName)) {
-            return fileName;
+        if (alreadyAttempted(processingEnv, fileName)) {
+            return schemaAvailable(processingEnv, fileName) ? fileName : null;
         }
-        Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, messageTypeElement, typeRefElement);
+        Optional<String> schemaJson = AvroSchemaExtractor.extractSchemaJson(processingEnv, messageTypeElement);
         if (schemaJson.isEmpty()) {
+            rememberFailure(processingEnv, fileName);
             processingEnv.getMessager().printMessage(NOTE,
                     "No avro schema file generated for the message type " + messageTypeName +
                     " (schema extraction unavailable; see diagnostics above). " +
@@ -75,9 +76,17 @@ class SchemaWriter {
         return fileName;
     }
 
-    private static synchronized boolean alreadyWritten(ProcessingEnvironment env, String fileName) {
+    private static synchronized boolean alreadyAttempted(ProcessingEnvironment env, String fileName) {
         Map<String, String> written = COMPILATIONS.get(env);
         return written != null && written.containsKey(fileName);
+    }
+
+    private static synchronized boolean schemaAvailable(ProcessingEnvironment env, String fileName) {
+        return COMPILATIONS.get(env).get(fileName) != null;
+    }
+
+    private static synchronized void rememberFailure(ProcessingEnvironment env, String fileName) {
+        COMPILATIONS.computeIfAbsent(env, ignored -> new HashMap<>()).put(fileName, null);
     }
 
     private static TypeElement messageTypeElement(TypeElement typeRefElement) {

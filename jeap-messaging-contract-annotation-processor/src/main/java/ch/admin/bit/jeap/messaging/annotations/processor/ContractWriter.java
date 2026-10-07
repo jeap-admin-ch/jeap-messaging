@@ -72,7 +72,7 @@ class ContractWriter {
                 .topics(getTopics(annotatedElement, topics, typeElement))
                 .encryptionKeyId(encryptionKeyId);
         String schemaResource = SchemaWriter.generateSchema(processingEnv, annotatedElement, typeElement, builder.build());
-        Contract contract = builder.schemaResource(schemaResource == null ? "" : schemaResource).build();
+        Contract contract = builder.schemaResource(schemaResource).build();
 
         try (Writer writer = contractFile.openWriter()) {
             writer.write(GSON.toJson(contract));

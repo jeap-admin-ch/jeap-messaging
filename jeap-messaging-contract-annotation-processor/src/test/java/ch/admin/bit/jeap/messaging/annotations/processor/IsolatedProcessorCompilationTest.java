@@ -2,6 +2,8 @@ package ch.admin.bit.jeap.messaging.annotations.processor;
 
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.io.TempDir;
 
 import javax.tools.DiagnosticCollector;
@@ -13,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -26,6 +27,67 @@ class IsolatedProcessorCompilationTest {
     Path directory;
 
     @Test
+    void readsMessageFromNamedModule() throws Exception {
+        Path dependency = directory.resolve("module-dependency");
+        compile(dependency, List.of(source("module-info.java", "module fixture.messages { exports fixture; }"),
+                source("fixture/Outer.java", eventSource("fields", "registry"))),
+                List.of("-proc:none", "--add-reads", "fixture.messages=ALL-UNNAMED"));
+        Path jar = jar(dependency);
+        Path output = directory.resolve("module-application");
+        var options = new ArrayList<>(processorOptions(directory.resolve("absent")));
+        options.addAll(List.of("--module-path", jar.toString(), "--add-reads", "fixture.consumer=ALL-UNNAMED",
+                "--add-reads", "fixture.messages=ALL-UNNAMED"));
+        compile(output, List.of(source("module-info.java", "module fixture.consumer { requires fixture.messages; }"),
+                source("app/Consumer.java", "package app;\n" + consumerSource())), options);
+        assertSchemas(output, "fields");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"load(\"hand.avsc\")", "new FakeParser().parse(\"hand.avsc\")",
+            "load(\"{\\\"type\\\":\\\"record\\\",\\\"name\\\":\\\"Event\\\",\\\"fields\\\":[]}\")",
+            "new FakeParser().parse(\"{\\\"type\\\":\\\"record\\\",\\\"name\\\":\\\"Event\\\",\\\"fields\\\":[]}\")",
+            "new org.apache.avro.Schema.Parser().parse(\"hand.avsc\")",
+            "new org.apache.avro.Schema.Parser().parse(\"\\\"string\\\"\")"})
+    void unsupportedSourceCallsAndInvalidJsonNeverBecomeSchemaResources(String initializer) throws Exception {
+        String event = eventSource("fields", "registry");
+        int start = event.indexOf(" = new org.apache.avro.Schema.Parser()");
+        event = event.substring(0, start) + " = " + initializer + event.substring(event.indexOf(';', start));
+        event = event.replace("public static org.apache.avro.Schema getClassSchema()", """
+                private static org.apache.avro.Schema load(String name) { throw new AssertionError(name); }
+                public static class FakeParser {
+                    public org.apache.avro.Schema parse(String name) { throw new AssertionError(name); }
+                }
+                public static org.apache.avro.Schema getClassSchema()
+                """);
+        Path output = directory.resolve("invalid-source");
+        String diagnostics = compile(output, List.of(source("fixture/Outer.java", event), source("Consumer.java", consumerSource())),
+                processorOptions(directory.resolve("absent")));
+        assertThat(diagnostics).contains("No avro schema file generated");
+        assertNoSchemas(output);
+    }
+
+    @Test
+    void duplicateFailedTypeDoesNotPreventAnotherTypeFromProducingSchema() throws Exception {
+        Path dependency = directory.resolve("dependency");
+        String unsupported = eventSource("slow", "registry").replace("public static class Event {", """
+                public static class Event {
+                    static { try { Thread.sleep(60_000); } catch (InterruptedException e) { throw new AssertionError(e); } }
+                """);
+        compile(dependency, List.of(source("fixture/Outer.java", unsupported),
+                source("other/Outer.java", eventSource("fast", "registry").replace("package fixture;", "package other;"))), List.of("-proc:none"));
+        Path output = directory.resolve("mixed");
+        String diagnostics = compile(output, List.of(source("Consumer.java", consumerSource()),
+                source("OtherConsumer.java", consumerSource().replace("fixture.Outer", "other.Outer")
+                        .replace("class Consumer", "class OtherConsumer").replace("appName=\"app\"", "appName=\"other\""))), processorOptions(jar(dependency)));
+        assertThat(diagnostics.split("Unsupported SCHEMA\\$ classfile initializer", -1)).hasSize(2);
+        try (var files = Files.list(contracts(output))) {
+            List<Path> schemas = files.filter(path -> path.toString().endsWith(".avsc")).toList();
+            assertThat(schemas).hasSize(1);
+            assertThat(Files.readString(schemas.getFirst())).contains("\"name\":\"fast\"");
+        }
+    }
+
+    @Test
     void eclipseReadsJarSchemaWithoutTreesOrWarnings() throws Exception {
         Path dependency = directory.resolve("dependency");
         compile(dependency, List.of(source("fixture/Outer.java", eventSource("fields", "registry"))), List.of("-proc:none"));
@@ -35,7 +97,6 @@ class IsolatedProcessorCompilationTest {
                 List.of(source("Consumer.java", consumerSource())), processorOptions(jar));
         assertSchemas(output, "fields");
         assertThat(diagnostics).doesNotContain("No avro schema", "Source origin unavailable");
-        assertNoWorkers();
     }
 
     @Test
@@ -49,11 +110,10 @@ class IsolatedProcessorCompilationTest {
                 List.of(event, source("Consumer.java", consumerSource())), processorOptions(jar(dependency)));
         assertNoSchemas(output);
         assertThat(diagnostics).contains("Source initializer inspection unavailable", "refusing potentially stale");
-        assertNoWorkers();
     }
 
     @Test
-    void disabledGenerationDoesNotInitializeMessageOrCreateWorker() throws Exception {
+    void disabledGenerationDoesNotExtractSchema() throws Exception {
         Path dependency = directory.resolve("dependency");
         String broken = eventSource("fields", "registry").replace("public static class Event {", """
                 public static class Event {
@@ -67,7 +127,6 @@ class IsolatedProcessorCompilationTest {
         String diagnostics = compile(output, List.of(source("Consumer.java", consumerSource())), options);
         assertThat(diagnostics).doesNotContain("No avro schema", "must not initialize", "not recognized");
         assertNoSchemas(output);
-        assertNoWorkers();
     }
 
     @Test
@@ -101,7 +160,7 @@ class IsolatedProcessorCompilationTest {
         Path jar = directory.resolve("messages.jar");
         try (var output = new JarOutputStream(Files.newOutputStream(jar)); var paths = Files.walk(dependency)) {
             for (Path path : paths.filter(Files::isRegularFile).toList()) {
-                output.putNextEntry(new JarEntry(dependency.relativize(path).toString()));
+                output.putNextEntry(new JarEntry(dependency.relativize(path).toString().replace(File.separatorChar, '/')));
                 Files.copy(path, output);
                 output.closeEntry();
             }
@@ -127,7 +186,7 @@ class IsolatedProcessorCompilationTest {
         Path shadow = directory.resolve("processor-dependency");
         compile(shadow, List.of(source("fixture/Outer.java", eventSource("wrong", "wrong-registry"))), List.of("-proc:none"));
         List<String> shadowOptions = new ArrayList<>(processorOptions(dependency));
-        shadowOptions.set(3, shadow + File.pathSeparator + classpath());
+        setOption(shadowOptions, "-processorpath", shadow + File.pathSeparator + classpath());
         Path third = directory.resolve("shadowed");
         compile(third, List.of(source("Consumer.java", consumerSource())), shadowOptions);
         assertSchemas(third, "fields");
@@ -181,18 +240,14 @@ class IsolatedProcessorCompilationTest {
     }
 
     @Test
-    void initializationFailureExplainsRootCauseAndLeavesContractWithoutSchema() throws Exception {
+    void getterIsNeverExecuted() throws Exception {
         Path dependency = directory.resolve("dependency");
         String broken = eventSource("fields", "registry").replace("return SCHEMA$;", "throw new IllegalStateException(\"broken schema factory\");");
         compile(dependency, List.of(source("fixture/Outer.java", broken)), List.of("-proc:none"));
         Path output = directory.resolve("application");
         String diagnostics = compile(output, List.of(source("Consumer.java", consumerSource())), processorOptions(dependency));
-        assertThat(diagnostics).contains("broken schema factory", "No avro schema file generated");
-        try (var paths = Files.list(contracts(output))) {
-            for (Path contract : paths.toList()) {
-                assertThat(JsonParser.parseString(Files.readString(contract)).getAsJsonObject().get("schemaResource").getAsString()).isEmpty();
-            }
-        }
+        assertThat(diagnostics).doesNotContain("broken schema factory", "No avro schema file generated");
+        assertSchemas(output, "fields");
     }
 
     @Test
@@ -201,41 +256,36 @@ class IsolatedProcessorCompilationTest {
     }
 
     @Test
-    void processorFailureStopsWorkerBeforeNextCompilation() throws Exception {
+    void processorFailureDoesNotAffectNextCompilation() throws Exception {
         Path dependency = directory.resolve("dependency");
         compile(dependency, List.of(source("fixture/Outer.java", eventSource("fields", "registry"))), List.of("-proc:none"));
         Path consumer = source("Consumer.java", consumerSource());
         Path duplicate = source("Duplicate.java", consumerSource().replace("class Consumer", "class Duplicate"));
         assertThatThrownBy(() -> compile(directory.resolve("failed"), List.of(consumer, duplicate), processorOptions(dependency)))
                 .isInstanceOf(RuntimeException.class).hasMessageContaining("duplicate");
-        assertNoWorkers();
         Path output = directory.resolve("next");
         compile(output, List.of(consumer), processorOptions(dependency));
         assertSchemas(output, "fields");
-        assertNoWorkers();
     }
 
     @Test
-    void bothProcessorsShareOneWorkerAndLoaderAndCloseIdempotently() throws Exception {
+    void bothProcessorsReadSchemaWithoutInitializingApplicationCode() throws Exception {
         String key = "jeap-schema-test-" + directory.getFileName();
         Path dependency = directory.resolve("dependency");
-        String counted = eventSource("fields", "registry").replace("public static class Event {", """
-                public static class Event {
+        String counted = eventSource("fields", "registry").replace("public static org.apache.avro.Schema getClassSchema()", """
                     static {
-                        if (Thread.currentThread().getContextClassLoader() != ClassLoader.getPlatformClassLoader())
-                            throw new AssertionError("worker inherited context loader");
                         System.setProperty("%s", Integer.toString(Integer.parseInt(System.getProperty("%s", "0")) + 1));
                     }
+                    public static org.apache.avro.Schema getClassSchema()
                 """.formatted(key, key));
         compile(dependency, List.of(source("fixture/Outer.java", counted)), List.of("-proc:none"));
         var options = new ArrayList<>(processorOptions(dependency));
-        options.set(5, JeapMessageAnnotationProcessor.class.getName() + "," + SharedSchemaTemplateProcessor.class.getName());
+        setOption(options, "-processor", JeapMessageAnnotationProcessor.class.getName() + "," + SharedSchemaTemplateProcessor.class.getName());
         try {
             Path output = directory.resolve("application");
             compile(output, List.of(source("Consumer.java", consumerSource())), options);
             assertSchemas(output, "fields");
-            assertThat(System.getProperty(key)).isEqualTo("1");
-            assertNoWorkers();
+            assertThat(System.getProperty(key)).isNull();
         } finally {
             System.clearProperty(key);
         }
@@ -273,9 +323,9 @@ class IsolatedProcessorCompilationTest {
         compile(dependency, List.of(source("fixture/Outer.java", broken)), List.of("-proc:none"));
         Path output = directory.resolve("application");
         String diagnostics = compile(output, List.of(source("Consumer.java", consumerSource())), processorOptions(dependency));
-        assertThat(diagnostics).contains(error, "broken static initializer", "No avro schema file generated");
+        assertThat(diagnostics).contains("Unsupported SCHEMA$ classfile initializer", "No avro schema file generated")
+                .doesNotContain("broken static initializer");
         assertNoSchemas(output);
-        assertNoWorkers();
     }
 
     @Test
@@ -294,7 +344,7 @@ class IsolatedProcessorCompilationTest {
         compile(dependency, List.of(event), List.of("-proc:none"));
         Files.writeString(event, eventSource("current", "registry"));
         var options = new ArrayList<>(processorOptions(dependency));
-        options.set(5, processor.getName());
+        setOption(options, "-processor", processor.getName());
         Path output = directory.resolve("application");
         String diagnostics = compile(output, List.of(event, source("Consumer.java", consumerSource())), options);
         if (supported) {
@@ -333,20 +383,8 @@ class IsolatedProcessorCompilationTest {
     public static class UnwrappableProcessor extends UnsupportedProxyProcessor { }
 
     @Test
-    void repeatedJarCompilationsHaveBoundedClassLoadingUnderConstrainedMetaspace() throws Exception {
-        Path log = directory.resolve("metaspace.log");
-        Process process = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
-                "-XX:MaxMetaspaceSize=320m", "-cp", classpath(), getClass().getName(), directory.toString())
-                .redirectErrorStream(true).redirectOutput(log.toFile()).start();
-        boolean finished = process.waitFor(120, TimeUnit.SECONDS);
-        if (!finished) {
-            process.destroyForcibly().waitFor();
-        }
-        assertThat(finished).as("Fork timed out; %s", Files.readString(log)).isTrue();
-        assertThat(process.exitValue()).as(Files.readString(log)).isZero();
-        assertThat(Files.readString(log)).contains("five compilations of 40 jar message types passed");
-        // Keep the fork's independent measurements in the surefire report as well.
-        System.out.println(Files.readString(log));
+    void repeatedJarCompilationsWriteAllSchemas() throws Exception {
+        manyJarTypes();
     }
 
     public static void main(String[] args) throws Exception {
@@ -369,7 +407,21 @@ class IsolatedProcessorCompilationTest {
                     test.source("Consumer.java", test.consumerSource())),
                     List.of("-processor", JeapMessageAnnotationProcessor.class.getName()));
             test.assertSchemas(defaultOutput, "fields");
-            assertNoWorkers();
+            Path dependency = test.directory.resolve("binary-dependency");
+            test.compile(dependency, List.of(test.source("fixture/Outer.java", test.eventSource("fields", "registry"))), List.of("-proc:none"));
+            Path binaryOutput = test.directory.resolve("binary-output");
+            test.compile(binaryOutput, List.of(test.source("Consumer.java", test.consumerSource())), test.processorOptions(test.jar(dependency)));
+            test.assertSchemas(binaryOutput, "fields");
+            Path realOutput = test.directory.resolve("real-message-output");
+            test.compile(realOutput, List.of(test.source("RealConsumer.java", """
+                    import ch.admin.bit.jeap.messaging.annotations.*;
+                    @JeapMessageConsumerContract(value=ch.admin.bit.jme.test.JmeSimpleTestEvent.TypeRef.class, appName="app")
+                    public class RealConsumer {}
+                    """)), List.of("-processor", JeapMessageAnnotationProcessor.class.getName()));
+            try (var files = Files.list(test.contracts(realOutput))) {
+                Path schema = files.filter(path -> path.toString().endsWith(".avsc")).findFirst().orElseThrow();
+                assertThat(Files.readString(schema)).contains("\"name\":\"JmeSimpleTestEvent\"");
+            }
         } else {
             test.manyJarTypes();
         }
@@ -387,33 +439,14 @@ class IsolatedProcessorCompilationTest {
         }
         Path dependency = directory.resolve("dependency");
         compile(dependency, events, List.of("-proc:none"));
-        Path jar = directory.resolve("messages.jar");
-        try (var output = new JarOutputStream(Files.newOutputStream(jar)); var paths = Files.walk(dependency)) {
-            for (Path path : paths.filter(Files::isRegularFile).toList()) {
-                output.putNextEntry(new JarEntry(dependency.relativize(path).toString()));
-                Files.copy(path, output);
-                output.closeEntry();
-            }
-        }
-        var classes = ManagementFactory.getClassLoadingMXBean();
+        Path jar = jar(dependency);
         for (int i = 0; i < 5; i++) {
-            long before = classes.getTotalLoadedClassCount();
             Path output = directory.resolve("run" + i);
             compile(output, consumers, processorOptions(jar));
-            long loaded = classes.getTotalLoadedClassCount() - before;
-            System.out.println("compilation " + i + ": loaded " + loaded + " classes");
-            // Deterministic bound: per-type loaders load ~25,000 classes. No System.gc() assumption.
-            assertThat(loaded).isLessThan(5000);
             try (var paths = Files.list(contracts(output))) {
                 assertThat(paths.filter(path -> path.toString().endsWith(".avsc")).count()).isEqualTo(40);
             }
-            assertNoWorkers();
         }
-        System.out.println("five compilations of 40 jar message types passed");
-    }
-
-    private static void assertNoWorkers() {
-        assertThat(Thread.getAllStackTraces().keySet()).noneMatch(thread -> thread.getName().equals("jeap-schema-extraction"));
     }
 
     private void assertNoSchemas(Path output) throws Exception {
@@ -421,7 +454,7 @@ class IsolatedProcessorCompilationTest {
             List<Path> contracts = paths.toList();
             assertThat(contracts).hasSize(2).allMatch(path -> path.toString().endsWith(".json"));
             for (Path contract : contracts) {
-                assertThat(JsonParser.parseString(Files.readString(contract)).getAsJsonObject().get("schemaResource").getAsString()).isEmpty();
+                assertThat(JsonParser.parseString(Files.readString(contract)).getAsJsonObject().get("schemaResource").isJsonNull()).isTrue();
             }
         }
     }
@@ -429,6 +462,10 @@ class IsolatedProcessorCompilationTest {
     private List<String> processorOptions(Path dependency) {
         return List.of("-classpath", dependency + File.pathSeparator + classpath(),
                 "-processorpath", classpath(), "-processor", JeapMessageAnnotationProcessor.class.getName());
+    }
+
+    private static void setOption(List<String> options, String name, String value) {
+        options.set(options.indexOf(name) + 1, value);
     }
 
     private String compile(Path output, List<Path> sources, List<String> extraOptions) throws Exception {

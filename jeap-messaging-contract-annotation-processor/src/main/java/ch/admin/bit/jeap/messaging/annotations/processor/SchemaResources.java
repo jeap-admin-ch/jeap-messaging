@@ -1,16 +1,18 @@
-package ch.admin.bit.jeap.messaging.contract.v2;
+package ch.admin.bit.jeap.messaging.annotations.processor;
+
+import ch.admin.bit.jeap.messaging.contract.v2.Contract;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/** Shared naming rules for schema resources accompanying contracts. */
-public final class SchemaResources {
+/** Internal naming rules for schema resources accompanying contracts. */
+final class SchemaResources {
     private SchemaResources() {
     }
 
-    public static String fileName(String binaryClassName, Contract contract) {
+    static String fileName(String binaryClassName, Contract contract) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             for (String value : new String[]{binaryClassName, contract.getSystemName(), contract.getMessageTypeName(),
@@ -24,7 +26,4 @@ public final class SchemaResources {
         }
     }
 
-    public static String legacyFileName(Contract contract) {
-        return contract.getMessageTypeName() + "-" + contract.getMessageTypeVersion() + ".avsc";
-    }
 }

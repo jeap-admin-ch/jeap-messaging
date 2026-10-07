@@ -29,10 +29,13 @@ class MessageContractPublisherTest {
         stubFor(put(RESOURCE_PATH).willReturn(created()));
         String baseUri = "http://localhost:" + wireMock.getHttpPort();
         MessageContractServiceClient client = new MessageContractServiceClient(baseUri, log, "user", "secret");
-        MessageContractPublisher messageContractPublisher = new MessageContractPublisher(client, log);
+        Log publishingLog = org.mockito.Mockito.mock(Log.class);
+        MessageContractPublisher messageContractPublisher = new MessageContractPublisher(client, publishingLog);
         Path contractsPath = Path.of("src/test/resources/validContracts");
 
         messageContractPublisher.publishMessageContracts(contractsPath, "1.0", null);
+
+        org.mockito.Mockito.verify(publishingLog).info("Publishing 5 messaging contracts: 1 with schema, 4 without schema (registry fallback)");
 
         verify(putRequestedFor(urlEqualTo(RESOURCE_PATH))
                 .withBasicAuth(new BasicCredentials("user", "secret"))

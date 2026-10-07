@@ -29,7 +29,7 @@ public class MessageContractPublisher {
     }
 
     public void publishMessageContracts(Path contractPath, String appVersion, String transactionId, boolean schemaUploadEnabled) {
-        MessageContracts messageContracts = new MessageContracts(schemaUploadEnabled);
+        MessageContracts messageContracts = new MessageContracts(schemaUploadEnabled, log);
         Optional<CreateMessageContractsDto> maybeDto = messageContracts.loadAll(contractPath);
         maybeDto.ifPresent(dto -> publishMessageContracts(dto, appVersion, transactionId));
     }
@@ -37,7 +37,10 @@ public class MessageContractPublisher {
     private void publishMessageContracts(CreateMessageContractsDto createMessageContractsDto, String appVersion, String transactionId) {
         String appName = appName(createMessageContractsDto.getContracts());
         String json = toJson(createMessageContractsDto);
-        log.info("Publishing " + createMessageContractsDto.getContracts().size() + " messaging contracts");
+        int total = createMessageContractsDto.getContracts().size();
+        long withSchema = createMessageContractsDto.getContracts().stream().filter(contract -> contract.getSchema() != null).count();
+        log.info("Publishing " + total + " messaging contracts: " + withSchema + " with schema, " +
+                (total - withSchema) + " without schema (registry fallback)");
         if (log.isDebugEnabled()) {
             log.debug("Publishing messaging contracts JSON: " + json);
         }

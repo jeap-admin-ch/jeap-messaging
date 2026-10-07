@@ -69,27 +69,24 @@ Next to the contract files, the processor writes the Avro schema of the message 
 Each contract's `schemaResource` points to its schema file. The identity includes the binary class
 name, system, message type, version and registry coordinates, preventing collisions between types
 with the same simple name and version. Contracts sharing that identity share one resource within a
-compilation; repeated contracts reuse the schema already extracted for that identity.
+compilation; repeated contracts reuse successful or unsuccessful extraction results for that identity.
 The `jeap-messaging-contract-maven-plugin` uploads the schema together with the contract, so that the
 Message Contract Service does not need to read the schema from the message type registry.
 
-Both direct and template-based contracts support message types from the compiler's classpath,
-including isolated `annotationProcessorPaths` and Eclipse ECJ. Types compiled in the same run require
-javac's Trees API; their schema literals are copied without initializing Avro or application logging.
-Unknown source origins and unreadable schemas are omitted rather than replaced with stale bytecode.
-Binary extraction has a 30-second timeout per schema, configurable with
-`-AmessageContractSchemaExtractionTimeoutSeconds=60` (a positive integer in seconds).
-A timeout emits a WARNING and omits that schema. The next binary extraction uses a replacement
-worker, allowing later types to succeed. At most one replacement is created per compilation to bound
-abandoned workers: after a second timeout, further binary schemas are omitted with NOTE diagnostics
-and registry fallback. Interruption stops binary extraction without starting a replacement.
-Warnings can fail builds using `-Werror`; invalid timeout values also emit a WARNING and use 30 seconds.
-Shutdown waits at most one second; an initializer that ignores interruption may continue on a daemon thread until
-it returns or the compiler JVM exits. Fatal VM errors still propagate.
+Both direct and template-based contracts read compiled message types from the compiler's classpath
+or module path, including isolated `annotationProcessorPaths`. Classpath extraction is tested with
+javac and Eclipse ECJ; named-module extraction is tested with javac. The processor reads the generated
+`new Schema.Parser().parse(...)` literal assignment from classfile instructions without executing it.
+Types compiled in the same run require javac's Trees API, which resolves the parser method before
+reading its literal arguments. JSON syntax and record shape are checked without initializing Avro,
+message classes, conversions or application logging. Full Avro semantic validation remains in MCS.
+Unknown initializer patterns, uncertain source origins and unreadable schemas are omitted, never
+replaced with stale bytecode or guessed values. Binary extraction accepts the generated straight-line
+assignment at the start of the static initializer, including split string literals; custom factories
+and preceding initialization code use the registry fallback.
 
 Generation deliberately remains in the contract processor: existing message artifacts work without
-being rebuilt to include schema resources. Source and binary extraction can produce differently
-formatted JSON; consumers must parse schemas rather than compare their text.
+being rebuilt to include schema resources. Consumers must parse schemas rather than compare JSON text.
 
 The uploaded schema is the schema of the message type artifact the application is actually built
 against, and the Message Contract Service uses it as the schema of that contract. It validates that the
@@ -97,14 +94,14 @@ schema is the Avro record schema of the declared message type and version; the r
 (`registryUrl`, `registryBranch`, `registryCommit`) stay in the contract for traceability and for the
 fallback below. Message types referenced by a hand-written `MessageTypeMetadata` implementation have no
 `SCHEMA$` and therefore no schema file. If a schema exists but cannot be read, the processor emits a
-NOTE with the reason (or a WARNING for a timeout, as described above). In both cases the Message
+NOTE with the reason. In both cases the Message
 Contract Service reads the schema from the message type registry as before.
 
-An empty `schemaResource` explicitly marks a schema as unavailable and prevents stale files from
-being uploaded. Older contracts without this field still use `<MessageTypeName>-<version>.avsc`
-when the contracts in the publication have unambiguous system/registry coordinates for that filename.
-Schema files are read only once per publication; the service API continues to receive a `schema`
-string on each contract.
+Only files explicitly named by `schemaResource` are uploaded. A null or absent reference means no
+schema is available, including contracts produced by earlier releases. Unreferenced files are ignored.
+A missing referenced file emits a Maven warning before publishing without that schema. The publish
+log reports contract counts with and without schemas. Schema files are read only once per publication;
+the service API continues to receive a `schema` string on each contract.
 
 Only in the special case where `annotationProcessorPaths` is configured explicitly in the
 `maven-compiler-plugin` must you add the processor path explicitly:
@@ -148,7 +145,7 @@ processor still generates schemas during compilation.
 
 To disable generation as well, pass `-AmessageContractSchemaGenerationEnabled=false` to the Java
 compiler. Both contract processors recognize this option. They continue to generate contract JSON,
-mark schemas explicitly unavailable, and perform no schema extraction or schema-related class initialization.
+leave schema references null, and perform no schema extraction.
 For the Maven compiler plugin:
 
 ```xml

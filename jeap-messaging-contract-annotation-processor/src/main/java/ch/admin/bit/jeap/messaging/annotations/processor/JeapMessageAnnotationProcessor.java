@@ -16,7 +16,7 @@ import java.util.Set;
 
 import static ch.admin.bit.jeap.messaging.annotations.processor.ContractWriter.generateContract;
 
-@SupportedOptions({SchemaWriter.GENERATION_ENABLED, AvroSchemaExtractor.EXTRACTION_TIMEOUT_SECONDS})
+@SupportedOptions(SchemaWriter.GENERATION_ENABLED)
 @SupportedAnnotationTypes({
         "ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContract",
         "ch.admin.bit.jeap.messaging.annotations.JeapMessageConsumerContractContainer",

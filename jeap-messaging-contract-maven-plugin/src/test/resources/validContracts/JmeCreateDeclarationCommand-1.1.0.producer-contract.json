@@ -12,5 +12,6 @@
   "topics": [
     "test-producer-topic-encrypted"
   ],
-  "encryptionKeyId": "testKey"
+  "encryptionKeyId": "testKey",
+  "schemaResource": "JmeCreateDeclarationCommand-1.1.0.avsc"
 }

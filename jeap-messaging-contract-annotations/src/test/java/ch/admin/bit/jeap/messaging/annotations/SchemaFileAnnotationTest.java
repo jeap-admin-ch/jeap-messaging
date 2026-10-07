@@ -3,7 +3,7 @@ package ch.admin.bit.jeap.messaging.annotations;
 import ch.admin.bit.jme.test.JmeSimpleTestEvent;
 import org.junit.jupiter.api.Test;
 
-import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchema;
+import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchemaForContract;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -16,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SchemaFileAnnotationTest {
 
     public static final String APP_NAME = "appNameForSchemaTest";
-    private static final String SCHEMA_FILE_NAME = JmeSimpleTestEvent.TypeRef.MESSAGE_TYPE_NAME + "-" +
-                                                   JmeSimpleTestEvent.TypeRef.MESSAGE_TYPE_VERSION + ".avsc";
+    private static final String CONTRACT_FILE_NAME = APP_NAME + "-" + JmeSimpleTestEvent.TypeRef.MESSAGE_TYPE_NAME + "-" +
+                                                    JmeSimpleTestEvent.TypeRef.MESSAGE_TYPE_VERSION + ".producer-contract.json";
 
     @Test
     void generatedSchemaFileContainsTheSchemaOfTheMessageType() throws Exception {
-        String schema = loadSchema(SCHEMA_FILE_NAME);
+        String schema = loadSchemaForContract(CONTRACT_FILE_NAME);
 
         assertEquals(JmeSimpleTestEvent.getClassSchema().toString(), schema);
     }

@@ -1,9 +1,10 @@
 package ch.admin.bit.jeap.messaging.annotations.processor;
 
 import ch.admin.bit.jeap.messaging.contract.v2.Contract;
-import ch.admin.bit.jeap.messaging.contract.v2.SchemaResources;
 import ch.admin.bit.jeap.messaging.annotations.processor.util.AvroSchemaExtractor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -23,8 +24,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class SchemaWriterTest {
-    @Test
-    void duplicateContractsExtractOnlyOnceAndNewCompilationExtractsAgain() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void duplicateContractsExtractOnlyOnceAndNewCompilationExtractsAgain(boolean available) throws Exception {
         ProcessingEnvironment env = mock(ProcessingEnvironment.class);
         Filer filer = mock(Filer.class);
         Elements elements = mock(Elements.class);
@@ -34,6 +36,7 @@ class SchemaWriterTest {
         Element origin = mock(Element.class);
         FileObject resource = mock(FileObject.class);
         when(env.getFiler()).thenReturn(filer);
+        when(env.getMessager()).thenReturn(mock(javax.annotation.processing.Messager.class));
         when(env.getElementUtils()).thenReturn(elements);
         when(elements.getBinaryName(messageType)).thenReturn(binaryName);
         when(binaryName.toString()).thenReturn("example.Event");
@@ -45,14 +48,20 @@ class SchemaWriterTest {
         Contract.ContractBuilder builder = Contract.builder().messageTypeName("Event").messageTypeVersion("1");
         try (var extractor = mockStatic(AvroSchemaExtractor.class)) {
             extractor.when(() -> AvroSchemaExtractor.isAvroGeneratedType(messageType)).thenReturn(true);
-            extractor.when(() -> AvroSchemaExtractor.extractSchemaJson(env, messageType, typeRef)).thenReturn(Optional.of("schema"));
+            extractor.when(() -> AvroSchemaExtractor.extractSchemaJson(env, messageType))
+                    .thenReturn(available ? Optional.of("schema") : Optional.empty());
             String first = SchemaWriter.generateSchema(env, origin, typeRef, builder.role("producer").build());
             assertThat(SchemaWriter.generateSchema(env, origin, typeRef, builder.role("consumer").build())).isEqualTo(first);
-            extractor.verify(() -> AvroSchemaExtractor.extractSchemaJson(env, messageType, typeRef), times(1));
-            verify(filer, times(1)).createResource(StandardLocation.CLASS_OUTPUT, ContractWriter.CONTRACTS_PACKAGE, first, origin);
+            extractor.verify(() -> AvroSchemaExtractor.extractSchemaJson(env, messageType), times(1));
+            if (available) {
+                verify(filer, times(1)).createResource(StandardLocation.CLASS_OUTPUT, ContractWriter.CONTRACTS_PACKAGE, first, origin);
+            } else {
+                assertThat(first).isNull();
+                verifyNoInteractions(filer);
+            }
             SchemaWriter.processingOver(env);
             SchemaWriter.generateSchema(env, origin, typeRef, builder.build());
-            extractor.verify(() -> AvroSchemaExtractor.extractSchemaJson(env, messageType, typeRef), times(2));
+            extractor.verify(() -> AvroSchemaExtractor.extractSchemaJson(env, messageType), times(2));
         } finally {
             SchemaWriter.processingOver(env);
         }

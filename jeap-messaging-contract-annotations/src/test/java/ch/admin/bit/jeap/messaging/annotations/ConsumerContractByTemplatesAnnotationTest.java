@@ -8,7 +8,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import static ch.admin.bit.jeap.messaging.annotations.ConsumerContractByTemplatesAnnotationTest.APP_NAME;
 import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.assertContractFileExists;
 import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadContractJson;
-import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchema;
+import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchemaForContract;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -60,9 +60,9 @@ public class ConsumerContractByTemplatesAnnotationTest {
      */
     @Test
     void generatedSchemaFileIsCorrect() throws Exception {
-        String expectedName = EVENT_NAME + "-" + EVENT_VERSION + ".avsc";
+        String expectedName = APP_NAME + "-" + EVENT_NAME + "-" + EVENT_VERSION + ".consumer-contract.json";
 
-        String schema = loadSchema(expectedName);
+        String schema = loadSchemaForContract(expectedName);
 
         assertEquals(JeapInitializerSimpleTestEvent.getClassSchema().toString(), schema);
     }

@@ -31,9 +31,6 @@ public final class CompilerTrees {
         if (failure instanceof VirtualMachineError fatal) {
             throw fatal;
         }
-        if (failure instanceof ThreadDeath fatal) {
-            throw fatal;
-        }
         if (failure instanceof InvocationTargetException wrapped) {
             rethrowFatal(wrapped.getCause());
         }

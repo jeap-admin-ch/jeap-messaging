@@ -2,7 +2,7 @@ package ch.admin.bit.jeap.messaging.annotations;
 
 import org.junit.jupiter.api.Test;
 
-import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchema;
+import static ch.admin.bit.jeap.messaging.annotations.ContractAnnotationsTestHelper.loadSchemaForContract;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -18,10 +18,10 @@ class SameCompilationUnitSchemaTest {
 
     @Test
     void generatedSchemaFileContainsTheSchemaOfTheMessageType() throws Exception {
-        String expectedName = SameCompilationUnitTestEvent.TypeRef.MESSAGE_TYPE_NAME + "-" +
-                              SameCompilationUnitTestEvent.TypeRef.MESSAGE_TYPE_VERSION + ".avsc";
+        String expectedName = APP_NAME + "-" + SameCompilationUnitTestEvent.TypeRef.MESSAGE_TYPE_NAME + "-" +
+                              SameCompilationUnitTestEvent.TypeRef.MESSAGE_TYPE_VERSION + ".producer-contract.json";
 
-        String schema = loadSchema(expectedName);
+        String schema = loadSchemaForContract(expectedName);
 
         assertEquals(SameCompilationUnitTestEvent.getClassSchema().toString(), schema);
     }

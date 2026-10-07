@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.CreateMessageCont
 import ch.admin.bit.jeap.messaging.contract.plugin.publish.dto.MessageContractDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.apache.maven.plugin.logging.Log;
 import ch.admin.bit.jeap.messaging.contract.v2.Contract;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -41,22 +42,28 @@ class MessageContractsTest {
     }
 
     @Test
-    void ambiguousLegacySchemasAndExplicitlyUnavailableSchemasAreNotUploaded() throws Exception {
+    void contractsWithoutSchemaReferenceDoNotUploadUnreferencedFiles() throws Exception {
         writeContract("one", null, "registry-one");
         writeContract("two", null, "registry-two");
         writeContract("three", "", "registry-three");
-        Files.writeString(directory.resolve("Event-1.avsc"), "ambiguous schema");
+        Files.writeString(directory.resolve("Event-1.avsc"), "unreferenced schema");
         assertThat(messageContracts.loadAll(directory).orElseThrow().getContracts())
                 .allSatisfy(contract -> assertThat(contract.getSchema()).isNull());
     }
 
     @Test
-    void explicitUnavailableOrMissingReferenceDoesNotFallBackToStaleLegacyFile() throws Exception {
-        writeContract("one", "", "registry");
+    void missingExplicitReferenceWarnsOnceAndDoesNotUseUnreferencedFiles() throws Exception {
+        writeContract("one", "missing.avsc", "registry");
         writeContract("two", "missing.avsc", "registry");
         Files.writeString(directory.resolve("Event-1.avsc"), "stale schema");
-        assertThat(messageContracts.loadAll(directory).orElseThrow().getContracts())
+        Log log = mock(Log.class);
+        assertThat(new MessageContracts(true, log).loadAll(directory).orElseThrow().getContracts())
                 .allSatisfy(contract -> assertThat(contract.getSchema()).isNull());
+        verify(log).warn("Referenced schema file is missing: " + directory.resolve("missing.avsc") +
+                "; publishing without this schema (registry fallback)");
+        clearInvocations(log);
+        new MessageContracts(false, log).loadAll(directory);
+        verifyNoInteractions(log);
     }
 
     @Test
