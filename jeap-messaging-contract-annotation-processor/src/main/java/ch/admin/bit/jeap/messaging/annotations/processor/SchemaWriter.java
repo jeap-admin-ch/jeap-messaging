@@ -35,7 +35,6 @@ class SchemaWriter {
 
     static synchronized void processingOver(ProcessingEnvironment env) {
         COMPILATIONS.remove(env);
-        AvroSchemaExtractor.processingOver(env);
     }
 
     private SchemaWriter() {

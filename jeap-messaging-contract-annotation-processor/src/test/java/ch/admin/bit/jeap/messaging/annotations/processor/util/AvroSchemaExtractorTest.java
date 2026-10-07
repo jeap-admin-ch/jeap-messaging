@@ -17,6 +17,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.tools.FileObject;
+import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.Diagnostic;
 import java.io.FileNotFoundException;
@@ -51,12 +52,20 @@ class AvroSchemaExtractorTest {
             });
             return file;
         });
+        when(elements.getFileObjectOf(any())).thenAnswer(call -> {
+            String name = ((TypeElement) call.getArgument(0)).getQualifiedName().toString();
+            int separator = name.lastIndexOf('.');
+            JavaFileObject file = mock(JavaFileObject.class);
+            when(file.getKind()).thenReturn(JavaFileObject.Kind.CLASS);
+            when(file.openInputStream()).thenAnswer(ignored -> filer.getResource(StandardLocation.CLASS_PATH,
+                    name.substring(0, separator), name.substring(separator + 1) + ".class").openInputStream());
+            return file;
+        });
         when(env.getMessager()).thenReturn(mock(Messager.class));
     }
 
     @AfterEach
     void close() {
-        AvroSchemaExtractor.processingOver(env);
         trees.close();
     }
 
@@ -82,9 +91,11 @@ class AvroSchemaExtractorTest {
     }
 
     @Test
-    void sourceRootNeverReadsStaleBinary() {
+    void compilerReportedSourceNeverReadsStaleBinary() {
         TypeElement type = type(Literal.class);
-        AvroSchemaExtractor.round(env, java.util.Set.of(type));
+        JavaFileObject source = mock(JavaFileObject.class);
+        when(source.getKind()).thenReturn(JavaFileObject.Kind.SOURCE);
+        when(env.getElementUtils().getFileObjectOf(type)).thenReturn(source);
         assertThat(AvroSchemaExtractor.extractSchemaJson(env, type)).isEmpty();
         verifyNoInteractions(env.getFiler());
     }

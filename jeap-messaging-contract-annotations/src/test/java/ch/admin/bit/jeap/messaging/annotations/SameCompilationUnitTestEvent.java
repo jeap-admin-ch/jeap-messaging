@@ -15,7 +15,7 @@ import org.apache.avro.specific.AvroGenerated;
 @AvroGenerated
 public class SameCompilationUnitTestEvent {
 
-    public static final Schema SCHEMA$ = new Schema.Parser().parse("{\"type\":\"record\",\"name\":\"SameCompilationUnitTestEvent\",",
+    public static final Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"SameCompilationUnitTestEvent\",",
             "\"namespace\":\"ch.admin.bit.jeap.messaging.annotations\",\"fields\":[{\"name\":\"domainEventVersion\",\"type\":\"string\"}]}");
 
     public static Schema getClassSchema() {

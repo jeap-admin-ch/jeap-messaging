@@ -73,17 +73,25 @@ compilation; repeated contracts reuse successful or unsuccessful extraction resu
 The `jeap-messaging-contract-maven-plugin` uploads the schema together with the contract, so that the
 Message Contract Service does not need to read the schema from the message type registry.
 
-Both direct and template-based contracts read compiled message types from the compiler's classpath
-or module path, including isolated `annotationProcessorPaths`. Classpath extraction is tested with
+The schema extractor reads compiled message types from the compiler's classpath or module path.
+Direct contracts support isolated `annotationProcessorPaths`; template discovery has an additional
+classpath visibility requirement described below. Classpath extraction is tested with
 javac and Eclipse ECJ; named-module extraction is tested with javac. The processor reads the generated
 `new Schema.Parser().parse(...)` literal assignment from classfile instructions without executing it.
-Types compiled in the same run require javac's Trees API, which resolves the parser method before
-reading its literal arguments. JSON syntax and record shape are checked without initializing Avro,
+Types compiled in the same run use an optional javac Trees adapter to recognize the fully qualified
+`new org.apache.avro.Schema.Parser().parse(<string literals>)` form emitted by Avro. It does not resolve
+initializer expressions or attribute message classes during annotation processing. Shortened/imported
+parser names and ambiguous hand-written scopes use registry fallback. Runtimes without javac's APIs
+can still generate contracts and extract binary schemas; source schemas are omitted with a NOTE.
+JSON syntax and record shape are checked without initializing Avro,
 message classes, conversions or application logging. Full Avro semantic validation remains in MCS.
 Unknown initializer patterns, uncertain source origins and unreadable schemas are omitted, never
 replaced with stale bytecode or guessed values. Binary extraction accepts the generated straight-line
 assignment at the start of the static initializer, including split string literals; custom factories
 and preceding initialization code use the registry fallback.
+If an overridden processor dependency prevents JSON validation (for example Gson older than 2.11),
+the processor emits a NOTE explaining the missing dependency and omits the schema rather than
+publishing unvalidated text. Use the managed Gson version to enable schema generation.
 
 Generation deliberately remains in the contract processor: existing message artifacts work without
 being rebuilt to include schema resources. Consumers must parse schemas rather than compare JSON text.
@@ -127,6 +135,11 @@ Only in the special case where `annotationProcessorPaths` is configured explicit
 A template annotation `@JeapMessageConsumerContractsByTemplates` exists for the Process Context Service
 and Process Archive Service to auto-generate consumer contracts from template JSON files. These are
 separate services and are out of scope here.
+
+Template discovery scans the processor/JVM classloader paths for message classes before the shared
+schema extractor is called. A message dependency visible only on the compiler classpath or module
+path can therefore be missed during discovery. Isolated processor-path support for schema extraction
+does not remove this existing visibility requirement for template-based contracts.
 
 ## Configuration
 

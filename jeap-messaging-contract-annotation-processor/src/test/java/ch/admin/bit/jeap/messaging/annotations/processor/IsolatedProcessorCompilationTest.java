@@ -6,15 +6,24 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.TypeElement;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -25,6 +34,129 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class IsolatedProcessorCompilationTest {
     @TempDir
     Path directory;
+
+    @ParameterizedTest
+    @ValueSource(strings = {"var", "lambda", "enclosing"})
+    void sourceExtractionDoesNotAttributeTypesGeneratedByAnotherProcessor(String variant) throws Exception {
+        String body = variant.equals("lambda")
+                ? "var helper = new gen.Helper(); return java.util.List.of(helper).stream().map(value -> value.name()).findFirst().orElse(\"\");"
+                : "var helper = new gen.Helper(); return helper.name();";
+        String method = "public String useGeneratedType() { " + body + " }";
+        String event = eventSource("fields", "registry");
+        event = variant.equals("enclosing") ? event.replace("public class Outer {", "public class Outer { " + method)
+                : event.replace("public static class TypeRef", method + " public static class TypeRef");
+        var sources = List.of(source("fixture/Outer.java", event), source("Consumer.java", consumerSource()));
+        var options = new ArrayList<>(processorOptions(directory.resolve("absent")));
+        setOption(options, "-processor", HelperGeneratingProcessor.class.getName());
+        compile(directory.resolve("control"), sources, options);
+        setOption(options, "-processor", HelperGeneratingProcessor.class.getName() + "," + JeapMessageAnnotationProcessor.class.getName());
+        Path output = directory.resolve("with-contracts");
+        compile(output, sources, options);
+        assertSchemas(output, "fields");
+        assertThat(output.resolve("gen/Helper.class")).exists();
+    }
+
+    public static class HelperGeneratingProcessor extends AbstractProcessor {
+        private boolean generated;
+
+        @Override
+        public Set<String> getSupportedAnnotationTypes() { return Set.of("*"); }
+
+        @Override
+        public SourceVersion getSupportedSourceVersion() { return SourceVersion.latest(); }
+
+        @Override
+        public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment round) {
+            if (!generated && !round.processingOver()) {
+                generated = true;
+                try (var writer = processingEnv.getFiler().createSourceFile("gen.Helper").openWriter()) {
+                    writer.write("package gen; public class Helper { public String name() { return \"helper\"; } }");
+                } catch (IOException ex) {
+                    throw new UncheckedIOException(ex);
+                }
+            }
+            return false;
+        }
+    }
+
+    @Test
+    void explicitBinaryRootIsNotMistakenForSource() throws Exception {
+        Path dependency = directory.resolve("dependency");
+        compile(dependency, List.of(source("fixture/Outer.java", eventSource("fields", "registry"))), List.of("-proc:none"));
+        Path output = directory.resolve("explicit-root");
+        compile(ToolProvider.getSystemJavaCompiler(), output, List.of(source("Consumer.java", consumerSource())),
+                processorOptions(dependency), List.of("fixture.Outer"));
+        assertSchemas(output, "fields");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void eclipseWithoutJavacModuleSupportsBinaryExtractionAndSourceFallback(boolean generationEnabled) throws Exception {
+        Path event = source("fixture/Outer.java", eventSource("fields", "registry"));
+        Path consumer = source("Consumer.java", consumerSource());
+        Path dependency = directory.resolve("dependency");
+        compile(dependency, List.of(event), List.of("-proc:none"));
+        for (boolean binary : List.of(true, false)) {
+            Path output = directory.resolve(binary ? "ecj-binary" : "ecj-source");
+            Files.createDirectories(output);
+            var command = new ArrayList<>(List.of(javaExecutable("java"), "--limit-modules", "java.se,jdk.unsupported,jdk.zipfs",
+                    "-cp", classpath(), "org.eclipse.jdt.internal.compiler.batch.Main", "-24",
+                    "-classpath", (binary ? dependency + File.pathSeparator : "") + classpath(),
+                    "-processor", JeapMessageAnnotationProcessor.class.getName() + "," + LifecycleTemplateProcessor.class.getName(),
+                    "-AmessageContractSchemaGenerationEnabled=" + generationEnabled, "-d", output.toString(), consumer.toString()));
+            if (!binary) command.add(event.toString());
+            String diagnostics = runCompilerProcess(binary ? "ecj-binary" : "ecj-source", command);
+            if (binary && generationEnabled) assertSchemas(output, "fields");
+            else assertNoSchemas(output);
+            if (!generationEnabled) assertThat(diagnostics).doesNotContain("No avro schema", "NoClassDefFoundError");
+        }
+    }
+
+    /** Exercise template round/cleanup hooks without relying on its separate template discovery mechanism. */
+    public static class LifecycleTemplateProcessor extends JeapMessageTemplateAnnotationProcessor {
+        @Override
+        public Set<String> getSupportedAnnotationTypes() { return Set.of("*"); }
+
+        @Override
+        public Set<String> getSupportedOptions() { return Set.of(SchemaWriter.GENERATION_ENABLED); }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void olderGsonOnProcessorPathOmitsUnvalidatedSchemaWithoutFailingCompilation(boolean binary) throws Exception {
+        Path oldGson = Path.of("target/test-fixtures/gson-2.8.9.jar").toAbsolutePath();
+        assertThat(oldGson).exists();
+        String processorPath = Arrays.stream(classpath().split(Pattern.quote(File.pathSeparator)))
+                .map(entry -> Path.of(entry).getFileName().toString().startsWith("gson-") ? oldGson.toString() : entry)
+                .collect(java.util.stream.Collectors.joining(File.pathSeparator));
+        Path event = source("fixture/Outer.java", eventSource("fields", "registry"));
+        Path consumer = source("Consumer.java", consumerSource());
+        Path dependency = directory.resolve("dependency");
+        compile(dependency, List.of(event), List.of("-proc:none"));
+        Path output = directory.resolve("old-gson");
+        Files.createDirectories(output);
+        var command = new ArrayList<>(List.of(javaExecutable("javac"), "-Werror", "-classpath",
+                (binary ? dependency + File.pathSeparator : "") + classpath(), "-processorpath", processorPath,
+                "-processor", JeapMessageAnnotationProcessor.class.getName(), "-d", output.toString(), consumer.toString()));
+        if (!binary) command.add(event.toString());
+        assertThat(runCompilerProcess("old-gson", command)).contains("Schema JSON validation unavailable", "Gson", "Strictness");
+        assertNoSchemas(output);
+    }
+
+    private static String javaExecutable(String executable) {
+        return Path.of(System.getProperty("java.home"), "bin", executable).toString();
+    }
+
+    private String runCompilerProcess(String name, List<String> command) throws Exception {
+        Path log = directory.resolve(name + ".log");
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        boolean finished = process.waitFor(60, TimeUnit.SECONDS);
+        if (!finished) process.destroyForcibly().waitFor();
+        String diagnostics = Files.readString(log);
+        assertThat(finished).as(diagnostics).isTrue();
+        assertThat(process.exitValue()).as(diagnostics).isZero();
+        return diagnostics;
+    }
 
     @Test
     void readsMessageFromNamedModule() throws Exception {
@@ -63,6 +195,28 @@ class IsolatedProcessorCompilationTest {
         String diagnostics = compile(output, List.of(source("fixture/Outer.java", event), source("Consumer.java", consumerSource())),
                 processorOptions(directory.resolve("absent")));
         assertThat(diagnostics).contains("No avro schema file generated");
+        assertNoSchemas(output);
+    }
+
+    @Test
+    void sourceTypeShadowingTheOrgPackageIsNotAcceptedAsAvroParser() throws Exception {
+        String event = eventSource("fields", "registry").replace("public class Outer {", """
+                public class Outer {
+                    public static class org {
+                        public static class apache {
+                            public static class avro {
+                                public static class Schema {
+                                    public static class Parser {
+                                        public Schema parse(String json) { throw new AssertionError("fake parser"); }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                """);
+        Path output = directory.resolve("shadowed-package");
+        compile(output, List.of(source("fixture/Outer.java", event), source("Consumer.java", consumerSource())),
+                processorOptions(directory.resolve("absent")));
         assertNoSchemas(output);
     }
 
@@ -192,14 +346,18 @@ class IsolatedProcessorCompilationTest {
         assertSchemas(third, "fields");
     }
 
-    @Test
-    void currentSourceWinsOverStaleCompiledClass() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void currentSourceWinsOverStaleCompiledClass(boolean explicitSource) throws Exception {
         Path dependency = directory.resolve("dependency");
         Path event = source("fixture/Outer.java", eventSource("stale", "registry"));
         compile(dependency, List.of(event), List.of("-proc:none"));
         Files.writeString(event, eventSource("current", "registry"));
         Path output = directory.resolve("application");
-        compile(output, List.of(event, source("Consumer.java", consumerSource())), processorOptions(dependency));
+        Path consumer = source("Consumer.java", consumerSource());
+        var options = new ArrayList<>(processorOptions(dependency));
+        if (!explicitSource) options.addAll(List.of("-sourcepath", directory.toString(), "-Xprefer:source", "-implicit:class"));
+        compile(output, explicitSource ? List.of(event, consumer) : List.of(consumer), options);
         assertSchemas(output, "current");
     }
 
@@ -473,12 +631,16 @@ class IsolatedProcessorCompilationTest {
     }
 
     private String compile(JavaCompiler compiler, Path output, List<Path> sources, List<String> extraOptions) throws Exception {
+        return compile(compiler, output, sources, extraOptions, null);
+    }
+
+    private String compile(JavaCompiler compiler, Path output, List<Path> sources, List<String> extraOptions, List<String> classes) throws Exception {
         Files.createDirectories(output);
         var diagnostics = new DiagnosticCollector<JavaFileObject>();
         try (var manager = compiler.getStandardFileManager(diagnostics, null, null)) {
             List<String> options = new ArrayList<>(List.of("-d", output.toString(), "-classpath", classpath()));
             options.addAll(extraOptions);
-            boolean success = compiler.getTask(null, manager, diagnostics, options, null,
+            boolean success = compiler.getTask(null, manager, diagnostics, options, classes,
                     manager.getJavaFileObjectsFromPaths(sources)).call();
             assertThat(success).as(diagnostics.getDiagnostics().toString()).isTrue();
             assertThat(diagnostics.getDiagnostics()).noneMatch(d -> d.getKind() == javax.tools.Diagnostic.Kind.WARNING
