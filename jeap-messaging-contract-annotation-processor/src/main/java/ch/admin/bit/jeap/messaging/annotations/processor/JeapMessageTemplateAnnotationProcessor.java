@@ -40,17 +40,7 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        // Release the compilation state on any abnormal exit, without catching Error.
-        boolean completed = false;
-        try {
-            boolean processed = processRound(roundEnv);
-            completed = true;
-            return processed;
-        } finally {
-            if (!completed) {
-                SchemaWriter.processingOver(processingEnv);
-            }
-        }
+        return SchemaWriter.withRoundCleanup(processingEnv, () -> processRound(roundEnv));
     }
 
     private boolean processRound(RoundEnvironment roundEnv) {

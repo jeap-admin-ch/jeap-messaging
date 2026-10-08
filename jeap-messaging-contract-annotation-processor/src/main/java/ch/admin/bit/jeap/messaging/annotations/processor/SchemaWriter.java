@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.function.BooleanSupplier;
 
 import static javax.tools.Diagnostic.Kind.NOTE;
 
@@ -35,6 +36,22 @@ class SchemaWriter {
 
     static synchronized void processingOver(ProcessingEnvironment env) {
         COMPILATIONS.remove(env);
+    }
+
+    /**
+     * Runs a processing round, releasing the compilation state on any abnormal exit, without catching Error.
+     */
+    static boolean withRoundCleanup(ProcessingEnvironment env, BooleanSupplier round) {
+        boolean completed = false;
+        try {
+            boolean processed = round.getAsBoolean();
+            completed = true;
+            return processed;
+        } finally {
+            if (!completed) {
+                processingOver(env);
+            }
+        }
     }
 
     private SchemaWriter() {
