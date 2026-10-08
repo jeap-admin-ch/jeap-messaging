@@ -419,7 +419,10 @@ class IsolatedProcessorCompilationTest {
         compile(dependency, List.of(source("fixture/Outer.java", eventSource("fields", "registry"))), List.of("-proc:none"));
         Path consumer = source("Consumer.java", consumerSource());
         Path duplicate = source("Duplicate.java", consumerSource().replace("class Consumer", "class Duplicate"));
-        assertThatThrownBy(() -> compile(directory.resolve("failed"), List.of(consumer, duplicate), processorOptions(dependency)))
+        Path failedOutput = directory.resolve("failed");
+        List<Path> duplicatedSources = List.of(consumer, duplicate);
+        List<String> options = processorOptions(dependency);
+        assertThatThrownBy(() -> compile(failedOutput, duplicatedSources, options))
                 .isInstanceOf(RuntimeException.class).hasMessageContaining("duplicate");
         Path output = directory.resolve("next");
         compile(output, List.of(consumer), processorOptions(dependency));

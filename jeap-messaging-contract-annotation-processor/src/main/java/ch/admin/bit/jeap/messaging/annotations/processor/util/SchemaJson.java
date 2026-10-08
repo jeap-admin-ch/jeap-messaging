@@ -12,6 +12,11 @@ import java.util.HashSet;
 
 /** Lightweight JSON/record-shape validation without initializing Avro. MCS validates Avro semantics. */
 final class SchemaJson {
+    private static final String TYPE = "type";
+    private static final String NAME = "name";
+    private static final String FIELDS = "fields";
+    private static final String RECORD = "record";
+
     private SchemaJson() { }
 
     static boolean isRecord(String json) {
@@ -19,17 +24,17 @@ final class SchemaJson {
             reader.setStrictness(Strictness.STRICT);
             JsonElement parsed = JsonParser.parseReader(reader);
             if (reader.peek() != JsonToken.END_DOCUMENT || !parsed.isJsonObject()) return false;
-            var record = parsed.getAsJsonObject();
-            if (!isString(record.get("type")) || !record.get("type").getAsString().equals("record")
-                    || !isString(record.get("name")) || record.get("name").getAsString().isBlank()
-                    || !record.has("fields") || !record.get("fields").isJsonArray()) return false;
+            var schemaObject = parsed.getAsJsonObject();
+            if (!isString(schemaObject.get(TYPE)) || !schemaObject.get(TYPE).getAsString().equals(RECORD)
+                    || !isString(schemaObject.get(NAME)) || schemaObject.get(NAME).getAsString().isBlank()
+                    || !schemaObject.has(FIELDS) || !schemaObject.get(FIELDS).isJsonArray()) return false;
             var names = new HashSet<String>();
-            for (var field : record.getAsJsonArray("fields")) {
+            for (var field : schemaObject.getAsJsonArray(FIELDS)) {
                 if (!field.isJsonObject()) return false;
                 var object = field.getAsJsonObject();
-                if (!isString(object.get("name")) || object.get("name").getAsString().isBlank()
-                        || !names.add(object.get("name").getAsString()) || !object.has("type")
-                        || !(isString(object.get("type")) || object.get("type").isJsonObject() || object.get("type").isJsonArray())) return false;
+                if (!isString(object.get(NAME)) || object.get(NAME).getAsString().isBlank()
+                        || !names.add(object.get(NAME).getAsString()) || !object.has(TYPE)
+                        || !(isString(object.get(TYPE)) || object.get(TYPE).isJsonObject() || object.get(TYPE).isJsonArray())) return false;
             }
             return true;
         } catch (IOException | RuntimeException invalid) {

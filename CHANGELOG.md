@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [19.15.0] - 2026-10-05
+## [19.15.1] - 2026-10-07
+
+### Fixed
+- Clean up the contract annotation processors and the schema extraction without changing their behaviour: no longer catch `Error`, and reduce the complexity of the schema classfile and source readers.
+
+## [19.15.0] - 2026-10-07
 
 ### Added
 - Generate and upload Avro schemas with message contracts without executing message classes, avoiding registry access in the Message Contract Service. Schema generation and upload can be disabled independently.

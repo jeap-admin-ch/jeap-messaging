@@ -40,15 +40,20 @@ public class JeapMessageTemplateAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        // Release the compilation state on any abnormal exit, without catching Error.
+        boolean completed = false;
         try {
-            return processRound(annotations, roundEnv);
-        } catch (RuntimeException | Error ex) {
-            SchemaWriter.processingOver(processingEnv);
-            throw ex;
+            boolean processed = processRound(roundEnv);
+            completed = true;
+            return processed;
+        } finally {
+            if (!completed) {
+                SchemaWriter.processingOver(processingEnv);
+            }
         }
     }
 
-    private boolean processRound(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    private boolean processRound(RoundEnvironment roundEnv) {
         if (roundEnv.processingOver()) {
             SchemaWriter.processingOver(processingEnv);
             return false;

@@ -9,6 +9,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import javax.tools.JavaFileObject;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -91,19 +92,30 @@ public class AvroSchemaExtractor {
         } catch (RuntimeException | LinkageError ex) {
             failures.add("Compiler file origin unavailable: " + describeFailure(ex));
         }
-        // ECJ cannot reliably supply files through getFileObjectOf in all environments (notably JARs).
-        // Its element exposes the binding's actual file, including implicitly loaded source.
-        // Keep this optional adapter separate from compiler dependencies.
-        if (type.getClass().getName().equals("org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl")) {
-            try {
-                Object file = type.getClass().getMethod("getFileName").invoke(type);
-                if (file instanceof String name) {
-                    if (name.endsWith(".class")) return Origin.BINARY;
-                    if (name.endsWith(".java")) return Origin.SOURCE;
-                }
-            } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
-                failures.add("Eclipse file origin unavailable: " + describeFailure(ex));
+        return eclipseFileOrigin(type, failures);
+    }
+
+    /**
+     * ECJ cannot reliably supply files through getFileObjectOf in all environments (notably JARs). Its element
+     * exposes the binding's actual file, including implicitly loaded source.
+     * <p>
+     * The element class is matched by name on purpose: ECJ is not a compile dependency of this processor, so
+     * {@code instanceof} is not available here. Keeping the name check confines the reflective adapter to that
+     * one compiler instead of calling an unrelated {@code getFileName()} on any other implementation.
+     */
+    @SuppressWarnings("java:S1872") // see javadoc: ECJ is not a compile dependency, instanceof is impossible
+    private static Origin eclipseFileOrigin(TypeElement type, List<String> failures) {
+        if (!type.getClass().getName().equals("org.eclipse.jdt.internal.compiler.apt.model.TypeElementImpl")) {
+            return Origin.UNAVAILABLE;
+        }
+        try {
+            Object file = type.getClass().getMethod("getFileName").invoke(type);
+            if (file instanceof String name) {
+                if (name.endsWith(".class")) return Origin.BINARY;
+                if (name.endsWith(".java")) return Origin.SOURCE;
             }
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+            failures.add("Eclipse file origin unavailable: " + describeFailure(ex));
         }
         return Origin.UNAVAILABLE;
     }
@@ -138,31 +150,38 @@ public class AvroSchemaExtractor {
      */
     private static Optional<String> readSchemaJsonFromClassFile(ProcessingEnvironment env, TypeElement type,
                                                                String className, List<String> failures) {
-        try {
-            FileObject file = null;
-            try {
-                JavaFileObject origin = env.getElementUtils().getFileObjectOf(type);
-                if (origin != null && origin.getKind() == JavaFileObject.Kind.CLASS) file = origin;
-            } catch (RuntimeException | LinkageError unavailable) {
-                // Optional compiler API; the module-aware Filer fallback below works with ECJ.
-            }
-            if (file == null) {
-                int separator = className.lastIndexOf('.');
-                String packageName = separator < 0 ? "" : className.substring(0, separator);
-                String fileName = className.substring(separator + 1) + ".class";
-                var module = env.getElementUtils().getModuleOf(type);
-                boolean named = module != null && !module.isUnnamed();
-                file = env.getFiler().getResource(named ? StandardLocation.MODULE_PATH : StandardLocation.CLASS_PATH,
-                        named ? module.getQualifiedName() + "/" + packageName : packageName, fileName);
-            }
-            try (var input = file.openInputStream()) {
-                var result = SchemaClassFile.read(input.readAllBytes(), className);
-                if (result.isEmpty()) failures.add("Unsupported SCHEMA$ classfile initializer; expected generated Schema.Parser.parse literals");
-                return result;
-            }
+        try (var input = compilerClassFile(env, type, className).openInputStream()) {
+            var result = SchemaClassFile.read(input.readAllBytes(), className);
+            if (result.isEmpty()) failures.add("Unsupported SCHEMA$ classfile initializer; expected generated Schema.Parser.parse literals");
+            return result;
         } catch (Exception | LinkageError ex) {
             failures.add("Compiler classfile unavailable: " + describeFailure(ex));
             return Optional.empty();
+        }
+    }
+
+    /** Resolves the compiler-owned class file, preferring the optional element API over the Filer. */
+    private static FileObject compilerClassFile(ProcessingEnvironment env, TypeElement type, String className) throws IOException {
+        FileObject file = elementClassFile(env, type);
+        if (file != null) {
+            return file;
+        }
+        int separator = className.lastIndexOf('.');
+        String packageName = separator < 0 ? "" : className.substring(0, separator);
+        String fileName = className.substring(separator + 1) + ".class";
+        var module = env.getElementUtils().getModuleOf(type);
+        boolean named = module != null && !module.isUnnamed();
+        return env.getFiler().getResource(named ? StandardLocation.MODULE_PATH : StandardLocation.CLASS_PATH,
+                named ? module.getQualifiedName() + "/" + packageName : packageName, fileName);
+    }
+
+    private static JavaFileObject elementClassFile(ProcessingEnvironment env, TypeElement type) {
+        try {
+            JavaFileObject origin = env.getElementUtils().getFileObjectOf(type);
+            return origin != null && origin.getKind() == JavaFileObject.Kind.CLASS ? origin : null;
+        } catch (RuntimeException | LinkageError unavailable) {
+            // Optional compiler API; the module-aware Filer fallback works with ECJ.
+            return null;
         }
     }
 
