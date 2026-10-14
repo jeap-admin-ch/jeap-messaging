@@ -47,9 +47,34 @@ default cluster needs neither.
 | `systemName`                     | —                            | Name of the sending system; required to generate `MessageProcessingFailedEvent` messages                    |
 | `serviceName`                    | `${spring.application.name}` | Name of the sending service; used in generated `MessageProcessingFailedEvent` messages                      |
 | `errorTopicName`                 | —                            | Error topic for `MessageProcessingFailedEvent` messages (also per cluster: `cluster.<name>.errorTopicName`) |
-| `errorServiceRetryIntervalMs`    | `5000`                       | Retry interval for sending a `MessageProcessingFailedEvent`                                                 |
-| `errorServiceRetryAttempts`      | `5`                          | Number of attempts to send a `MessageProcessingFailedEvent` before the application terminates               |
 | `embedded`                       | —                            | Force (`true`) or disable (`false`) the automatic EmbeddedKafka test configuration                          |
+
+## Error reporting
+
+Properties below use `jeap.messaging.kafka.*`. For the error topic and sender identity, see [Core](#core).
+For publication and processing behavior, see [Error handling](error-handling.md).
+
+| Name | Default | Description |
+| --- | --- | --- |
+| `errorServiceRetryIntervalMs`    | `5000`                       | Retry interval for sending a `MessageProcessingFailedEvent`                                                 |
+| `errorServiceRetryAttempts` | `5` | Maximum retries after the initial attempt to publish a failure event; the application terminates if publication still fails. |
+| `errorEventStackTraceMaxLength` | `7000` | Maximum stack-trace length in the failure event; longer traces are truncated to limit event size. |
+| `errorStackTraceHashEnabled` | `true` | Include a stack-trace hash for error grouping; set to `false` to disable it. |
+| `errorStackTraceHashDefaultExclusionPatterns` | See below | Replace the built-in regular expressions for stack frames excluded from hashing. |
+| `errorStackTraceHashAdditionalExclusionPatterns` | Empty list | Add exclusions to the defaults, for example `^org.springframework..*` or `^ch.admin.bit.mypackage..*`. |
+
+Default exclusion patterns (one Java regular expression per line):
+
+```text
+^java.base/.*
+^org.springframework.aop..*
+.*\$\$FastClassByCGLIB\$\$.*
+.*\$\$EnhancerBySpringCGLIB\$\$.*
+.*\$\$EnhancerByCGLIB\$\$.*
+.*\$\$SpringCGLIB\$\$.*
+```
+
+See [Error stack trace hashing](error-handling.md#error-stack-trace-hashing) for the matching input and purpose.
 
 ## Contracts
 

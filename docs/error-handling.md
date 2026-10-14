@@ -6,39 +6,36 @@ topic, and acknowledges the **original** message so the application keeps consum
 
 ## The Error Handling Service
 
-A separate Error Handling Service (the `jeap-error-handling-service` component) reads
-`MessageProcessingFailedEvent` messages from the error topic, stores them, and can:
-
-- resubmit the original message to its topic after a delay (temporary errors);
-- escalate repeated temporary errors to permanent;
-- create an Agir task for permanent errors so a human can intervene.
+The [Error Handling Service](https://jeap-admin-ch.github.io/docs/building-blocks/reusable-microservices/jeap-error-handling/) consumes the failure events and manages
+retries and manual resolution. Its deployment and operation are documented with the service.
 
 ## Integration steps
 
-- order an error topic;
-- provide a user with write access to all topics the Error Handling Service must resubmit to;
-- configure roles in PAMS;
-- arrange Agir access;
-- configure jEAP Messaging in every consuming service (`systemName`, `serviceName`, `errorTopicName`);
-- run an Error Handling Service instance.
+Configure each consuming application with an error topic and permission to publish to it, plus its
+system and service identity (see [Configuration](configuration.md#core)). For ordering topics, retry
+permissions, roles, Agir access and deploying the EHS, follow the
+[EHS getting-started guide](https://jeap-admin-ch.github.io/docs/building-blocks/reusable-microservices/jeap-error-handling/getting-started).
 
 ## Configuration
 
-All properties use the prefix `jeap.messaging.kafka`.
+Properties and defaults are maintained in the [Configuration reference](configuration.md#core).
+See [Error reporting](configuration.md#error-reporting) for error-publication retries, stack-trace
+truncation and hashing options.
 
-| Name                                             | Default                      | Description                                                                                                                                         |
-|--------------------------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `errorTopicName`                                 | —                            | Error topic for `MessageProcessingFailedEvent` messages                                                                                             |
-| `systemName`                                     | —                            | Name of the sending system                                                                                                                          |
-| `serviceName`                                    | `${spring.application.name}` | Name of the sending service                                                                                                                         |
-| `errorServiceRetryIntervalMs`                    | `5000`                       | Retry interval for sending a `MessageProcessingFailedEvent`                                                                                         |
-| `errorServiceRetryAttempts`                      | `5`                          | Number of send attempts before the application terminates                                                                                           |
-| `errorEventStackTraceMaxLength`                  | `7000`                       | The caught exception's stack trace is truncated to this length so the error event stays within the topic's size limit                               |
-| `errorStackTraceHashEnabled`                     | `true`                       | Compute a stack-trace hash for caught exceptions (used to group recurring errors)                                                                   |
-| `errorStackTraceHashDefaultExclusionPatterns`    | (framework patterns)         | Regexes for stack-trace elements (FQCN + method) to ignore when computing the hash; defaults exclude `java.base`, Spring AOP and CGLIB proxy frames |
-| `errorStackTraceHashAdditionalExclusionPatterns` | (empty)                      | Additional regexes to exclude when computing the hash, on top of the defaults                                                                       |
+## Message listener and acknowledgment
 
-See the [Configuration reference](configuration.md).
+The auto-configured handler supports record listeners, including records fetched together in one
+Kafka poll. Batch listeners that process multiple records in one invocation are not supported.
+For a listener example and the acknowledgment rules, see [Consuming messages](consuming-messages.md#a-listener-method).
+
+The handler uses Spring Kafka's `DefaultErrorHandler` without local retries of business processing.
+After forwarding the failed record, it seeks the remaining unprocessed records so they can be
+redelivered, including when a poll contains records from several topics or partitions.
+
+Sending the failure event has its own retries. If publication still fails when those retries are
+exhausted, the default failure handler terminates the application instance without acknowledging the
+failed record, allowing the container platform to restart it. These publication retries are separate
+from the EHS resubmitting the original business message.
 
 ## Temporary exceptions
 
@@ -48,6 +45,9 @@ Spring data-access errors, transaction timeouts, common Hibernate connection/loc
 Spring `ResourceAccessException`s (including subclasses). The default resolver checks only the exception
 passed to it, not its cause chain. An explicit `PERMANENT` or `TEMPORARY` temporality declared by that
 exception through `MessageHandlerExceptionInformation` always takes precedence.
+
+Applications can provide error code, message, description and temporality through
+`MessageHandlerExceptionInformation`, or use the supplied `MessageHandlerException` implementation.
 
 Applications can customize this classification by providing a Spring bean of type
 `ExceptionTemporalityResolver`. An application-provided resolver **replaces** the default resolver, so
@@ -70,6 +70,24 @@ is preserved as before, including `UNKNOWN`, unless the resolver returns a concr
 Explicit `PERMANENT` or `TEMPORARY` values supplied through `MessageHandlerExceptionInformation` by the
 thrown exception itself remain unchanged; only its temporality is replaced if it is `UNKNOWN` — error
 code, message, description and stack trace are reported as provided.
+
+## Error stack trace hashing
+
+Since version 8.7.0, the error handler can include a stack-trace hash in the failure event. The EHS
+uses matching hashes to group recurring errors. Exclude variable stack frames to keep the grouping
+stable: exclusion patterns are Java regular expressions matched against a fully qualified class name
+with its method name, for example `ch.admin.bit.mypackage.MyClass.myMethod`.
+
+Defaults and examples for replacing or extending the exclusion patterns are in
+[Error reporting configuration](configuration.md#error-reporting).
+
+## Example
+
+The [jme-messaging-example](https://github.com/jme-admin-ch/jme-messaging-example) demonstrates the
+integration. Its subscriber throws different exceptions depending on the message content; see
+[ExampleController.java](https://github.com/jme-admin-ch/jme-messaging-example/blob/main/jme-messaging-subscriber-service/src/main/java/ch/admin/bit/jeap/jme/messaging/receiver/ExampleController.java).
+The [jme-messaging-error-scs](https://github.com/jme-admin-ch/jme-messaging-example/tree/main/jme-messaging-error-scs)
+provides the EHS instance.
 
 ## Guidelines
 

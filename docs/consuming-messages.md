@@ -6,9 +6,11 @@ the default cluster, omit `containerFactory`; for a non-default cluster set
 
 ## A listener method
 
-jeap-messaging sets `enable.auto.commit=false` and `AckMode=MANUAL`. You MUST always acknowledge with
-`ack.acknowledge()` at the END of processing — once the message was either processed successfully or
-handed to the error handler. NEVER acknowledge before processing completes, or messages may be lost.
+jeap-messaging sets `enable.auto.commit=false` and `AckMode=MANUAL`. A listener acknowledges with
+`ack.acknowledge()` only after successful processing. Let processing exceptions propagate to the
+[error handler](error-handling.md#message-listener-and-acknowledgment), which takes care of acknowledging
+failed records after publishing their failure event. Never acknowledge before processing or in a
+`finally` block: if error-event publication fails, an early acknowledgment can lose the message.
 
 ```java
 @Component
