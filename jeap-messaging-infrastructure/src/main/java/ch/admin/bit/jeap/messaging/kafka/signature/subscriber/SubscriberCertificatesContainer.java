@@ -35,7 +35,8 @@ public class SubscriberCertificatesContainer {
                 certificateSerialNumbers.add(CertificateHelper.serialNumberHexString(certificateChain.getLeafCertificate().getSerialNumber()));
             }
         }
-        log.info("SubscriberCertificatesContainer initialized, certificate serial numbers: {}", certificateSerialNumbers);
+        log.info("SubscriberCertificatesContainer initialized with {} certificates", certificateSerialNumbers.size());
+        log.debug("Certificate serial numbers: {}", certificateSerialNumbers);
     }
 
     public SignatureCertificateWithChainValidity getCertificateWithSerialNumber(byte[] certificateSerialNumber) {
@@ -85,7 +86,7 @@ public class SubscriberCertificatesContainer {
                 CertificateHelper.validateCertificateChain(x509Certificates);
                 certificateChain.updateValidity(true);
             } catch (CertificateException e) {
-                log.warn(String.format("Certificate chain validation failed for service %s and chain %s", certificateChainEntry.service(), certificateChain.getName()), e);
+                log.debug(String.format("Certificate chain validation failed for service %s and chain %s", certificateChainEntry.service(), certificateChain.getName()), e);
                 certificateChain.updateValidity(false);
             }
         }
