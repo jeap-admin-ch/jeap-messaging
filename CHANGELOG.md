@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [19.18.0] - 2026-10-15
+### Changed
+- update jeap-crypto from 11.17.0 to 11.18.0
+- update jeap-spring-boot-vault-starter from 25.17.0 to 25.18.0
+- Add the platform-independent `@RetryOnDatabaseFailover` annotation. Retryable failures remain
+  limited to the supported AWS JDBC failover case.
+- Deprecate `@RetryOnAwsJdbcFailover` in favor of `@RetryOnDatabaseFailover`; retain it as a
+  compatibility alias with the same retry settings.
+
 ## [19.17.2] - 2026-10-15
 
 ### Changed
