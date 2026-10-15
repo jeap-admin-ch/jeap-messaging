@@ -1,7 +1,7 @@
 publiccodeYmlVersion: 0.5.0
 name: jeap-messaging
 applicationSuite: jEAP
-softwareVersion: 19.17.2
+softwareVersion: 19.18.0
 releaseDate: 2026-10-15
 url: "https://github.com/jeap-admin-ch/jeap-messaging.git"
 landingURL: "https://github.com/jeap-admin-ch/jeap"
