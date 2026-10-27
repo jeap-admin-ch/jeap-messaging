@@ -29,11 +29,13 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -131,7 +133,7 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
     }
 
     @Test
-    void wrappedTransientExceptionWhileEventHandlingIsNotClassifiedAsTemporary() {
+    void wrappedTransientExceptionWhileEventHandlingIsClassifiedAsTemporary() {
         Mockito.doThrow(new RuntimeException("wrapper", new TimeoutException("timeout")))
                 .when(testEventProcessor).receive(Mockito.any());
 
@@ -140,11 +142,25 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
         MessageProcessingFailedEvent resultingError = expectError();
 
         Assertions.assertEquals("UNKNOWN_EXCEPTION", resultingError.getReferences().getErrorType().getCode());
-        Assertions.assertEquals("UNKNOWN", resultingError.getReferences().getErrorType().getTemporality());
+        Assertions.assertEquals("TEMPORARY", resultingError.getReferences().getErrorType().getTemporality());
     }
 
     @Test
-    void specificExceptionWithUnknownTemporalityAndTransientCauseKeepsItsDetails() {
+    void databaseConnectionFailureWhileEventHandlingIsClassifiedAsTemporary() {
+        SQLException failover = new SQLException("The active SQL connection has changed", "08S02");
+        Mockito.doThrow(new DataAccessResourceFailureException("could not execute batch", failover))
+                .when(testEventProcessor).receive(Mockito.any());
+
+        AvroMessage message = JmeDeclarationCreatedEventBuilder.create().idempotenceId("idempotenceId").message("message").build();
+        sendSync(TestEventConsumer.TOPIC_NAME, message);
+        MessageProcessingFailedEvent resultingError = expectError();
+
+        Assertions.assertEquals("UNKNOWN_EXCEPTION", resultingError.getReferences().getErrorType().getCode());
+        Assertions.assertEquals("TEMPORARY", resultingError.getReferences().getErrorType().getTemporality());
+    }
+
+    @Test
+    void specificExceptionWithUnknownTemporalityAndTransientCauseIsClassifiedAsTemporaryAndKeepsItsDetails() {
         SpecificException exception = SpecificException.builder()
                 .description("desc")
                 .errorCode("code")
@@ -160,7 +176,7 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
         MessageProcessingFailedEvent resultingError = expectError();
 
         Assertions.assertEquals("code", resultingError.getReferences().getErrorType().getCode());
-        Assertions.assertEquals("UNKNOWN", resultingError.getReferences().getErrorType().getTemporality());
+        Assertions.assertEquals("TEMPORARY", resultingError.getReferences().getErrorType().getTemporality());
         Assertions.assertTrue(resultingError.getOptionalPayload().isPresent());
         Assertions.assertEquals("desc", resultingError.getOptionalPayload().get().getErrorDescription());
         Assertions.assertEquals("msg", resultingError.getOptionalPayload().get().getErrorMessage());

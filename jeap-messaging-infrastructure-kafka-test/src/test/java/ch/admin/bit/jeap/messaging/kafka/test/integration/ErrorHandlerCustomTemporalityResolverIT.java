@@ -71,12 +71,12 @@ class ErrorHandlerCustomTemporalityResolverIT extends KafkaIntegrationTestBase {
     }
 
     @Test
-    void applicationResolverDelegatingToDefaultsDoesNotClassifyWrappedException() {
+    void applicationResolverDelegatingToDefaultsClassifiesWrappedException() {
         Mockito.doThrow(new RuntimeException(new TimeoutException("timeout"))).when(testEventProcessor).receive(Mockito.any());
 
         MessageProcessingFailedEvent resultingError = sendAndExpectError();
 
-        assertEquals("UNKNOWN", resultingError.getReferences().getErrorType().getTemporality());
+        assertEquals("TEMPORARY", resultingError.getReferences().getErrorType().getTemporality());
     }
 
     private MessageProcessingFailedEvent sendAndExpectError() {

@@ -41,10 +41,23 @@ from the EHS resubmitting the original business message.
 
 The error service sender automatically marks known transient framework errors as `TEMPORARY`, so the
 Error Handling Service can retry them. This includes retryable Kafka errors, transient and recoverable
-Spring data-access errors, transaction timeouts, common Hibernate connection/lock/timeout errors and
-Spring `ResourceAccessException`s (including subclasses). The default resolver checks only the exception
-passed to it, not its cause chain. An explicit `PERMANENT` or `TEMPORARY` temporality declared by that
-exception through `MessageHandlerExceptionInformation` always takes precedence.
+Spring data-access errors, transaction timeouts, common Hibernate connection/lock/timeout errors,
+Spring `ResourceAccessException`s (including subclasses), JDBC `SQLTransientException`s and
+`SQLRecoverableException`s, and database connection failures (`SQLException`s with an SQLState of
+class `08`).
+
+The default resolver inspects the exception and its cause chain, starting with the exception thrown by
+the listener. The first exception that is either a known transient error or declares an explicit
+`PERMANENT` or `TEMPORARY` temporality through `MessageHandlerExceptionInformation` decides. An explicit
+temporality therefore takes precedence over the exceptions it wraps, while an exception declaring
+`UNKNOWN` leaves the decision to its causes.
+
+Spring translates connection failures to the generic `DataAccessResourceFailureException`, which is
+also used for permanent resource failures, for example statements exceeding database limits. Only a
+connection failure in its cause chain makes it temporary. This covers a database failover with the AWS
+Advanced JDBC Wrapper (`FailoverSuccessSQLException`, SQLState `08S02`), but also SQLState `08007`,
+where the outcome of the interrupted transaction is unknown. As messages are delivered at least once,
+message handlers must be idempotent anyway, which makes resubmitting the message safe in this case too.
 
 Applications can provide error code, message, description and temporality through
 `MessageHandlerExceptionInformation`, or use the supplied `MessageHandlerException` implementation.

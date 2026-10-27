@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [19.23.0] - 2026-10-27
+
+### Changed
+- The default exception temporality resolver inspects the cause chain, so wrapped transient errors are classified as
+  `TEMPORARY`. The first exception with an explicit `PERMANENT` or `TEMPORARY` temporality decides.
+- Classify database connection failures (SQLState class `08`, e.g. after an Aurora failover), `SQLTransientException`
+  and `SQLRecoverableException` as `TEMPORARY`, including when Spring wraps them in a
+  `DataAccessResourceFailureException`.
+
 ## [19.22.0] - 2026-10-26
 
 ### Changed
