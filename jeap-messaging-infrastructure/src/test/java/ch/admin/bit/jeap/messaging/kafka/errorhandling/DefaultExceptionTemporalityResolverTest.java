@@ -11,8 +11,6 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 
 import java.sql.SQLException;
-import java.sql.SQLRecoverableException;
-import java.sql.SQLTransientConnectionException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,18 +38,16 @@ class DefaultExceptionTemporalityResolverTest {
     }
 
     @Test
-    void classifiesWrappedTemporaryException() {
-        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY),
-                resolver.resolve(new RuntimeException(new TimeoutException())));
+    void doesNotClassifyWrappedTemporaryException() {
+        assertTrue(resolver.resolve(new RuntimeException(new TimeoutException())).isEmpty());
     }
 
     @Test
-    void appliesExplicitTemporalityOfWrappedException() {
+    void doesNotClassifyWrappedExceptionWithExplicitTemporality() {
         CertificateValidationException permanentCause = CertificateValidationException.certificateExpired(null);
         RuntimeException wrapper = new RuntimeException("wrapped", permanentCause);
 
-        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.PERMANENT),
-                resolver.resolve(wrapper));
+        assertTrue(resolver.resolve(wrapper).isEmpty());
     }
 
     @Test
@@ -64,11 +60,34 @@ class DefaultExceptionTemporalityResolverTest {
     }
 
     @Test
-    void resolvesCauseOfExceptionWithUnknownTemporality() {
+    void doesNotTraverseCyclicCauseChain() {
+        RuntimeException wrapper = new RuntimeException("wrapper");
+        TimeoutException retryable = new TimeoutException("retryable");
+        wrapper.initCause(retryable);
+        retryable.initCause(wrapper);
+
+        assertTrue(resolver.resolve(wrapper).isEmpty());
+        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY),
+                resolver.resolve(retryable));
+    }
+
+    @Test
+    void resolvesWrappedFailoverAsTemporary() {
+        SQLException failover = new SQLException("The active SQL connection has changed", "08S02");
+        RuntimeException exception = new RuntimeException("Failed updating process",
+                new DataAccessResourceFailureException("could not execute batch", failover));
+
+        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY),
+                resolver.resolve(exception));
+    }
+
+    @Test
+    void resolvesFailoverCauseOfExceptionWithUnknownTemporalityAsTemporary() {
         MessageHandlerException unknown = MessageHandlerException.builder()
                 .temporality(MessageHandlerExceptionInformation.Temporality.UNKNOWN)
                 .errorCode("code")
-                .cause(new TimeoutException("timeout"))
+                .cause(new DataAccessResourceFailureException("could not execute batch",
+                        new SQLException("The active SQL connection has changed", "08S02")))
                 .build();
 
         assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY),
@@ -76,38 +95,36 @@ class DefaultExceptionTemporalityResolverTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"08S02", "08006", "08001", "08007"})
-    void resolvesTranslatedConnectionExceptionAsTemporary(String sqlState) {
-        SQLException connectionFailure = new SQLException("The active SQL connection has changed", sqlState);
-        RuntimeException exception = new RuntimeException("Failed updating process",
-                new DataAccessResourceFailureException("could not execute batch", connectionFailure));
+    @ValueSource(strings = {"08007", "08006", "08001", "54001"})
+    void leavesOtherSqlStatesUnclassified(String sqlState) {
+        DataAccessResourceFailureException exception = new DataAccessResourceFailureException("failed",
+                new SQLException("failed", sqlState));
 
-        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY),
-                resolver.resolve(exception));
+        assertTrue(resolver.resolve(exception).isEmpty());
     }
 
     @Test
-    void resolvesTransientAndRecoverableSqlExceptionsAsTemporary() {
-        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY),
-                resolver.resolve(new SQLTransientConnectionException("connection unavailable")));
-        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY),
-                resolver.resolve(new SQLRecoverableException("connection lost")));
+    void preservesExplicitPermanentTemporalityOfExceptionCausedByFailover() {
+        CertificateValidationException permanent = CertificateValidationException.certificateExpired(null);
+        permanent.initCause(new SQLException("The active SQL connection has changed", "08S02"));
+
+        assertEquals(Optional.of(MessageHandlerExceptionInformation.Temporality.PERMANENT),
+                resolver.resolve(permanent));
     }
 
     @Test
-    void leavesNonConnectionResourceFailureUnclassified() {
-        assertTrue(resolver.resolve(new DataAccessResourceFailureException("no cause")).isEmpty());
-        assertTrue(resolver.resolve(new DataAccessResourceFailureException("statement too complex",
-                new SQLException("statement too complex", "54001"))).isEmpty());
-        assertTrue(resolver.resolve(new SQLException("no SQLState")).isEmpty());
+    void doesNotClassifyFailoverBelowWrappedExceptionWithExplicitTemporality() {
+        CertificateValidationException permanent = CertificateValidationException.certificateExpired(null);
+        permanent.initCause(new SQLException("The active SQL connection has changed", "08S02"));
+
+        assertTrue(resolver.resolve(new RuntimeException("wrapped", permanent)).isEmpty());
     }
 
     @Test
-    void terminatesOnCyclicCauseChain() {
+    void doesNotTraverseCyclicCauseChainWhenSearchingFailover() {
         RuntimeException wrapper = new RuntimeException("wrapper");
-        IllegalStateException cause = new IllegalStateException("cause");
+        IllegalStateException cause = new IllegalStateException("cause", wrapper);
         wrapper.initCause(cause);
-        cause.initCause(wrapper);
 
         assertTrue(resolver.resolve(wrapper).isEmpty());
     }

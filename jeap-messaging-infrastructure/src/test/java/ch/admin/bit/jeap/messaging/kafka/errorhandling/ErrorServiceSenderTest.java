@@ -189,7 +189,7 @@ class ErrorServiceSenderTest {
     }
 
     @Test
-    void sendToErrorTopic_classifiesKnownExceptionInCauseChain() {
+    void sendToErrorTopic_doesNotClassifyKnownExceptionInCauseChain() {
         ConsumerRecord<?, ?> consumerRecord = new ConsumerRecord<>("topic", 1, 3, key, value);
         Exception exception = new IllegalStateException("wrapper", new TimeoutException());
 
@@ -198,7 +198,7 @@ class ErrorServiceSenderTest {
         verify(kafkaTemplate, only()).send(eq("errorTopic"), any(), eventCaptor.capture());
         MessageProcessingFailedEvent event = (MessageProcessingFailedEvent) eventCaptor.getValue();
 
-        assertEquals("TEMPORARY", event.getReferences().getErrorType().getTemporality());
+        assertEquals("UNKNOWN", event.getReferences().getErrorType().getTemporality());
     }
 
     @Test

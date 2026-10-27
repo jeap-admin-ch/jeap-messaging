@@ -7,8 +7,6 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.transaction.TransactionTimedOutException;
 
 import java.sql.SQLException;
-import java.sql.SQLRecoverableException;
-import java.sql.SQLTransientException;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Optional;
@@ -16,8 +14,7 @@ import java.util.Set;
 
 /**
  * Classifies framework exceptions for which retrying the original message is
- * generally safe and useful. The cause chain is inspected, as frameworks and
- * applications usually wrap the exception that reveals a temporary failure.
+ * generally safe and useful.
  */
 public class DefaultExceptionTemporalityResolver implements ExceptionTemporalityResolver {
 
@@ -28,56 +25,54 @@ public class DefaultExceptionTemporalityResolver implements ExceptionTemporality
             "org.springframework.web.client.ResourceAccessException"
     };
 
-    // SQLState class 08 (connection exception). Spring translates it to the generic
-    // DataAccessResourceFailureException, which is not classified as it also covers permanent failures.
-    private static final String CONNECTION_EXCEPTION_SQL_STATE_CLASS = "08";
+    // SQLState 08S02 (communication link changed): the AWS Advanced JDBC Wrapper reports it after a successful
+    // failover, when the connection has been re-established but the interrupted operation was not replayed.
+    private static final String CONNECTION_CHANGED_SQL_STATE = "08S02";
 
     @Override
     public Optional<MessageHandlerExceptionInformation.Temporality> resolve(Throwable exception) {
-        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        Throwable current = exception;
-        while (current != null && visited.add(current)) {
-            Optional<MessageHandlerExceptionInformation.Temporality> explicitTemporality = explicitTemporality(current);
-            if (explicitTemporality.isPresent()) {
-                return explicitTemporality;
-            }
-            if (isTemporary(current)) {
-                return Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY);
-            }
-            current = current.getCause();
-        }
-        return Optional.empty();
-    }
-
-    private static Optional<MessageHandlerExceptionInformation.Temporality> explicitTemporality(Throwable exception) {
         if (exception instanceof MessageHandlerExceptionInformation info) {
             MessageHandlerExceptionInformation.Temporality temporality = info.getTemporality();
             if (temporality != null && temporality != MessageHandlerExceptionInformation.Temporality.UNKNOWN) {
                 return Optional.of(temporality);
             }
         }
-        return Optional.empty();
-    }
-
-    private static boolean isTemporary(Throwable exception) {
         return exception instanceof RetriableException
                 || exception instanceof TransientDataAccessException
                 || exception instanceof RecoverableDataAccessException
                 || exception instanceof TransactionTimedOutException
-                || exception instanceof SQLTransientException
-                || exception instanceof SQLRecoverableException
-                || isConnectionException(exception)
-                || hasTemporaryExceptionClassName(exception);
+                || (exception != null && hasTemporaryExceptionClassName(exception))
+                || isCausedByConnectionChange(exception)
+                ? Optional.of(MessageHandlerExceptionInformation.Temporality.TEMPORARY)
+                : Optional.empty();
     }
 
-    private static boolean isConnectionException(Throwable exception) {
-        return exception instanceof SQLException sqlException
-                && sqlException.getSQLState() != null
-                && sqlException.getSQLState().startsWith(CONNECTION_EXCEPTION_SQL_STATE_CLASS);
+    // Spring and Hibernate translate the SQLException, and applications usually wrap it, so the whole cause chain is
+    // searched. An exception that declares its own temporality ends the search, as it decides about its causes.
+    private static boolean isCausedByConnectionChange(Throwable exception) {
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        Throwable current = exception;
+        while (current != null && visited.add(current)) {
+            if (current != exception && hasExplicitTemporality(current)) {
+                return false;
+            }
+            if (current instanceof SQLException sqlException
+                    && CONNECTION_CHANGED_SQL_STATE.equals(sqlException.getSQLState())) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private static boolean hasExplicitTemporality(Throwable exception) {
+        return exception instanceof MessageHandlerExceptionInformation info
+                && info.getTemporality() != null
+                && info.getTemporality() != MessageHandlerExceptionInformation.Temporality.UNKNOWN;
     }
 
     // Matched by name to avoid compile-time dependencies; the superclass chain is checked so subclasses match too
-    private static boolean hasTemporaryExceptionClassName(Throwable exception) {
+    private boolean hasTemporaryExceptionClassName(Throwable exception) {
         for (Class<?> type = exception.getClass(); type != null; type = type.getSuperclass()) {
             String className = type.getName();
             for (String temporaryExceptionClassName : TEMPORARY_EXCEPTION_CLASS_NAMES) {

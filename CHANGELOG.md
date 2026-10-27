@@ -8,11 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [19.23.0] - 2026-10-27
 
 ### Changed
-- The default exception temporality resolver inspects the cause chain, so wrapped transient errors are classified as
-  `TEMPORARY`. The first exception with an explicit `PERMANENT` or `TEMPORARY` temporality decides.
-- Classify database connection failures (SQLState class `08`, e.g. after an Aurora failover), `SQLTransientException`
-  and `SQLRecoverableException` as `TEMPORARY`, including when Spring wraps them in a
-  `DataAccessResourceFailureException`.
+- Classify a database failover with the AWS Advanced JDBC Wrapper (`SQLException` with SQLState `08S02`) as
+  `TEMPORARY`, also when it is wrapped, e.g. in a `DataAccessResourceFailureException`.
 
 ## [19.22.0] - 2026-10-26
 

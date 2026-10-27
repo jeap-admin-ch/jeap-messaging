@@ -133,7 +133,7 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
     }
 
     @Test
-    void wrappedTransientExceptionWhileEventHandlingIsClassifiedAsTemporary() {
+    void wrappedTransientExceptionWhileEventHandlingIsNotClassifiedAsTemporary() {
         Mockito.doThrow(new RuntimeException("wrapper", new TimeoutException("timeout")))
                 .when(testEventProcessor).receive(Mockito.any());
 
@@ -142,13 +142,13 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
         MessageProcessingFailedEvent resultingError = expectError();
 
         Assertions.assertEquals("UNKNOWN_EXCEPTION", resultingError.getReferences().getErrorType().getCode());
-        Assertions.assertEquals("TEMPORARY", resultingError.getReferences().getErrorType().getTemporality());
+        Assertions.assertEquals("UNKNOWN", resultingError.getReferences().getErrorType().getTemporality());
     }
 
     @Test
-    void databaseConnectionFailureWhileEventHandlingIsClassifiedAsTemporary() {
+    void databaseFailoverWhileEventHandlingIsClassifiedAsTemporary() {
         SQLException failover = new SQLException("The active SQL connection has changed", "08S02");
-        Mockito.doThrow(new DataAccessResourceFailureException("could not execute batch", failover))
+        Mockito.doThrow(new RuntimeException("wrapper", new DataAccessResourceFailureException("could not execute batch", failover)))
                 .when(testEventProcessor).receive(Mockito.any());
 
         AvroMessage message = JmeDeclarationCreatedEventBuilder.create().idempotenceId("idempotenceId").message("message").build();
@@ -160,7 +160,7 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
     }
 
     @Test
-    void specificExceptionWithUnknownTemporalityAndTransientCauseIsClassifiedAsTemporaryAndKeepsItsDetails() {
+    void specificExceptionWithUnknownTemporalityAndTransientCauseKeepsItsDetails() {
         SpecificException exception = SpecificException.builder()
                 .description("desc")
                 .errorCode("code")
@@ -176,7 +176,7 @@ class ErrorHandlerIT extends KafkaIntegrationTestBase {
         MessageProcessingFailedEvent resultingError = expectError();
 
         Assertions.assertEquals("code", resultingError.getReferences().getErrorType().getCode());
-        Assertions.assertEquals("TEMPORARY", resultingError.getReferences().getErrorType().getTemporality());
+        Assertions.assertEquals("UNKNOWN", resultingError.getReferences().getErrorType().getTemporality());
         Assertions.assertTrue(resultingError.getOptionalPayload().isPresent());
         Assertions.assertEquals("desc", resultingError.getOptionalPayload().get().getErrorDescription());
         Assertions.assertEquals("msg", resultingError.getOptionalPayload().get().getErrorMessage());
