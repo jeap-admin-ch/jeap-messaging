@@ -81,9 +81,11 @@ final class IdlTokens {
         Set<AvroTypeInfo> types = new LinkedHashSet<>();
         String protocolNamespace = "";
         String namespaceAnnotation = null;
-        for (int i = 0; i < tokens.size(); i++) {
+        int i = 0;
+        while (i < tokens.size()) {
             if (isNamespaceAnnotation(i)) {
                 namespaceAnnotation = unquote(tokens.get(i + 3).image);
+                // continue after the closing parenthesis
                 i += 4;
             } else if (is(i, IdlConstants.PROTOCOL)) {
                 protocolNamespace = namespaceAnnotation == null ? "" : namespaceAnnotation;
@@ -100,6 +102,7 @@ final class IdlTokens {
                 }
                 types.add(new AvroTypeInfo(namespace, name));
             }
+            i++;
         }
         return types;
     }

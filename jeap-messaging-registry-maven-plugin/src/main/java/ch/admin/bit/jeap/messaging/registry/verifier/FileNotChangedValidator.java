@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class FileNotChangedValidator {
+
+    private FileNotChangedValidator() {
+    }
+
     static ValidationResult noSystemDeleted(ValidationContext validationContext) {
         File newDescriptorFolder = descriptorDir(validationContext, false);
         File oldDescriptorFolder = descriptorDir(validationContext, true);

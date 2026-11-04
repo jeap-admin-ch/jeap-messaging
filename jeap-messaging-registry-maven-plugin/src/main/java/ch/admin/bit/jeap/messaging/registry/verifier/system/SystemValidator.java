@@ -18,6 +18,7 @@ import java.util.*;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class SystemValidator {
+    private static final String DESCRIPTOR_SUFFIX = ".json";
     private static final List<String> allowedSchemaSuffix = List.of("avdl", "avpr", "avsc");
     private final File systemDirectory;
     private final String messageTypeDirName;
@@ -191,7 +192,7 @@ public class SystemValidator {
 
     private Optional<String> getCommandOrEventName(File subDir) {
         //Check if it has a single descriptor
-        FilenameFilter jsonFilter = new SuffixFileFilter(".json");
+        FilenameFilter jsonFilter = new SuffixFileFilter(DESCRIPTOR_SUFFIX);
         String[] jsonFileNames = subDir.list(jsonFilter);
         if (jsonFileNames == null) {
             return Optional.empty();
@@ -203,7 +204,7 @@ public class SystemValidator {
     }
 
     private IOFileFilter getNotAllowedFilesFilter(String descriptorName) {
-        IOFileFilter allowedFilesFilter = new OrFileFilter(List.of(new RegexFileFilter(descriptorName + ".json"),
+        IOFileFilter allowedFilesFilter = new OrFileFilter(List.of(new RegexFileFilter(descriptorName + DESCRIPTOR_SUFFIX),
                 valueSchemaFilter(descriptorName),
                 keySchemaFilter(descriptorName)));
         return new NotFileFilter(allowedFilesFilter);
@@ -253,7 +254,7 @@ public class SystemValidator {
         File eventDir = new File(messageTypeDirName, eventDescriptorName.toLowerCase());
         ValidationContext subValidationContext = validationContext.toBuilder()
                 .messageTypeDirectory(eventDir)
-                .descriptorFile(new File(eventDir, eventDescriptorName + ".json"))
+                .descriptorFile(new File(eventDir, eventDescriptorName + DESCRIPTOR_SUFFIX))
                 .messageTypeName(eventDescriptorName)
                 .messagingType(MessagingType.EVENT)
                 .build();
@@ -264,7 +265,7 @@ public class SystemValidator {
         File commandDir = new File(commandDirName, commandDescriptorName.toLowerCase());
         ValidationContext subValidationContext = validationContext.toBuilder()
                 .messageTypeDirectory(commandDir)
-                .descriptorFile(new File(commandDir, commandDescriptorName + ".json"))
+                .descriptorFile(new File(commandDir, commandDescriptorName + DESCRIPTOR_SUFFIX))
                 .messageTypeName(commandDescriptorName)
                 .messagingType(MessagingType.COMMAND)
                 .build();

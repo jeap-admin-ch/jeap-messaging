@@ -4,6 +4,7 @@ import ch.admin.bit.jeap.messaging.avro.plugin.compiler.IdlFileParser;
 import ch.admin.bit.jeap.messaging.avro.plugin.compiler.ImportClassLoader;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
+import org.apache.avro.compiler.idl.ParseException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -220,7 +221,7 @@ final class SchemaFileComparator {
 
     @FunctionalInterface
     private interface SchemaReader {
-        SortedMap<String, JsonNode> read(File file, ImportClassLoader imports) throws Exception;
+        SortedMap<String, JsonNode> read(File file, ImportClassLoader imports) throws IOException, ParseException;
     }
 
     private static class SchemaNotReadableException extends RuntimeException {
