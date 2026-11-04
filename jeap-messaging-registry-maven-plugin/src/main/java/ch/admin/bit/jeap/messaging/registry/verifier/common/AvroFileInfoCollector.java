@@ -15,7 +15,7 @@ public class AvroFileInfoCollector {
 
     private final Log log;
 
-    Set<AvroFileInfo> collectAvroFileInfos(Set<String> files, ImportClassLoader importClassLoader) {
+    Set<AvroFileInfo> collectAvroFileInfos(Set<String> files, ImportClassLoader importClassLoader) throws IOException {
         Set<AvroFileInfo> avroFileInfos = new HashSet<>();
         for (String file : files) {
             URL resource = importClassLoader.findResource(file);
@@ -29,7 +29,7 @@ public class AvroFileInfoCollector {
                 Set<AvroTypeInfo> avroTypeInfos = collectAvroTypeInfos(file, inputStream);
                 avroTypeInfos.forEach(avroFileInfo::addDefinedType);
             } catch (IOException e) {
-                throw new IllegalStateException("Error parsing imported file: " + file, e);
+                throw new IOException("Error parsing imported file " + file + ": " + e.getMessage(), e);
             }
             avroFileInfos.add(avroFileInfo);
         }

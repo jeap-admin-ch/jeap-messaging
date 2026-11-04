@@ -102,6 +102,19 @@ class IdlTokensTest {
     }
 
     @Test
+    void declaredTypes_importProtocolKeepsProtocolNamespace() throws IOException {
+        Set<AvroTypeInfo> types = read("""
+                @namespace("ch.admin.test")
+                protocol P {
+                  import protocol "Other.avpr";
+                  record R { string value; }
+                }
+                """).declaredTypes();
+
+        assertThat(types).singleElement().matches(type -> type.isSameType("ch.admin.test.R"));
+    }
+
+    @Test
     void declaredTypes_withoutProtocolNamespace() throws IOException {
         Set<AvroTypeInfo> types = read("protocol P { record R { string value; } }").declaredTypes();
 

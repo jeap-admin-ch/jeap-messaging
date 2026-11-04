@@ -4,8 +4,10 @@ import ch.admin.bit.jeap.messaging.avro.plugin.compiler.ImportClassLoader;
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.nio.file.Files;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -66,6 +68,23 @@ class AvroImportsValidatorTest {
         assertFalse(result.isValid());
         assertThat(result.getErrors().toString()).contains("Unused import");
         assertThat(result.getErrors().toString()).contains("UnusedImportTestUsedInUnion.avdl");
+    }
+
+    @Test
+    void checkUnusedImports_resultNotSuccessful_whenImportedFileIsNotReadable(@TempDir File tmpDir) throws Exception {
+        File file = new File(tmpDir, "Importing.avdl");
+        Files.writeString(file.toPath(), """
+                protocol Importing {
+                  import idl "Broken.avdl";
+                  record Importing { Broken broken; }
+                }
+                """);
+        Files.writeString(tmpDir.toPath().resolve("Broken.avdl"), "protocol Broken { /* unterminated comment");
+
+        ValidationResult result = validator.validate(file, new ImportClassLoader(tmpDir));
+
+        assertFalse(result.isValid());
+        assertThat(result.getErrors().toString()).contains("Error collecting imported files").contains("Broken.avdl");
     }
 
     @Test

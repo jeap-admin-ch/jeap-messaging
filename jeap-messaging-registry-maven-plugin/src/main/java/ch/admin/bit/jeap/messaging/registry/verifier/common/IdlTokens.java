@@ -87,7 +87,7 @@ final class IdlTokens {
                 namespaceAnnotation = unquote(tokens.get(i + 3).image);
                 // continue after the closing parenthesis
                 i += 4;
-            } else if (is(i, IdlConstants.PROTOCOL)) {
+            } else if (is(i, IdlConstants.PROTOCOL) && !is(i - 1, IdlConstants.IMPORT)) {
                 protocolNamespace = namespaceAnnotation == null ? "" : namespaceAnnotation;
                 namespaceAnnotation = null;
             } else if (isTypeDeclaration(i, IdlConstants.RECORD, IdlConstants.ERROR, IdlConstants.ENUM, IdlConstants.FIXED)) {

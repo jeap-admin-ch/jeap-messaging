@@ -71,7 +71,7 @@ public class AvroImportsValidator {
             referencedTypes = collectTypeReferences(filePath);
         } catch (IOException e) {
             log.error("Error collecting imported files for " + filePath, e);
-            return ValidationResult.fail("Error collecting imported files for " + filePath);
+            return ValidationResult.fail("Error collecting imported files for " + filePath + ": " + e.getMessage());
         }
 
         Set<String> unusedImports = determineUnusedImports(importedFiles, referencedTypes);

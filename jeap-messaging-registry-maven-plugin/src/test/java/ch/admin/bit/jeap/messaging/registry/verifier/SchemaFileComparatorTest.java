@@ -128,7 +128,8 @@ class SchemaFileComparatorTest {
                 change("added custom property", s -> s.replace("record TestPayload", "@foo(\"bar\") record TestPayload"), Result.CHANGED),
                 change("changed logical type", s -> s.replace("timestamp_ms created;", "long created;"), Result.CHANGED),
                 change("added type", s -> s.replace("record TestNested", "record Other { string value; }\n  record TestNested"), Result.CHANGED),
-                change("not parsable anymore", s -> s.replace("string id;", "string id"), Result.CHANGED)
+                change("not parsable anymore", s -> s.replace("string id;", "string id"), Result.CHANGED),
+                change("unterminated comment", s -> s.replace("/** The payload */", "/* The payload"), Result.CHANGED)
         );
     }
 
@@ -189,6 +190,17 @@ class SchemaFileComparatorTest {
     void compareAvdl_notParsable_detailContainsParseError() throws IOException {
         File oldFile = write(oldDir, "Test.avdl", SCHEMA);
         File newFile = write(newDir, "Test.avdl", SCHEMA.replace("string id;", "string id"));
+
+        Comparison comparison = compare(oldFile, newFile);
+
+        assertThat(comparison.result()).isEqualTo(Result.CHANGED);
+        assertThat(comparison.detail()).startsWith("cannot parse " + newFile.getAbsolutePath());
+    }
+
+    @Test
+    void compareAvdl_lexerError_detailContainsParseError() throws IOException {
+        File oldFile = write(oldDir, "Test.avdl", SCHEMA);
+        File newFile = write(newDir, "Test.avdl", SCHEMA.replace("/** The payload */", "/* The payload"));
 
         Comparison comparison = compare(oldFile, newFile);
 
