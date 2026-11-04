@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [19.30.0] - 2026-11-04
+
+### Changed
+- Message type registry verifier compares existing schema files by the schema they define: comments,
+  documentation and formatting may change, schema changes are still rejected
+- Unused-import check of the message type registry verifier no longer depends on comments or formatting
+- Message type registry verifier reports changed common files and changed message type schemas in one run
+
 ## [19.29.0] - 2026-11-03
 
 ### Changed

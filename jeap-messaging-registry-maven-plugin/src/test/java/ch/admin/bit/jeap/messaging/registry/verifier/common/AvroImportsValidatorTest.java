@@ -40,6 +40,25 @@ class AvroImportsValidatorTest {
     }
 
     @Test
+    void checkUnusedImports_resultSuccessful_whenUsedImportWithUnusualFormatting() throws Exception {
+        // annotation before 'record', tab and comment between 'record' and its name, multi-line comment in the body,
+        // type and field name on separate lines
+        File file = new File("src/test/resources/unittest/UnusedImportTestUsedWithUnusualFormatting.avdl");
+
+        ValidationResult result = validator.validate(file, new ImportClassLoader(new File("src/test/resources/unittest/")));
+        assertTrue(result.isValid(), String.join(",", result.getErrors()));
+    }
+
+    @Test
+    void checkUnusedImports_resultNotSuccessful_whenImportedTypeIsOnlyMentionedInComments() throws Exception {
+        File file = new File("src/test/resources/unittest/UnusedImportTestUsedOnlyInComments.avdl");
+
+        ValidationResult result = validator.validate(file, new ImportClassLoader(new File("src/test/resources/unittest/")));
+        assertFalse(result.isValid());
+        assertThat(result.getErrors().toString()).contains("Unused imports").contains("UnusedImportTestUnused.avdl");
+    }
+
+    @Test
     void checkUnusedImports_resultNotSuccessful_whenUnusedImport() throws Exception {
         File file = new File("src/test/resources/unittest/UnusedImportTestUnused.avdl");
 

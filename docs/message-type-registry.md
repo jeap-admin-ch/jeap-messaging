@@ -17,6 +17,26 @@ it. `/schema` holds JSON schemas for descriptors (usable in the IDE). Shared rec
 `/descriptor/<system>/_common` or `/descriptor/_common`; a record checked into master must never be
 changed or deleted (create a new record with a new name, e.g. a version suffix).
 
+## Changing existing schemas
+
+The verification build compares every schema file that already exists on master with its new content.
+The check compares the schema the file defines, not its text: both versions are parsed, and imports are
+resolved against their own branch. You may change:
+
+- comments (`//`, `/* */`) and documentation comments (`/** */`)
+- whitespace, indentation, line breaks and line endings
+- the order of imports and of type declarations
+
+Any change to the schema itself is rejected. That covers names, namespaces, fields and their order, types,
+logical types, defaults, aliases, enum symbols and their order, enum defaults and custom properties. It
+also covers changes that come in through an imported type. The error names the changed types.
+
+Such changes don't reach artifacts that were already published, because only new versions are compiled.
+Changed documentation of a `_common` type ships with the next common library of that system. With
+`autoRegisterSchema=true` (the default), this registers a new, compatible schema version in the Kafka
+Schema Registry on first send. For links to further documentation, prefer the descriptor's
+`documentationUrl`: descriptor fields outside `versions` can be changed at any time.
+
 ## Descriptor data model
 
 Top-level descriptor fields:

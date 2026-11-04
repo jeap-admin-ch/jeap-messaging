@@ -1,0 +1,13 @@
+@namespace("ch.admin.test")
+protocol UnusedImportTestUsedWithUnusualFormatting {
+  import idl "UnusedImportTestUnused.avdl"; /* the import is used below */
+
+  @aliases(["ch.admin.test.OldName"]) record	/* a comment between keyword and name */ UnusedImportTestUsedWithUnusualFormattingEvent
+  {
+    /* a multi-line comment
+       whose second line does not start with an asterisk */
+    UnusedImportTestUnusedReferences
+        references;
+    string domainEventVersion;
+  }
+}

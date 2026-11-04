@@ -1,0 +1,11 @@
+@namespace("ch.admin.test")
+protocol UnusedImportTestUsedOnlyInComments {
+  import idl "UnusedImportTestUnused.avdl";
+
+  record UnusedImportTestUsedOnlyInCommentsEvent {
+    string domainEventVersion; // was UnusedImportTestUnusedReferences
+    /* UnusedImportTestUnusedPayload payload; */
+    /** Documentation mentioning UnusedImportTestUnusedEvent */
+    string other;
+  }
+}

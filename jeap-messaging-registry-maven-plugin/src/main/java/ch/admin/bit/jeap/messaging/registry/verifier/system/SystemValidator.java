@@ -42,16 +42,19 @@ public class SystemValidator {
                 systemValidator.checkSubDirs(MessagingType.EVENT),
                 systemValidator.checkSubDirs(MessagingType.COMMAND),
                 systemValidator.checkCommonSystemDir(),
-                FileNotChangedValidator.noMessageTypeDeleted(validationContext),
-                FileNotChangedValidator.commonSystemDirNoFilesChanged(validationContext)
+                FileNotChangedValidator.noMessageTypeDeleted(validationContext)
         );
+        ValidationResult commonFilesNotChanged = FileNotChangedValidator.commonSystemDirNoFilesChanged(validationContext);
 
         //If dir is not valid itself, it makes no sense to check its content
         if (!result.isValid()) {
-            return result;
+            return ValidationResult.merge(result, commonFilesNotChanged);
         }
 
+        // Changed common files do not prevent checking the message types, so that all changed files of a
+        // system are reported at once
         return ValidationResult.merge(
+                commonFilesNotChanged,
                 systemValidator.checkEventDescriptors(),
                 systemValidator.checkCommandDescriptors()
         );

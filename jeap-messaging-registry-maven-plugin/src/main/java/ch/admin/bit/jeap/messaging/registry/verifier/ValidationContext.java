@@ -12,6 +12,10 @@ import java.io.File;
 @Builder(toBuilder = true)
 public class ValidationContext {
     ImportClassLoader importClassLoader;
+    /**
+     * Resolves imports against the descriptor directory of the trunk branch
+     */
+    ImportClassLoader oldImportClassLoader;
     File descriptorDir;
     File oldDescriptorDir;
     String systemName;

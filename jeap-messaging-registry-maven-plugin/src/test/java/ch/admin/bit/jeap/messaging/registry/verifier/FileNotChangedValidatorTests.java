@@ -12,6 +12,9 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.io.IOException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+
 class FileNotChangedValidatorTests {
     private File oldCommon;
     private File newCommon;
@@ -244,6 +247,98 @@ class FileNotChangedValidatorTests {
         ValidationResult validationResult = FileNotChangedValidator.noExistingSchemasChanged(validationContext);
 
         Assertions.assertFalse(validationResult.isValid(), "Cannot change schema");
+    }
+
+    private static final String COMMON_TYPE = """
+            @namespace("ch.admin.test")
+            protocol TestEnumProtocol {
+              // see: https://example.com/old
+              enum TestEnum {
+                VALUE1, VALUE2
+              }
+            }
+            """;
+
+    private static final String COMMON_TYPE_COMMENT_AND_FORMATTING_CHANGED = """
+            @namespace("ch.admin.test") protocol TestEnumProtocol {
+            \t/** see: https://example.com/new */
+            \tenum TestEnum { VALUE1, VALUE2 }
+            }
+            """;
+
+    private static final String COMMON_TYPE_SCHEMA_CHANGED = COMMON_TYPE.replace("VALUE2", "VALUE3");
+
+    private static final String EVENT_SCHEMA = """
+            @namespace("ch.admin.test")
+            protocol TestEventProtocol {
+              import idl "ch.admin.test.TestEnum.avdl";
+
+              record TestEvent {
+                ch.admin.test.TestEnum value; // see https://example.com/old
+              }
+            }
+            """;
+
+    @Test
+    void commonSystemFoldersAvroFileCommentsAndFormattingChanged() throws IOException {
+        FileUtils.write(new File(oldCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE, UTF_8);
+        FileUtils.write(new File(newCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE_COMMENT_AND_FORMATTING_CHANGED, UTF_8);
+
+        ValidationResult validationResult = FileNotChangedValidator.commonSystemDirNoFilesChanged(validationContext);
+
+        Assertions.assertTrue(validationResult.isValid(), String.join(",", validationResult.getErrors()));
+    }
+
+    @Test
+    void commonSystemFoldersAvroFileSchemaChanged() throws IOException {
+        FileUtils.write(new File(oldCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE, UTF_8);
+        FileUtils.write(new File(newCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE_SCHEMA_CHANGED, UTF_8);
+
+        ValidationResult validationResult = FileNotChangedValidator.commonSystemDirNoFilesChanged(validationContext);
+
+        Assertions.assertFalse(validationResult.isValid(), "Cannot change schema of a common type");
+        assertThat(validationResult.getErrors()).singleElement().asString()
+                .contains("ch.admin.test.TestEnum.avdl has changed compared to test")
+                .contains("(ch.admin.test.TestEnum changed)");
+    }
+
+    @Test
+    void commonFoldersAvroFileCommentsAndFormattingChanged() throws IOException {
+        FileUtils.write(new File(oldCommon, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE, UTF_8);
+        FileUtils.write(new File(newCommon, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE_COMMENT_AND_FORMATTING_CHANGED, UTF_8);
+
+        ValidationResult validationResult = FileNotChangedValidator.commonRootDirNotChanged(
+                validationContext.toBuilder().systemName(null).build());
+
+        Assertions.assertTrue(validationResult.isValid(), String.join(",", validationResult.getErrors()));
+    }
+
+    @Test
+    void schemaCommentsChanged_importsResolvedFromCommonSystemFolder() throws IOException {
+        FileUtils.write(new File(oldCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE, UTF_8);
+        FileUtils.write(new File(newCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE, UTF_8);
+        FileUtils.write(new File(oldEvent, "TestEvent_v1.0.0.avdl"), EVENT_SCHEMA, UTF_8);
+        FileUtils.write(new File(newEvent, "TestEvent_v1.0.0.avdl"), EVENT_SCHEMA.replace("old", "new"), UTF_8);
+
+        ValidationResult validationResult = FileNotChangedValidator.noExistingSchemasChanged(validationContext);
+
+        Assertions.assertTrue(validationResult.isValid(), String.join(",", validationResult.getErrors()));
+    }
+
+    @Test
+    void schemaChanged_importedCommonTypeChanged() throws IOException {
+        FileUtils.write(new File(oldCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE, UTF_8);
+        FileUtils.write(new File(newCommonSystem, "ch.admin.test.TestEnum.avdl"), COMMON_TYPE_SCHEMA_CHANGED, UTF_8);
+        FileUtils.write(new File(oldEvent, "TestEvent_v1.0.0.avdl"), EVENT_SCHEMA, UTF_8);
+        FileUtils.write(new File(newEvent, "TestEvent_v1.0.0.avdl"), EVENT_SCHEMA.replace("old", "new"), UTF_8);
+
+        ValidationResult validationResult = FileNotChangedValidator.noExistingSchemasChanged(validationContext);
+
+        Assertions.assertFalse(validationResult.isValid(), "The schema changes if an imported type changes");
+        assertThat(validationResult.getErrors()).singleElement().asString()
+                .contains("TestEvent_v1.0.0.avdl has changed")
+                .contains("ch.admin.test.TestEnum changed")
+                .contains("ch.admin.test.TestEvent changed");
     }
 
     @Test

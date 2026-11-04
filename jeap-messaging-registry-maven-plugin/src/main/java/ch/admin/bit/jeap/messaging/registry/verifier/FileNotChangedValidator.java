@@ -1,11 +1,11 @@
 package ch.admin.bit.jeap.messaging.registry.verifier;
 
+import ch.admin.bit.jeap.messaging.avro.plugin.compiler.ImportClassLoader;
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.MessageTypeRegistryConstants;
 import ch.admin.bit.jeap.messaging.avro.plugin.validator.ValidationResult;
 import ch.admin.bit.jeap.messaging.registry.dto.DescriptorDto;
 import ch.admin.bit.jeap.messaging.registry.dto.VersionDto;
 import ch.admin.bit.jeap.messaging.registry.helper.MessagingType;
-import org.apache.commons.io.FileUtils;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -67,7 +67,7 @@ public class FileNotChangedValidator {
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
 
         ValidationResult filesChanged = Arrays.stream(Objects.requireNonNullElse(oldCommonRootDir.list(), new String[0]))
-                .map(filename -> fileNotChanged(oldCommonRootDir, newCommonRootDir, filename, validationContext.getTrunkBranchName()))
+                .map(filename -> fileNotChanged(oldCommonRootDir, newCommonRootDir, filename, validationContext))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
 
         return ValidationResult.merge(filesCreated, filesChanged);
@@ -89,7 +89,7 @@ public class FileNotChangedValidator {
         }
 
         return Arrays.stream(Objects.requireNonNullElse(oldCommonSystemDir.list(), new String[0]))
-                .map(filename -> fileNotChanged(oldCommonSystemDir, newCommonSystemDir, filename, validationContext.getTrunkBranchName()))
+                .map(filename -> fileNotChanged(oldCommonSystemDir, newCommonSystemDir, filename, validationContext))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
     }
 
@@ -103,7 +103,7 @@ public class FileNotChangedValidator {
         }
 
         return Arrays.stream(Objects.requireNonNullElse(oldEventDir.list(), new String[0]))
-                .map(filename -> fileNotChanged(oldEventDir, newEventDir, filename, validationContext.getTrunkBranchName()))
+                .map(filename -> fileNotChanged(oldEventDir, newEventDir, filename, validationContext))
                 .reduce(ValidationResult.ok(), ValidationResult::merge);
     }
 
@@ -118,9 +118,10 @@ public class FileNotChangedValidator {
         return ValidationResult.ok();
     }
 
-    private static ValidationResult fileNotChanged(File oldFolder, File newFolder, String filename, String trunkBranchName) {
+    private static ValidationResult fileNotChanged(File oldFolder, File newFolder, String filename, ValidationContext validationContext) {
         File newFile = new File(newFolder, filename);
         File oldFile = new File(oldFolder, filename);
+        String trunkBranchName = validationContext.getTrunkBranchName();
 
         if (!newFile.exists()) {
             String message = String.format("File %s exists in %s but does not exist in this branch. " +
@@ -129,22 +130,63 @@ public class FileNotChangedValidator {
         }
 
         if (!filename.endsWith("json")) {
-            return schemaFileNotChanged(oldFile, newFile, trunkBranchName);
+            return schemaFileNotChanged(oldFile, newFile, validationContext);
         } else {
             return alreadyDefinedVersionInDescriptorFileNotChanged(oldFile, newFile);
         }
     }
 
-    private static ValidationResult schemaFileNotChanged(File oldFile, File newFile, String trunkBranchName) {
+    /**
+     * Existing schema files must define the same schema as on the trunk branch. Comments, documentation and
+     * formatting may change, see {@link SchemaFileComparator}.
+     */
+    private static ValidationResult schemaFileNotChanged(File oldFile, File newFile, ValidationContext validationContext) {
+        String trunkBranchName = validationContext.getTrunkBranchName();
+        SchemaFileComparator.Comparison comparison;
         try {
-            if (FileUtils.checksumCRC32(newFile) != FileUtils.checksumCRC32(oldFile)) {
-                return ValidationResult.fail(String.format("File %s has changed compared to %s. " +
-                        "You are not allowed to change this file", newFile.getAbsolutePath(), trunkBranchName));
-            }
+            comparison = SchemaFileComparator.compare(
+                    oldFile, () -> importClassLoader(validationContext, true),
+                    newFile, () -> importClassLoader(validationContext, false));
         } catch (IOException e) {
-            return ValidationResult.fail(String.format("Could not compute checksum: %s", e.getMessage()));
+            return ValidationResult.fail(String.format("Could not compare file %s with %s: %s",
+                    newFile.getAbsolutePath(), trunkBranchName, e.getMessage()));
         }
-        return ValidationResult.ok();
+
+        return switch (comparison.result()) {
+            case IDENTICAL -> ValidationResult.ok();
+            case EQUIVALENT -> {
+                if (validationContext.getLog() != null) {
+                    validationContext.getLog().info(String.format("File %s differs from %s only in comments, " +
+                            "documentation or formatting", newFile.getAbsolutePath(), trunkBranchName));
+                }
+                yield ValidationResult.ok();
+            }
+            case CHANGED -> ValidationResult.fail(String.format("File %s has changed compared to %s. " +
+                    "You are not allowed to change this file%s. Only comments, documentation and formatting of an " +
+                    "existing schema may be changed, create a new version or a new type instead",
+                    newFile.getAbsolutePath(), trunkBranchName,
+                    comparison.detail() == null ? "" : " (" + comparison.detail() + ")"));
+        };
+    }
+
+    /**
+     * Resolves imports the same way as the compiler does: from the descriptor directory, the runtime classpath
+     * and the common directories. Imports of the old file are resolved against the trunk branch, imports of
+     * the new file against the current branch.
+     */
+    private static ImportClassLoader importClassLoader(ValidationContext validationContext, boolean old) {
+        File descriptorDir = descriptorDir(validationContext, old);
+        File commonRootDir = new File(descriptorDir, MessageTypeRegistryConstants.COMMON_DIR_NAME);
+        File commonSystemDir = validationContext.getSystemName() == null ?
+                commonRootDir :
+                new File(systemDir(validationContext, old), MessageTypeRegistryConstants.COMMON_DIR_NAME);
+        ImportClassLoader rootImportClassLoader = old ?
+                validationContext.getOldImportClassLoader() :
+                validationContext.getImportClassLoader();
+        if (rootImportClassLoader == null) {
+            rootImportClassLoader = new ImportClassLoader();
+        }
+        return new ImportClassLoader(rootImportClassLoader, commonRootDir, commonSystemDir);
     }
 
     private static ValidationResult alreadyDefinedVersionInDescriptorFileNotChanged(File oldFile, File newFile){

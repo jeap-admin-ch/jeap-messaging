@@ -97,6 +97,55 @@ class MessageTypeRegistryVerifierCompatibilityMojoTest {
                 .hasMessageContaining("The new message type TestTestCommand in version 2.0.0 is missing the mandatory 'compatibilityMode' attribute");
     }
 
+    @Test
+    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
+    void commentsAndFormattingOfExistingSchemasChanged(Mojo target, @TempDir File tmpDir) throws Exception {
+        String gitUrl = createTestRepoFrom(Path.of("src/test/resources/commonData"));
+        FileUtils.copyDirectory(new File(RESOURCES_DIR, "commonData"), tmpDir);
+        Path commonDir = tmpDir.toPath().resolve("descriptor/test/_common");
+        Path eventDir = tmpDir.toPath().resolve("descriptor/test/event/testtestevent");
+        replaceInFile(commonDir.resolve("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestEnum.avdl"),
+                "enum TestEnum {", "// see https://example.com\n  /** A test enum */\n  enum\tTestEnum\n  {");
+        replaceInFile(commonDir.resolve("ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestTestEventKey.avdl"),
+                "\n", "\r\n");
+        replaceInFile(eventDir.resolve("TestTestEvent_v1.1.0.avdl"),
+                "record TestReferences {", "/* references */ record   TestReferences {");
+
+        pointToTempDir(target, tmpDir);
+        ((MessageTypeRegistryVerifierMojo) target).setGitUrl(gitUrl);
+
+        assertDoesNotThrow(target::execute);
+    }
+
+    @Test
+    @InjectMojo(goal = "registry", pom = "src/test/resources/valid/pom.xml")
+    void existingSchemasChanged_allChangedFilesReported(Mojo target, @TempDir File tmpDir) throws Exception {
+        String gitUrl = createTestRepoFrom(Path.of("src/test/resources/commonData"));
+        FileUtils.copyDirectory(new File(RESOURCES_DIR, "commonData"), tmpDir);
+        replaceInFile(tmpDir.toPath().resolve("descriptor/test/_common/ch.admin.bit.jeap.domainevent.registry.verifier.testevent.TestReference.avdl"),
+                "string id;", "string id;\n    string description;");
+        replaceInFile(tmpDir.toPath().resolve("descriptor/test/event/testtestevent/TestTestEvent_v1.1.0.avdl"),
+                "TestReference test;", "TestReference other;");
+
+        pointToTempDir(target, tmpDir);
+        ((MessageTypeRegistryVerifierMojo) target).setGitUrl(gitUrl);
+
+        // A changed common file does not hide the changed message type schema
+        assertThatThrownBy(target::execute)
+                .hasMessageContaining("(2 errors)")
+                .hasMessageContaining("TestReference.avdl has changed compared to master")
+                .hasMessageContaining("TestTestEvent_v1.1.0.avdl has changed compared to master");
+    }
+
+    private static void replaceInFile(Path file, String target, String replacement) throws IOException {
+        String content = Files.readString(file);
+        String changed = content.replace(target, replacement);
+        if (changed.equals(content)) {
+            throw new IllegalArgumentException("'" + target + "' not found in " + file);
+        }
+        Files.writeString(file, changed);
+    }
+
     private String createTestRepoFrom(Path copyFrom) throws Exception {
         Path repoDir = Files.createTempDirectory("test-repo");
         Git repo = initGitRepo(repoDir);

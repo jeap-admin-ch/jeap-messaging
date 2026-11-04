@@ -54,12 +54,16 @@ public class MessageTypeRegistryVerifierMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
+        File oldDescriptorDirectory = getFolderToCompareTo();
         try (ImportClassLoader importClassLoader = new ImportClassLoader(getDescriptorDirectory(),
-                getProject().getRuntimeClasspathElements())) {
+                getProject().getRuntimeClasspathElements());
+             ImportClassLoader oldImportClassLoader = new ImportClassLoader(oldDescriptorDirectory,
+                     getProject().getRuntimeClasspathElements())) {
             ValidationContext validationContext = ValidationContext.builder()
                     .descriptorDir(descriptorDirectory)
-                    .oldDescriptorDir(getFolderToCompareTo())
+                    .oldDescriptorDir(oldDescriptorDirectory)
                     .importClassLoader(importClassLoader)
+                    .oldImportClassLoader(oldImportClassLoader)
                     .failOnUnusedImports(failOnUnusedImports)
                     .log(getLog())
                     .trunkBranchName(trunkBranchName)
