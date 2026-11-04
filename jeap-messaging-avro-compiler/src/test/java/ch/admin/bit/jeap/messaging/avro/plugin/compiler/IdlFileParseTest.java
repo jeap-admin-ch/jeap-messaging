@@ -3,13 +3,16 @@ package ch.admin.bit.jeap.messaging.avro.plugin.compiler;
 import org.apache.avro.Protocol;
 import org.apache.avro.compiler.idl.ParseException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IdlFileParseTest {
     @Test
@@ -26,5 +29,16 @@ class IdlFileParseTest {
         final File testDirectory = new File("src/test/resources/unittest/");
         IdlFileParser target = new IdlFileParser(new ImportClassLoader());
         assertThrows(ParseException.class, () -> target.parseIdlFile(new File(testDirectory, "valid-idl.avdl")));
+    }
+
+    @Test
+    void lexicalError_throwsParseException(@TempDir File tmpDir) throws IOException {
+        File file = new File(tmpDir, "unterminated-comment.avdl");
+        Files.writeString(file.toPath(), "protocol P { /* unterminated comment");
+        IdlFileParser target = new IdlFileParser(new ImportClassLoader());
+
+        ParseException exception = assertThrows(ParseException.class, () -> target.parseIdlFile(file));
+
+        assertTrue(exception.getMessage().startsWith(file.getAbsolutePath()), exception.getMessage());
     }
 }

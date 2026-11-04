@@ -13,6 +13,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Unused-import check of the message type registry verifier no longer depends on comments or formatting
 - Message type registry verifier reports changed common files and changed message type schemas in one run
 
+### Fixed
+- Lexical errors in Avro IDL files (e.g. an unterminated comment) are reported as parse errors instead of aborting
+  the build
+
 ## [19.29.0] - 2026-11-03
 
 ### Changed

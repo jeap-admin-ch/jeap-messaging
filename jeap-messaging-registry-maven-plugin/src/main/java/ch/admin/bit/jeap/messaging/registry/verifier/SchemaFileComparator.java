@@ -5,7 +5,6 @@ import ch.admin.bit.jeap.messaging.avro.plugin.compiler.ImportClassLoader;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.idl.ParseException;
-import org.apache.avro.compiler.idl.TokenMgrError;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -115,9 +114,8 @@ final class SchemaFileComparator {
     private static SortedMap<String, JsonNode> readSchema(SchemaReader reader, File file, ImportClassLoader imports) {
         try {
             return reader.read(file, imports);
-        } catch (Exception | TokenMgrError e) {
-            // Fail closed: a file that cannot be parsed is never considered unchanged. The IDL lexer reports invalid
-            // input (e.g. an unterminated comment) with an Error, not an Exception.
+        } catch (Exception e) {
+            // Fail closed: a file that cannot be parsed is never considered unchanged
             throw new SchemaNotReadableException("cannot parse %s: %s".formatted(file.getAbsolutePath(), e.getMessage()));
         }
     }
