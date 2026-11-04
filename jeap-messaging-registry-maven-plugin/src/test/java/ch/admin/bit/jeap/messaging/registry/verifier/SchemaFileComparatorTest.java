@@ -129,7 +129,8 @@ class SchemaFileComparatorTest {
                 change("changed logical type", s -> s.replace("timestamp_ms created;", "long created;"), Result.CHANGED),
                 change("added type", s -> s.replace("record TestNested", "record Other { string value; }\n  record TestNested"), Result.CHANGED),
                 change("not parsable anymore", s -> s.replace("string id;", "string id"), Result.CHANGED),
-                change("unterminated comment", s -> s.replace("/** The payload */", "/* The payload"), Result.CHANGED)
+                change("unterminated comment", s -> s.replace("/** The payload */", "/* The payload"), Result.CHANGED),
+                change("invalid unicode escape in comment", s -> s.replace("https://example.com/old", "C:\\users\\test"), Result.CHANGED)
         );
     }
 

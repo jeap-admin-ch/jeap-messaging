@@ -24,18 +24,29 @@ public class IdlFileParser {
      * @return The parsed Protocol
      * @throws IOException    If the input file cannot be read
      * @throws ParseException If the input file cannot be parsed, including lexical errors such as an unterminated
-     *                        comment
+     *                        comment or an invalid unicode escape
      */
     public Protocol parseIdlFile(File src) throws IOException, ParseException {
         try (Idl parser = new Idl(src, classLoader)) {
             Protocol p = parser.CompilationUnit();
             String json = p.toString(true);
             return Protocol.parse(json);
-        } catch (TokenMgrError e) {
-            // Avro's lexer reports invalid input with an Error, which callers handling parse failures would not catch
+        } catch (Error e) { // NOSONAR only lexical errors are converted, see isLexicalError
+            if (!isLexicalError(e)) {
+                throw e;
+            }
             ParseException parseException = new ParseException(src.getAbsolutePath() + ": " + e.getMessage());
             parseException.initCause(e);
             throw parseException;
         }
+    }
+
+    /**
+     * Avro's IDL lexer reports invalid input with an {@link Error}, which callers handling parse failures would not
+     * catch: a {@link TokenMgrError} for invalid tokens such as an unterminated comment, and a plain {@link Error} from
+     * {@code JavaCharStream} for an invalid unicode escape, which is decoded even in comments (e.g. a Windows path).
+     */
+    public static boolean isLexicalError(Error error) {
+        return error instanceof TokenMgrError || error.getClass() == Error.class;
     }
 }

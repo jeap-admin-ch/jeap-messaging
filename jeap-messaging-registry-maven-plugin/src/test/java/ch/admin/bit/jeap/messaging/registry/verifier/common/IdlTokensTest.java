@@ -135,6 +135,13 @@ class IdlTokensTest {
                 .hasMessageStartingWith("Invalid Avro IDL");
     }
 
+    @Test
+    void read_invalidUnicodeEscapeInComment_throwsIOException() {
+        assertThatThrownBy(() -> read("protocol P { // see C:\\users\\test\n }"))
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("Invalid escape character");
+    }
+
     private static void assertDeclared(Set<AvroTypeInfo> types, String fullName) {
         assertThat(types).as("declares %s", fullName).anyMatch(type -> type.isSameType(fullName));
     }

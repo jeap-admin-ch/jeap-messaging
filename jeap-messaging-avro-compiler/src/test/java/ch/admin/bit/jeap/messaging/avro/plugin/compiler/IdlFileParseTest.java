@@ -41,4 +41,15 @@ class IdlFileParseTest {
 
         assertTrue(exception.getMessage().startsWith(file.getAbsolutePath()), exception.getMessage());
     }
+
+    @Test
+    void invalidUnicodeEscapeInComment_throwsParseException(@TempDir File tmpDir) throws IOException {
+        File file = new File(tmpDir, "invalid-escape.avdl");
+        Files.writeString(file.toPath(), "protocol P {\n  // see C:\\users\\test\n  record R { string value; }\n}");
+        IdlFileParser target = new IdlFileParser(new ImportClassLoader());
+
+        ParseException exception = assertThrows(ParseException.class, () -> target.parseIdlFile(file));
+
+        assertTrue(exception.getMessage().contains("Invalid escape character"), exception.getMessage());
+    }
 }

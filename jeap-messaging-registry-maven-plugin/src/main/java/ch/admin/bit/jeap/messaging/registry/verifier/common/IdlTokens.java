@@ -1,10 +1,10 @@
 package ch.admin.bit.jeap.messaging.registry.verifier.common;
 
+import ch.admin.bit.jeap.messaging.avro.plugin.compiler.IdlFileParser;
 import org.apache.avro.compiler.idl.IdlConstants;
 import org.apache.avro.compiler.idl.IdlTokenManager;
 import org.apache.avro.compiler.idl.JavaCharStream;
 import org.apache.avro.compiler.idl.Token;
-import org.apache.avro.compiler.idl.TokenMgrError;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +38,10 @@ final class IdlTokens {
             for (Token token = tokenManager.getNextToken(); token.kind != IdlConstants.EOF; token = tokenManager.getNextToken()) {
                 tokens.add(token);
             }
-        } catch (TokenMgrError e) {
+        } catch (Error e) { // NOSONAR only lexical errors are converted
+            if (!IdlFileParser.isLexicalError(e)) {
+                throw e;
+            }
             throw new IOException("Invalid Avro IDL: " + e.getMessage(), e);
         }
         return new IdlTokens(tokens);

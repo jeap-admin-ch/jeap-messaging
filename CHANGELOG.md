@@ -14,8 +14,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Message type registry verifier reports changed common files and changed message type schemas in one run
 
 ### Fixed
-- Lexical errors in Avro IDL files (e.g. an unterminated comment) are reported as parse errors instead of aborting
-  the build
+- Lexical errors in Avro IDL files (e.g. an unterminated comment or an invalid unicode escape such as a Windows path
+  in a comment) are reported as parse errors instead of aborting the build
 
 ## [19.29.0] - 2026-11-03
 
