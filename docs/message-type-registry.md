@@ -99,9 +99,8 @@ keeps to its predecessor (see [Message evolution](message-evolution.md)):
 
 ## Maintenance
 
-Check out, create a branch, commit, open a PR to master; the verification pipeline (also runnable
-locally with `mvn verify`) must pass before merge. Each new version needs a migration strategy (see
-[Message evolution](message-evolution.md)).
+For the steps to add a message type or a new version of one, see
+[Updating the message type registry](how-tos/update-message-type-registry.md).
 
 ## Java bindings
 
@@ -116,6 +115,7 @@ Registry is the **runtime** home; jeap-messaging registers runtime schemas autom
 
 ## Related
 
+- [Updating the message type registry](how-tos/update-message-type-registry.md)
 - [Message evolution](message-evolution.md)
 - [Defining messages](defining-messages.md)
 - [Message contracts](message-contracts.md)

@@ -19,9 +19,34 @@ For the transactional outbox pattern see the separate
 
 Start with [Getting started](docs/getting-started.md), then follow the links below.
 
+### How-to guides
+
+Task-oriented steps for one goal at a time.
+
+All but the first four live under [docs/how-tos/](docs/how-tos/index.md), which is also its own
+nested section in the site navigation.
+
+| Task                                                     | File                                                                                             |
+|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| Getting started (add the dependency, produce & consume) | [docs/getting-started.md](docs/getting-started.md)                                              |
+| Publishing messages                                      | [docs/publishing-messages.md](docs/publishing-messages.md)                                       |
+| Consuming messages                                       | [docs/consuming-messages.md](docs/consuming-messages.md)                                         |
+| Encrypting messages                                       | [docs/encrypting-messages.md](docs/encrypting-messages.md)                                       |
+| Integrating Kafka into a service (end-to-end checklist)  | [docs/how-tos/kafka-how-to.md](docs/how-tos/kafka-how-to.md)                                     |
+| Declaring message contracts                              | [docs/how-tos/declare-message-contracts.md](docs/how-tos/declare-message-contracts.md)           |
+| Updating the message type registry                       | [docs/how-tos/update-message-type-registry.md](docs/how-tos/update-message-type-registry.md)     |
+| Using the idempotent message handler                     | [docs/how-tos/use-idempotent-message-handler.md](docs/how-tos/use-idempotent-message-handler.md) |
+| Configuring error handling                                | [docs/how-tos/configure-error-handling.md](docs/how-tos/configure-error-handling.md)             |
+| Enabling message signing                                  | [docs/how-tos/enable-message-signing.md](docs/how-tos/enable-message-signing.md)                 |
+| Switching to AWS Glue and MSK IAM authentication          | [docs/how-tos/switch-to-aws-glue-and-msk-iam.md](docs/how-tos/switch-to-aws-glue-and-msk-iam.md) |
+| Evolving a self-consumed message type                     | [docs/how-tos/evolve-self-consumed-message-type.md](docs/how-tos/evolve-self-consumed-message-type.md) |
+
+### Reference & concepts
+
+How things work and what can be configured.
+
 | Topic                                                   | File                                                                             |
 |---------------------------------------------------------|----------------------------------------------------------------------------------|
-| Getting started (add the dependency, produce & consume) | [docs/getting-started.md](docs/getting-started.md)                               |
 | Architecture & three-layer model                        | [docs/architecture.md](docs/architecture.md)                                     |
 | Choosing dependencies                                   | [docs/dependencies.md](docs/dependencies.md)                                     |
 | Configuration reference (`jeap.messaging.kafka.*`)      | [docs/configuration.md](docs/configuration.md)                                   |
@@ -29,20 +54,16 @@ Start with [Getting started](docs/getting-started.md), then follow the links bel
 | Defining messages in Avro                               | [docs/defining-messages.md](docs/defining-messages.md)                           |
 | Avro Maven plugin                                       | [docs/avro-maven-plugin.md](docs/avro-maven-plugin.md)                           |
 | Avro class whitelist                                    | [docs/avro-class-security.md](docs/avro-class-security.md)                       |
-| Schema evolution                                        | [docs/message-evolution.md](docs/message-evolution.md)                           |
 | Message Type Registry                                   | [docs/message-type-registry.md](docs/message-type-registry.md)                   |
-| Publishing messages                                     | [docs/publishing-messages.md](docs/publishing-messages.md)                       |
-| Consuming messages                                      | [docs/consuming-messages.md](docs/consuming-messages.md)                         |
-| Kafka how-to (integrate Kafka into a service)           | [docs/kafka-how-to.md](docs/kafka-how-to.md)                                     |
-| Kafka topics & client configuration                     | [docs/kafka-topics-and-configuration.md](docs/kafka-topics-and-configuration.md) |
+| Schema evolution                                        | [docs/message-evolution.md](docs/message-evolution.md)                           |
 | Message contracts & schema upload                       | [docs/message-contracts.md](docs/message-contracts.md)                           |
+| Kafka topics & client configuration                     | [docs/kafka-topics-and-configuration.md](docs/kafka-topics-and-configuration.md) |
 | Idempotent message handler                              | [docs/idempotent-message-handler.md](docs/idempotent-message-handler.md)         |
 | Error handling                                          | [docs/error-handling.md](docs/error-handling.md)                                 |
 | Confluent Schema Registry                               | [docs/schema-registry-confluent.md](docs/schema-registry-confluent.md)           |
 | AWS Glue Schema Registry                                | [docs/schema-registry-aws-glue.md](docs/schema-registry-aws-glue.md)             |
 | AWS MSK IAM authentication                              | [docs/aws-msk-iam-authentication.md](docs/aws-msk-iam-authentication.md)         |
 | Signing messages                                        | [docs/signing-messages.md](docs/signing-messages.md)                             |
-| Encrypting messages                                     | [docs/encrypting-messages.md](docs/encrypting-messages.md)                       |
 | Message filtering                                       | [docs/message-filtering.md](docs/message-filtering.md)                           |
 | Health indicators                                       | [docs/health-indicators.md](docs/health-indicators.md)                           |
 | Testing                                                 | [docs/testing.md](docs/testing.md)                                               |

@@ -2,7 +2,7 @@
 
 This page shows how to add jEAP Messaging to a Spring Boot service and produce and consume a message
 over Kafka. For the bigger picture see [Architecture](architecture.md); for an end-to-end checklist
-when wiring Kafka into a new service see the [Kafka how-to](kafka-how-to.md).
+when wiring Kafka into a new service see the [Kafka how-to](how-tos/kafka-how-to.md).
 
 ## 1. Add the dependency
 
@@ -50,12 +50,16 @@ jeap:
 ```
 
 `systemName` and `errorTopicName` are required for the [error handler](error-handling.md) to report
-failures; `serviceName` defaults to `${spring.application.name}`.
+failures (`serviceName` defaults to `${spring.application.name}`) — see
+[Configuring error handling](how-tos/configure-error-handling.md) for the rest of this service's setup
+(topic permissions, the Error Handling Service).
 
 ## 4. Declare message contracts
 
-Every produced and consumed message type needs a [message contract](message-contracts.md), declared
-with an annotation anywhere in the service (typically on the `@SpringBootApplication` class):
+Every produced and consumed message type needs a [message contract](message-contracts.md). The
+minimal case is an annotation anywhere in the service (typically on the `@SpringBootApplication`
+class) — see [Declaring message contracts](how-tos/declare-message-contracts.md) for overrides
+(`appName`, multiple topics):
 
 ```java
 @JeapMessageProducerContract(JmeDeclarationCreatedEvent.TypeRef.class)
@@ -105,12 +109,15 @@ class DeclarationConsumer {
 }
 ```
 
-Because delivery is at-least-once, make consumers [idempotent](idempotent-message-handler.md).
+Because delivery is at-least-once, make consumers [idempotent](idempotent-message-handler.md) — see
+[Using the idempotent message handler](how-tos/use-idempotent-message-handler.md) for the steps.
 
 ## Related
 
 - [Architecture](architecture.md)
 - [Configuration reference](configuration.md)
-- [Kafka how-to](kafka-how-to.md)
-- [Message contracts](message-contracts.md)
+- [Kafka how-to](how-tos/kafka-how-to.md)
+- [Declaring message contracts](how-tos/declare-message-contracts.md)
+- [Configuring error handling](how-tos/configure-error-handling.md)
+- [Using the idempotent message handler](how-tos/use-idempotent-message-handler.md)
 - [Testing](testing.md)

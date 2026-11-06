@@ -1,0 +1,10 @@
+# Sidebar order for this folder's direct children. See docs/_order for the format.
+#
+kafka-how-to.md
+declare-message-contracts.md
+update-message-type-registry.md
+use-idempotent-message-handler.md
+configure-error-handling.md
+enable-message-signing.md
+switch-to-aws-glue-and-msk-iam.md
+evolve-self-consumed-message-type.md

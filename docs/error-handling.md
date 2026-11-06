@@ -11,10 +11,8 @@ retries and manual resolution. Its deployment and operation are documented with 
 
 ## Integration steps
 
-Configure each consuming application with an error topic and permission to publish to it, plus its
-system and service identity (see [Configuration](configuration.md#core)). For ordering topics, retry
-permissions, roles, Agir access and deploying the EHS, follow the
-[EHS getting-started guide](https://jeap-admin-ch.github.io/docs/building-blocks/reusable-microservices/jeap-error-handling/getting-started).
+For the steps to configure this service's side (error topic, identity, permissions) and set up the
+EHS, see [Configuring error handling](how-tos/configure-error-handling.md).
 
 ## Configuration
 
@@ -111,6 +109,7 @@ Resubmitted messages are automatically filtered to the intended consumer — see
 ## Related
 
 - [jeap-messaging](../README.md)
+- [Configuring error handling](how-tos/configure-error-handling.md)
 - [Consuming messages](consuming-messages.md)
 - [Message filtering](message-filtering.md)
 - [Configuration reference](configuration.md)

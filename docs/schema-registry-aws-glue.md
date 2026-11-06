@@ -47,6 +47,7 @@ Confluent registry. See [Message evolution](message-evolution.md).
 
 ## Related
 
+- [Switching to AWS Glue and MSK IAM authentication](how-tos/switch-to-aws-glue-and-msk-iam.md)
 - [AWS MSK IAM authentication](aws-msk-iam-authentication.md)
 - [Confluent Schema Registry](schema-registry-confluent.md)
 - [Configuration reference](configuration.md)

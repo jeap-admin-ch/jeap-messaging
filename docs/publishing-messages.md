@@ -46,9 +46,10 @@ keeps the routing decision out of the business code — see [Architecture](archi
 
 ## Producer contract required
 
-A producer contract is REQUIRED for every produced type (see
-[Message contracts](message-contracts.md)). The `publishWithoutContractAllowed` property must be
-`false` in production (see [Configuration reference](configuration.md)).
+A producer contract is REQUIRED for every produced type — see
+[Declaring message contracts](how-tos/declare-message-contracts.md) for how, or
+[Message contracts](message-contracts.md) for why. The `publishWithoutContractAllowed` property must
+be `false` in production (see [Configuration reference](configuration.md)).
 
 ## Multi-cluster caveat with Lombok
 
@@ -62,6 +63,7 @@ cluster's template may be injected. See
 
 - [jeap-messaging](../README.md)
 - [Consuming messages](consuming-messages.md)
+- [Declaring message contracts](how-tos/declare-message-contracts.md)
 - [Message contracts](message-contracts.md)
 - [Defining messages](defining-messages.md)
 - [Configuration reference](configuration.md)

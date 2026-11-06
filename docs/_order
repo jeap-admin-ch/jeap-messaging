@@ -1,0 +1,33 @@
+# Sidebar order for this repo's section on the jEAP documentation site.
+#
+# One entry per line, in the order entries should appear. Lines starting with
+# '#' and blank lines are ignored. Each entry names a file or folder directly
+# under docs/; its line number becomes the sidebar position. An optional
+# '| Label' sets a folder's sidebar category label. getting-started.md is
+# pinned first tree-wide by the site build regardless of this file, so it is
+# intentionally not listed here. See jeap/docs/_order for the full format.
+#
+how-tos | How-Tos
+publishing-messages.md
+consuming-messages.md
+encrypting-messages.md
+architecture.md
+dependencies.md
+configuration.md
+message-types.md
+defining-messages.md
+avro-maven-plugin.md
+avro-class-security.md
+message-type-registry.md
+message-evolution.md
+message-contracts.md
+kafka-topics-and-configuration.md
+idempotent-message-handler.md
+error-handling.md
+schema-registry-confluent.md
+schema-registry-aws-glue.md
+aws-msk-iam-authentication.md
+signing-messages.md
+message-filtering.md
+health-indicators.md
+testing.md

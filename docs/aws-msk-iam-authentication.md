@@ -34,6 +34,7 @@ jeap:
 
 ## Related
 
+- [Switching to AWS Glue and MSK IAM authentication](how-tos/switch-to-aws-glue-and-msk-iam.md)
 - [AWS Glue Schema Registry](schema-registry-aws-glue.md)
 - [Configuration reference](configuration.md)
 - [jeap-messaging](../README.md)

@@ -27,7 +27,21 @@ jeap:
 
 Producers select a non-default cluster with a `@Qualifier("<name>")` on the injected `KafkaTemplate`;
 consumers select it with `containerFactory = "<name>KafkaListenerContainerFactory"` on `@KafkaListener`. The
-default cluster needs neither.
+default cluster needs neither:
+
+| Use case | Default cluster | Other clusters (example: a cluster named `aws`) |
+| --- | --- | --- |
+| Consumer | `@KafkaListener(topics=...)` | `@KafkaListener(topics=..., containerFactory = "awsKafkaListenerContainerFactory")` |
+| Producer | `KafkaTemplate<AvroMessageKey, AvroMessage> defaultClusterTemplate` | `@Qualifier("aws") KafkaTemplate<AvroMessageKey, AvroMessage> awsClusterTemplate` |
+
+> **Lombok caveat:** if you inject the qualified `KafkaTemplate` into a Lombok-generated constructor
+> (`@AllArgsConstructor`, `@RequiredArgsConstructor`), the `@Qualifier` annotation isn't copied by
+> default and the default cluster's template may be injected regardless — see
+> [Multi-cluster caveat with Lombok](publishing-messages.md#multi-cluster-caveat-with-lombok) for the fix.
+
+See the [jme-messaging-example](https://github.com/jme-admin-ch/jme-messaging-example) repository for a
+multi-cluster service injecting these beans and defining listeners that produce/consume from different
+clusters.
 
 | Name                                               | Default          | Description                                                                                                                                                                     |
 |----------------------------------------------------|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

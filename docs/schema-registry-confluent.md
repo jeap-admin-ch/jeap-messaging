@@ -43,6 +43,7 @@ tests. See the [Configuration reference](configuration.md).
 
 ## Related
 
+- [Switching to AWS Glue and MSK IAM authentication](how-tos/switch-to-aws-glue-and-msk-iam.md)
 - [Configuration reference](configuration.md)
 - [Message Type Registry](message-type-registry.md)
 - [Message evolution](message-evolution.md)

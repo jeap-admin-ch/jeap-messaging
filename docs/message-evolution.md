@@ -48,14 +48,15 @@ Registry. Developers usually never interact with it directly.
 
 ## Self-messages
 
-A service consuming a type it also produces: since 7.5.0, two compatible versions can coexist by giving
-them different Avro namespaces and adding a `<classifier>` on the second Maven dependency; force
-deserialization with the listener property `specific.avro.value.type=...` (see
-[Configuration reference](configuration.md)). Before 7.5.0 only `FULL` changes are possible for such
-types; otherwise use EMC Message Replacement.
+A service consuming a type it also produces needs extra steps to evolve it under any compatibility mode
+other than `FULL`, because producer and consumer of the new version are deployed in the same rolling
+deployment, with no forward/backward ordering between them. See
+[Evolving a self-consumed message type](how-tos/evolve-self-consumed-message-type.md) for the steps and
+a worked example.
 
 ## Related
 
+- [Evolving a self-consumed message type](how-tos/evolve-self-consumed-message-type.md)
 - [Message Type Registry](message-type-registry.md)
 - [Defining messages](defining-messages.md)
 - [Configuration reference](configuration.md)

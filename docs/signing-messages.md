@@ -3,6 +3,10 @@
 Since 8.21.0 jEAP Messaging can sign messages on send and verify signatures on receive, so that
 consumers can establish which service actually published a message.
 
+For the steps to turn this on — getting a key/certificate, configuring publisher and subscriber, and
+rolling it out without breaking existing consumers — see
+[Enabling message signing](how-tos/enable-message-signing.md).
+
 ## Flow
 
 ```mermaid
@@ -53,10 +57,10 @@ Properties under `jeap.messaging.authentication.subscriber.`:
 
 | Name                                    | Mandatory | Default | Description                                                                                                                                                                     |
 |-----------------------------------------|-----------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `require-signature`                     | No        | `false` | Strict mode: every message except whitelisted ones must be signed. When `false`, signatures are only checked if the `jeap-sign`/`jeap-sign-key`/`jeap-cert` headers are present |
+| `require-signature`                     | No        | `false` | Strict mode: every message except whitelisted ones must be signed and have its signature verified. When `false`, the signature is **not** cryptographically verified even if the `jeap-sign`/`jeap-sign-key`/`jeap-cert` headers are present — only their consistent presence/absence is checked |
 | `accept-unsigned-messagetype-whitelist` | No        | —       | List of message types allowed without a signature                                                                                                                               |
 | `allowed-publishers`                    | No        | —       | Map of message type to list of services allowed to publish it                                                                                                                   |
-| `certificate-chains`                    | No        | —       | Map of service to certificate chain (`[leaf, optional intermediates, root]`) used to verify signatures                                                                          |
+| `certificate-chains`                    | No        | —       | Map of service to a map of chain name to certificate chain (`[leaf, optional intermediates, root]`) used to verify signatures; the chain name is arbitrary and lets a service have more than one chain active at once, e.g. during certificate rotation |
 | `privileged-producer-common-names`      | No        | —       | List of producer-certificate CNs whose signature is verified but NOT matched against the message's declared publisher (for mirroring migrations, e.g. OnPrem to AWS MSK)        |
 | `allow-non-jeap-messages`               | No        | `false` | If `true`, non-jEAP messages are allowed and bypass signature checking                                                                                                          |
 
@@ -85,6 +89,7 @@ In addition, `jeap_messaging_total` gained a `signed` (`0`/`1`) dimension.
 ## Related
 
 - [jeap-messaging](../README.md)
+- [Enabling message signing](how-tos/enable-message-signing.md)
 - [Error handling](error-handling.md)
 - [Configuration reference](configuration.md)
 - [Consuming messages](consuming-messages.md)

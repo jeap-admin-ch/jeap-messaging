@@ -26,8 +26,9 @@ class DeclarationConsumer {
 ## Make consumers idempotent
 
 Delivery is at-least-once, so duplicates are possible. Make consumers idempotent. The automatic
-approach is the [idempotent message handler](idempotent-message-handler.md). The manual alternative is
-to persist and check the message's idempotence id:
+approach is the [idempotent message handler](idempotent-message-handler.md) — see
+[Using the idempotent message handler](how-tos/use-idempotent-message-handler.md) for the steps. The
+manual alternative is to persist and check the message's idempotence id:
 
 ```java
 String idempotenceId = event.getIdentity().getIdempotenceId();
@@ -39,10 +40,12 @@ if (alreadyProcessed(idempotenceId)) {
 
 ## Consumer contract required
 
-A consumer contract is REQUIRED (see [Message contracts](message-contracts.md)). The
-`consumeWithoutContractAllowed` property must be `false` in production. When listening to a topic that
-carries several event types, set `silentIgnoreWithoutContract=true` to suppress the error logged for
-types you don't process (see [Configuration reference](configuration.md)).
+A consumer contract is REQUIRED — see
+[Declaring message contracts](how-tos/declare-message-contracts.md) for how, or
+[Message contracts](message-contracts.md) for why. The `consumeWithoutContractAllowed` property must
+be `false` in production. When listening to a topic that carries several event types, set
+`silentIgnoreWithoutContract=true` to suppress the error logged for types you don't process (see
+[Configuration reference](configuration.md)).
 
 ## Overriding the deserialized type
 
@@ -66,6 +69,8 @@ To access message keys in the consumer, set `expose-message-key-to-consumer=true
 - [jeap-messaging](../README.md)
 - [Publishing messages](publishing-messages.md)
 - [Idempotent message handler](idempotent-message-handler.md)
+- [Using the idempotent message handler](how-tos/use-idempotent-message-handler.md)
 - [Error handling](error-handling.md)
+- [Declaring message contracts](how-tos/declare-message-contracts.md)
 - [Message contracts](message-contracts.md)
 - [Configuration reference](configuration.md)

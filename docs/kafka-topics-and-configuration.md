@@ -75,5 +75,5 @@ records on retry. This is another reason an idempotent consumer is important.
 
 - [jeap-messaging](../README.md)
 - [Consuming messages](consuming-messages.md)
-- [Kafka how-to](kafka-how-to.md)
+- [Kafka how-to](how-tos/kafka-how-to.md)
 - [Configuration reference](configuration.md)

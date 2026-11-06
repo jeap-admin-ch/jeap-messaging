@@ -4,11 +4,15 @@ Because Kafka delivery is at-least-once, a consumer may receive the same message
 `jeap-messaging-idempotence` module provides automatic idempotent handling so that an
 already-processed message is skipped. See [Choosing dependencies](dependencies.md) for the artifact.
 
+For the steps to annotate a handler and the required database table, see
+[Using the idempotent message handler](how-tos/use-idempotent-message-handler.md). The rest of this page
+explains how it works.
+
 ## `@IdempotentMessageHandler`
 
 `@IdempotentMessageHandler` is a method-level, runtime-retained annotation. Put it on a handler method
-whose **first** argument is the `Message`. An AOP aspect (`IdempotentMessageHandlerAspect`) wraps the
-method:
+whose **first** argument is the `Message`; the method also needs an active transaction (see the how-to
+above). An AOP aspect (`IdempotentMessageHandlerAspect`) wraps the method:
 
 - it derives the key from `message.getIdentity().getIdempotenceId()`;
 - it derives a context from the message type name (`message.getType().getName()`) with a trailing
@@ -16,24 +20,7 @@ method:
 - it creates an `IdempotentProcessing` record via `createIfNotExists`. If the record is newly created,
   the method proceeds; if the record already exists, the method is **skipped** and returns `null`.
 
-## Requires a transaction
-
-The aspect requires an **active transaction** — without one it throws `IllegalStateException`.
-Annotate the handler (or a surrounding method) with `@Transactional`.
-
-```java
-@Component
-class DeclarationConsumer {
-
-    @Transactional
-    @IdempotentMessageHandler
-    @KafkaListener(topics = "jme-messaging-declaration-created")
-    void consume(JmeDeclarationCreatedEvent event, Acknowledgment ack) {
-        // ... process the event ...
-        ack.acknowledge();
-    }
-}
-```
+Without an active transaction the aspect throws `IllegalStateException`.
 
 ## Exception Handling
 
@@ -125,6 +112,7 @@ For a manual alternative, persist and check the `idempotenceId` yourself (see
 ## Related
 
 - [jeap-messaging](../README.md)
+- [Using the idempotent message handler](how-tos/use-idempotent-message-handler.md)
 - [Consuming messages](consuming-messages.md)
 - [Message types](message-types.md)
 - [Error handling](error-handling.md)

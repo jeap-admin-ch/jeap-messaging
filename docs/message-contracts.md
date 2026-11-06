@@ -31,32 +31,10 @@ not disable command-consumer validation.
 
 ## Declaring contracts
 
-Four annotations come from `jeap-messaging-contract-annotations`, normally brought in transitively via
-the generated message-type JARs: `@JeapMessageConsumerContract`, `@JeapMessageProducerContract`,
-`@JeapMessageConsumerContracts` and `@JeapMessageProducerContracts`. They can be placed anywhere,
-commonly on the `@SpringBootApplication` class. Each references the generated `TypeRef` inner class of
-the message type, e.g. `JmeCreateDeclarationCommand.TypeRef.class`.
-
-`appName` is optional and defaults from `spring.application.name`. `topic` is optional and defaults to
-the message type's default topic; an array of multiple topics is allowed, for example for shared
-events.
-
-```java
-@JeapMessageProducerContract(JmeDeclarationCreatedEvent.TypeRef.class)
-@JeapMessageConsumerContract(JmeCreateDeclarationCommand.TypeRef.class)
-@JeapMessageConsumerContract(
-        value = JmeSharedEvent.TypeRef.class,
-        topic = {"my-topic", "my-topic-2"})
-@JeapMessageProducerContract(
-        value = JmeAuditEvent.TypeRef.class,
-        appName = "my-audit-service")
-@SpringBootApplication
-public class Application {
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-}
-```
+Four annotations declare what a service produces/consumes: `@JeapMessageConsumerContract`,
+`@JeapMessageProducerContract`, `@JeapMessageConsumerContracts` and `@JeapMessageProducerContracts`.
+For the steps to add them and an example, see
+[Declaring message contracts](how-tos/declare-message-contracts.md).
 
 ## Annotation processor
 
@@ -180,6 +158,7 @@ statement emitted when a message without a contract is received (without relaxin
 ## Related
 
 - [jeap-messaging](../README.md)
+- [Declaring message contracts](how-tos/declare-message-contracts.md)
 - [Message Type Registry](message-type-registry.md)
 - [Message evolution](message-evolution.md)
 - [Publishing messages](publishing-messages.md)
