@@ -432,7 +432,6 @@ Go License
 -------------------------------
 
  * RE2/J - [com.google.re2j:re2j](http://github.com/google/re2j)
- * RE2/J - [com.google.re2j:re2j](http://github.com/google/re2j)
 
 LGPL 2.1
 -------------------------------
