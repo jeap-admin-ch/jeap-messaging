@@ -8,8 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [19.37.0] - 2026-11-25
 
 ### Changed
-
 - Update parent from 11.17.0 to 12.0.0
+- update jeap-spring-boot-roles-anywhere-starter from 3.72.0 to 3.73.0
 
 ## [19.36.0] - 2026-11-21
 
